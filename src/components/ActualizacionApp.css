@@ -1,0 +1,58 @@
+.sf-update-pill {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99940;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 0.45rem 0.7rem;
+  background: rgba(15, 23, 42, 0.88);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+  pointer-events: none;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.sf-update-pill-label {
+  white-space: nowrap;
+}
+
+.sf-update-pill-bar {
+  flex: 1;
+  height: 4px;
+  min-width: 56px;
+  border-radius: 999px;
+  background: #334155;
+  overflow: hidden;
+}
+
+.sf-update-pill-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #22c55e);
+  transition: width 0.25s ease;
+}
+
+.sf-update-pill-fill.pulse {
+  animation: sf-update-pulse 1.1s ease-in-out infinite;
+}
+
+.sf-update-pill-pct {
+  font-variant-numeric: tabular-nums;
+  color: #94a3b8;
+  min-width: 2.2em;
+  text-align: right;
+}
+
+@keyframes sf-update-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}

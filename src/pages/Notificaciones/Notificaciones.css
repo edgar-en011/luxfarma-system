@@ -1,0 +1,223 @@
+.notif-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Header */
+.notif-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.notif-page-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.notif-page-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.notif-page-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.notif-filter-select {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  color: #334155;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.notif-filter-select:focus { border-color: #022b5e; }
+
+.notif-btn-limpiar {
+  background: #022b5e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.notif-btn-limpiar:hover { opacity: 0.85; }
+
+/* Loading / Empty */
+.notif-page-loading,
+.notif-page-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 4rem 2rem;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* Lista de items */
+.notif-page-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-page-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.15s;
+  position: relative;
+  cursor: default;
+}
+
+.npi-clickable { cursor: pointer; }
+.npi-clickable:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transform: translateX(2px);
+}
+
+.npi-leida { opacity: 0.55; }
+
+/* Colores por tipo */
+.npi-tipo-warn { border-left-color: #f59e0b; background: #fffdf0; }
+.npi-tipo-err  { border-left-color: #ef4444; background: #fff8f8; }
+.npi-tipo-ok   { border-left-color: #22c55e; background: #f8fff9; }
+.npi-tipo-purp { border-left-color: #a855f7; background: #fdf8ff; }
+.npi-tipo-info { border-left-color: #3b82f6; background: #f8fcff; }
+
+.npi-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.npi-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.npi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.npi-categoria {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+}
+
+.npi-tiempo {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.npi-mensaje {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e293b;
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+
+.npi-mensaje-stock {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.npi-qty {
+  flex-shrink: 0;
+  font-weight: 800;
+  color: #012B63;
+  font-variant-numeric: tabular-nums;
+}
+
+.npi-tipo-err .npi-qty { color: #b91c1c; }
+.npi-tipo-warn .npi-qty { color: #b45309; }
+
+.npi-sep { flex-shrink: 0; color: #cbd5e1; font-weight: 600; }
+
+.npi-nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.npi-accion {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.npi-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* Paginación */
+.notif-page-paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding-top: 0.5rem;
+}
+
+.notif-pag-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.notif-pag-btn:hover:not(:disabled) { background: #022b5e; color: white; border-color: #022b5e; }
+.notif-pag-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.notif-pag-info {
+  font-size: 0.85rem;
+  color: #64748b;
+  white-space: nowrap;
+}

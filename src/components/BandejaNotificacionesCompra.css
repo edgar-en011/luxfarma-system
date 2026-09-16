@@ -1,0 +1,204 @@
+/* Bandeja flotante: 2 tarjetas completas + pila iOS detrás.
+   No participa del layout del modal (height: 0, absolute).
+   Las vars de tamaño viven en el overlay para que el hueco del modal las use. */
+.bandeja-notif-compra {
+  --bandeja-step: calc(var(--bandeja-h) + var(--bandeja-gap));
+  position: absolute;
+  top: var(--bandeja-top);
+  left: 50%;
+  width: min(680px, calc(100% - 48px));
+  margin-left: calc(min(680px, calc(100% - 48px)) / -2);
+  height: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.bandeja-notif-tamano {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+
+.bandeja-notif-tamano-btn {
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  font: 700 11px/1 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.bandeja-notif-tamano-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.bandeja-notif-tamano-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.bandeja-notif-tamano-lbl {
+  min-width: 3.6rem;
+  text-align: center;
+  font: 650 10px/1 ui-sans-serif, system-ui, sans-serif;
+  color: #cbd5e1;
+  letter-spacing: 0.02em;
+}
+
+.bandeja-notif-slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  transform-origin: top center;
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.bandeja-notif-slot.is-legible {
+  transform: translate3d(0, calc(var(--i) * var(--bandeja-step)), 0);
+  z-index: calc(40 - var(--i));
+}
+
+.bandeja-notif-slot.is-pila {
+  transform: translate3d(0, calc(1 * var(--bandeja-step) + 10px + var(--pila) * 8px), 0) scale(calc(0.93 - var(--pila) * 0.04));
+  z-index: calc(20 - var(--pila));
+  opacity: 0.7;
+}
+
+.bandeja-notif-slot.is-saliendo {
+  opacity: 0;
+  transform: translate3d(0, calc(1 * var(--bandeja-step) + 28px), 0) scale(0.9);
+}
+
+.bandeja-notif-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--bandeja-h);
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0 var(--bandeja-pad-x);
+  background: rgba(248, 249, 252, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 10px 28px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.bandeja-notif-slot.is-legible .bandeja-notif-card {
+  animation: bandeja-notif-entra 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.bandeja-notif-slot.is-legible .bandeja-notif-icono {
+  animation: bandeja-check-pop 0.38s cubic-bezier(0.22, 1.3, 0.36, 1) 0.05s both;
+}
+
+@keyframes bandeja-notif-entra {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes bandeja-check-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.bandeja-notif-icono {
+  flex-shrink: 0;
+  width: var(--bandeja-icon);
+  height: var(--bandeja-icon);
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.18);
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bandeja-notif-texto {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--bandeja-gap-in);
+}
+
+.bandeja-notif-nombre {
+  margin: 0;
+  font-size: var(--bandeja-font-nombre);
+  font-weight: 600;
+  color: #1c1c1e;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bandeja-notif-meta {
+  margin: 2px 0 0;
+  font-size: var(--bandeja-font-meta);
+  font-weight: 400;
+  color: #8e8e93;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bandeja-notif-cupon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  min-width: 0;
+  padding: 0;
+  background: none;
+}
+
+.bandeja-notif-importe {
+  display: flex;
+  align-items: baseline;
+  gap: 0.22rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.bandeja-notif-moneda {
+  font-size: calc(var(--bandeja-font-importe) * 0.7);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #8e8e93;
+}
+
+.bandeja-notif-monto {
+  margin-top: 0;
+  font-size: var(--bandeja-font-importe);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #1c1c1e;
+}

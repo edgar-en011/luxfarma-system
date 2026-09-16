@@ -1,0 +1,52 @@
+.tlb-root {
+  position: relative;
+  width: 100%;
+}
+.tlb-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+}
+.tlb-root.is-open .tlb-btn,
+.tlb-btn:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+.tlb-chevron { color: #94a3b8; font-size: 0.75rem; }
+.tlb-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 8;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+.tlb-opt {
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.tlb-opt.is-on { background: #eff6ff; }
+.tlb-opt.is-sel { color: #012B63; }

@@ -1,0 +1,106 @@
+.admin-inv-container { display: flex; flex-direction: column; gap: 1.5rem; color: #0f172a; }
+
+.admin-loading { padding: 4rem; text-align: center; color: #64748b; font-size: 1.1rem; }
+
+/* TOP ACTIONS */
+.inv-top-actions { display: flex; justify-content: space-between; align-items: center; }
+.inv-title-area p { margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 600; }
+.inv-buttons-area { display: flex; gap: 1rem; }
+.btn-inv-outline { background: white; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.btn-inv-primary { background: #0f172a; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+/* KPI CARDS */
+.inv-kpis-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.inv-kpi-card { background: white; padding: 1.5rem; border-radius: 12px; display: flex; gap: 1.2rem; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.inv-kpi-card.border-blue { border-bottom: 4px solid #3b82f6; }
+.inv-kpi-card.border-yellow { border-bottom: 4px solid #eab308; }
+.inv-kpi-card.border-red { border-bottom: 4px solid #ef4444; }
+.inv-kpi-card.border-green { border-bottom: 4px solid #22c55e; }
+
+.kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
+.bg-blue-soft { background-color: #eff6ff; }
+.bg-yellow-soft { background-color: #fefce8; }
+.bg-red-soft { background-color: #fef2f2; }
+.bg-green-soft { background-color: #f0fdf4; }
+
+.kpi-info p { margin: 0 0 0.2rem 0; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+.kpi-info h2 { margin: 0 0 0.2rem 0; font-size: 1.8rem; font-weight: 800; color: #0f172a; line-height: 1;}
+.kpi-info span { font-size: 0.75rem; color: #94a3b8; }
+
+/* FILTERS BAR */
+.inv-filters-bar { display: flex; align-items: center; gap: 1rem; background: white; padding: 0.8rem 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.search-box-inv { flex: 1; display: flex; align-items: center; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 8px; }
+.search-box-inv input { border: none; background: transparent; padding-left: 0.8rem; outline: none; width: 100%; font-size: 0.9rem; }
+
+.select-inv-sucursal, .select-inv-sort { padding: 0.6rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; color: #475569; font-weight: 600; outline: none; background: white;}
+
+.inv-pills-group { display: flex; gap: 0.5rem; }
+.pill-btn { background: white; border: 1px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s;}
+.pill-btn.active.dark { background: #0f172a; color: white; border-color: #0f172a; }
+.pill-btn.active.yellow { background: #fefce8; color: #b45309; border-color: #fde047; }
+.pill-btn.active.red { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+.pill-btn.active.orange { background: #fff7ed; color: #c2410c; border-color: #fdba74; }
+
+.dot-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+.dot-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+.dot-orange { width: 8px; height: 8px; border-radius: 50%; background: #f97316; }
+
+/* TABLE */
+.inv-table-container { background: white; border-radius: 12px; padding: 1rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; }
+.inv-table { width: 100%; border-collapse: collapse; }
+.inv-table th { text-align: left; padding: 1rem 0.5rem; font-size: 0.7rem; font-weight: 800; color: #64748b; border-bottom: 2px solid #f1f5f9; text-transform: uppercase; }
+.inv-table td { padding: 1rem 0.5rem; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; vertical-align: middle;}
+.empty-inv { text-align: center; padding: 4rem !important; color: #94a3b8; }
+
+.text-dark { color: #0f172a; }
+.text-muted { color: #94a3b8; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+.text-red { color: #ef4444; }
+.text-yellow { color: #eab308; }
+.text-green { color: #22c55e; }
+.text-orange { color: #f97316; }
+.bg-red { background-color: #ef4444; }
+.bg-yellow { background-color: #eab308; }
+.bg-green { background-color: #22c55e; }
+
+/* Category Pills */
+.cat-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.cat-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+.pill-blue { background: #eff6ff; color: #2563eb; } .pill-blue .dot { background: #2563eb; }
+.pill-green { background: #f0fdf4; color: #16a34a; } .pill-green .dot { background: #16a34a; }
+.pill-orange { background: #fff7ed; color: #ea580c; } .pill-orange .dot { background: #ea580c; }
+.pill-purple { background: #f3e8ff; color: #9333ea; } .pill-purple .dot { background: #9333ea; }
+
+/* Progress Bars */
+.inv-bar-bg { width: 80%; height: 4px; background: #f1f5f9; border-radius: 2px; margin: 0.3rem auto 0 auto; overflow: hidden; }
+.inv-bar-fill { height: 100%; border-radius: 2px; }
+
+/* Actions */
+.actions-cell button { background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; margin: 0 0.2rem;}
+.actions-cell button:hover { opacity: 1; }
+
+/* Pagination */
+.inv-pagination { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; margin-top: 0.5rem; }
+/* ================= PAGINACIÓN ARREGLADA (CUADRADA Y BONITA) ================= */
+.page-controls { display: flex; gap: 0.4rem; align-items: center; }
+.page-controls button {
+  background: white; border: 1px solid #e2e8f0;
+  min-width: 36px; height: 36px; padding: 0 0.5rem; 
+  border-radius: 8px; color: #475569; font-weight: 600; cursor: pointer;
+  display: flex; justify-content: center; align-items: center;
+  transition: all 0.2s ease;
+}
+.page-controls button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+.page-controls button.active { background: #0f172a; color: white; border-color: #0f172a; }
+.page-controls button:disabled { opacity: 0.4; cursor: not-allowed; background: #f8fafc; }
+/* ================= PAGINACIÓN ARREGLADA ================= */
+.page-controls { display: flex; gap: 0.4rem; align-items: center; }
+.page-controls button {
+  background: white; border: 1px solid #e2e8f0;
+  min-width: 32px; height: 32px; padding: 0 0.5rem; /* El padding arregla el problema de que se aplasten */
+  border-radius: 6px; color: #475569; font-weight: 600; cursor: pointer;
+  display: flex; justify-content: center; align-items: center;
+}
+.page-controls button.active { background: #0f172a; color: white; border-color: #0f172a; }
+.page-controls button:disabled { opacity: 0.5; cursor: not-allowed; }

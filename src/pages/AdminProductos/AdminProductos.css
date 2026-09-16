@@ -1,0 +1,527 @@
+/* Layout de 2 zonas: la de arriba (título+toolbar+KPIs+filtros) tiene alto natural
+   (flex-shrink:0, ver .prod-zona-superior) y NO scrollea; el resto del alto disponible
+   (heredado de .page-content en MainLayout.css, que ya le da a este contenedor una
+   altura real via flex:1) se lo queda la tabla, con su propio scroll interno — así el
+   scroll de página completa de .page-content queda como excepción, no como norma. */
+.admin-prod-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  color: #0f172a;
+  max-width: 1600px;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.prod-zona-superior {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  flex-shrink: 0;
+}
+
+.admin-loading { padding: 4rem; text-align: center; color: #64748b; font-size: 1.1rem; }
+
+/* ---- LOGO DE CARGA (pulso suave, mismo logo que el sidebar) ---- */
+@keyframes pulse-logo {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.9); }
+}
+.prod-loading-logo { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.prod-loading-logo-img { width: 42px; height: 42px; border-radius: 10px; animation: pulse-logo 1.4s ease-in-out infinite; }
+.prod-loading-logo span { font-size: 0.85rem; font-weight: 600; color: #012B63; }
+
+/* TOP BAR */
+.prod-top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.prod-eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0369a1;
+}
+.prod-title-area h2 {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+.prod-title-area > p:last-child { margin: 0.25rem 0 0; color: #64748b; font-size: 0.9rem; font-weight: 550; }
+
+.prod-toolbar { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+.btn-prod-primary {
+  background: linear-gradient(135deg, #012B63 0%, #0a3d7a 100%);
+  color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 10px;
+  font-weight: 700; cursor: pointer; transition: transform 0.12s, box-shadow 0.15s;
+  box-shadow: 0 3px 10px rgba(1, 43, 99, 0.22);
+}
+.btn-prod-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(1, 43, 99, 0.28); }
+.btn-prod-outline {
+  background: white; border: 1px solid #e2e8f0; color: #0f172a;
+  padding: 0.6rem 1.1rem; border-radius: 10px; font-weight: 700; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.btn-prod-outline:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+.btn-prod-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-prod-danger { color: #dc2626; border-color: #fecaca; }
+.btn-prod-danger:hover:not(:disabled) { background: #fef2f2; }
+.btn-prod-success { color: #15803d; border-color: #bbf7d0; }
+.btn-prod-success:hover:not(:disabled) { background: #f0fdf4; }
+
+/* ---- KPIs navy/fintech ---- */
+.prod-kpis-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.95rem; }
+.prod-kpis-loading { grid-column: 1 / -1; display: flex; justify-content: center; padding: 0.85rem 0; }
+.prod-kpi-card {
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  border: 1px solid #e8eef5;
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(1, 43, 99, 0.06);
+  transition: transform 0.15s, box-shadow 0.15s;
+  border-left: 4px solid #cbd5e1;
+}
+.prod-kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(1, 43, 99, 0.1); }
+.prod-kpi-card.border-navy { border-left-color: #012B63; }
+.prod-kpi-card.border-blue { border-left-color: #2563eb; }
+.prod-kpi-card.border-teal { border-left-color: #0d9488; }
+.prod-kpi-card.border-green { border-left-color: #16a34a; }
+
+.prod-kpi-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 1.15rem; flex-shrink: 0;
+}
+.bg-navy-soft { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.bg-blue-soft { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
+.bg-teal-soft { background: linear-gradient(135deg, #ccfbf1, #99f6e4); }
+.bg-green-soft { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+
+.prod-kpi-info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.prod-kpi-label {
+  font-size: 0.66rem; font-weight: 800; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.prod-kpi-valor {
+  font-size: 1.35rem; font-weight: 800; color: #012B63;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+/* ---- FILTERS BAR ---- */
+.prod-filters-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  background: #fff;
+  border: 1px solid #e8eef5;
+  padding: 1.2rem 1.45rem 1.25rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(1, 43, 99, 0.05);
+}
+.prod-filtros-grupo-header { display: flex; align-items: center; gap: 0.5rem; }
+.prod-filtros-grupo-titulo {
+  font-size: 0.68rem; font-weight: 800; color: #94a3b8;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.prod-filtros-fila { display: flex; align-items: flex-end; gap: 1.1rem; flex-wrap: wrap; }
+.prod-filtros-fila-final {
+  align-items: center;
+  padding-top: 0.85rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid #f1f5f9;
+  gap: 0.85rem;
+}
+
+.prod-campo-filtro { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 220px; }
+.prod-campo-filtro label {
+  font-size: 0.68rem; font-weight: 800; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.prod-search-box {
+  display: flex; align-items: center;
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  padding: 0 1rem; border-radius: 10px;
+  min-height: 42px; height: 42px; box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.prod-search-box:focus-within {
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.prod-search-box input {
+  border: none; background: transparent; padding-left: 0.5rem;
+  outline: none; width: 100%; font-size: 0.9rem; font-family: inherit; font-weight: 600; color: #0f172a;
+}
+
+.prod-select {
+  width: 100%; padding: 0.65rem 1rem; border: 1px solid #e2e8f0; border-radius: 10px;
+  color: #0f172a; font-weight: 600; font-family: inherit; font-size: 0.88rem;
+  outline: none; background: #f8fafc; cursor: pointer; min-height: 42px; box-sizing: border-box;
+}
+.prod-select:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+.prod-campo-filtro-lab { flex: 1.55; min-width: 300px; }
+.prod-lab-filtro-row { display: flex; gap: 0.5rem; align-items: center; width: 100%; }
+.prod-lab-filtro-row .ss-root { flex: 1; min-width: 0; }
+.prod-lab-gestionar-btn {
+  flex-shrink: 0; height: 42px; padding: 0 0.9rem;
+  white-space: nowrap; box-sizing: border-box;
+}
+.prod-filters-bar .ss-root.prod-select .ss-control {
+  min-height: 42px; height: 42px; background: #f8fafc; border-radius: 10px;
+}
+
+/* Más filtros (colapsable) */
+.prod-filtros-avanzados-toggle-row { display: flex; }
+.prod-mas-filtros-btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  border: 1px solid #e2e8f0; background: #f8fafc; color: #334155;
+  border-radius: 999px; padding: 0.4rem 0.95rem;
+  font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.prod-mas-filtros-btn:hover { background: #fff; border-color: #cbd5e1; }
+.prod-mas-filtros-btn.is-open,
+.prod-mas-filtros-btn.has-active {
+  background: #eff6ff; border-color: #93c5fd; color: #012B63;
+}
+.prod-mas-filtros-badge {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: #012B63; color: #fff; font-size: 0.68rem; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.prod-filtros-avanzados {
+  padding: 0.95rem 1rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+/* Columnas — dropdown compacto */
+.prod-columnas-dropdown { position: relative; }
+.prod-columnas-trigger {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  height: 36px; padding: 0 0.9rem;
+  border: 1px solid #e2e8f0; border-radius: 999px;
+  background: #fff; color: #334155; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.prod-columnas-trigger:hover,
+.prod-columnas-trigger.is-open {
+  border-color: #93c5fd; background: #eff6ff; color: #012B63;
+}
+.prod-columnas-count {
+  min-width: 18px; height: 18px; border-radius: 999px;
+  background: #012B63; color: #fff; font-size: 0.68rem; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.prod-columnas-chevron { font-size: 0.7rem; color: #94a3b8; }
+.prod-columnas-menu {
+  position: absolute; left: 0; top: calc(100% + 6px); z-index: 40;
+  min-width: 210px; padding: 0.55rem;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
+}
+.prod-columnas-menu-title {
+  margin: 0 0 0.45rem; padding: 0.2rem 0.45rem;
+  font-size: 0.65rem; font-weight: 800; color: #94a3b8;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.prod-columnas-option {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.5rem 0.55rem; border-radius: 8px;
+  font-size: 0.84rem; font-weight: 650; color: #334155; cursor: pointer;
+}
+.prod-columnas-option:hover { background: #f8fafc; }
+.prod-columnas-option.is-on { background: #eff6ff; color: #012B63; }
+.prod-columnas-option input { accent-color: #012B63; width: 15px; height: 15px; }
+
+/* Pills Rotar / Stock — lenguaje Cuentas por Pagar */
+.prod-pills-group { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+.prod-pill {
+  border: 1.5px solid #e2e8f0; background: #fff; color: #475569;
+  border-radius: 999px; padding: 0.4rem 0.9rem;
+  font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+.prod-pill:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+.prod-pill.is-active { background: #eff6ff; border-color: #93c5fd; color: #012B63; }
+.prod-pill.is-active.dark { background: #012B63; border-color: #012B63; color: #fff; }
+.prod-pill.is-active.green { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.prod-pill.is-active.red { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+
+.btn-prod-buscar {
+  margin-left: auto;
+  background: linear-gradient(135deg, #012B63 0%, #0a3d7a 100%);
+  color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 10px;
+  font-weight: 700; font-size: 0.88rem; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(1, 43, 99, 0.22);
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.btn-prod-buscar:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(1, 43, 99, 0.28); }
+
+@media (max-width: 1100px) {
+  .prod-kpis-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---- TABLE — table-layout fixed con anchos por CLASE de columna (no nth-child, porque
+   las columnas opcionales cambian de posición según cuáles estén tildadas) asegura que
+   la tabla nunca sobrepasa el 100% del contenedor (evita el scroll horizontal); las
+   columnas de texto libre truncan con ellipsis + title (tooltip) en vez de estirar la
+   columna. Los anchos están pensados para cuando las 11 columnas están visibles a la
+   vez (suman 100%) — con menos columnas tildadas, table-layout:fixed las reparte
+   proporcionalmente y la tabla se sigue viendo bien, nunca se desborda. ---- */
+/* Zona inferior de la pantalla (ver .admin-prod-container): toma TODO el alto restante
+   después de la zona superior, en vez de una altura fija — en una pantalla de 1600px
+   de alto muestra más filas que en una de 1400px, sin desperdiciar ni desbordar
+   espacio. La paginación (12/24/50/100 filas por página) sigue igual, esto solo
+   controla cuántas de las filas ya cargadas se ven sin desplazarse. */
+.prod-table-container {
+  background: white; border-radius: 16px; border: 1px solid #e8eef5;
+  padding: 0.65rem 1.35rem 1.35rem;
+  box-shadow: 0 2px 12px rgba(1, 43, 99, 0.05);
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+}
+.prod-table-loading-overlay {
+  position: absolute; inset: 0; background: rgba(255,255,255,0.85);
+  display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: 16px;
+}
+
+.prod-table-scroll { flex: 1; min-height: 220px; overflow-y: auto; overflow-x: auto; border-radius: 10px; }
+
+.prod-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.prod-table .col-select { width: 3%; }
+.prod-table .col-codigo { width: 8%; }
+.prod-table .col-producto { width: 20%; }
+.prod-table .col-dpto { width: 8%; }
+.prod-table .col-principio-activo { width: 12%; }
+.prod-table .col-presentacion { width: 8%; }
+.prod-table .col-laboratorio { width: 10%; }
+.prod-table .col-dolencia { width: 12%; }
+.prod-table .col-codigo-i { width: 7%; }
+.prod-table .col-stock { width: 6%; }
+.prod-table .col-stock-minimo { width: 6%; }
+.prod-table .col-activo { width: 7%; }
+
+.prod-table th {
+  text-align: left; padding: 0.95rem 0.85rem;
+  font-size: 0.68rem; font-weight: 800; color: #64748b;
+  border-bottom: 2px solid #e8eef5; text-transform: uppercase; letter-spacing: 0.05em;
+  position: sticky; top: 0; z-index: 2;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+.prod-table td {
+  padding: 0.95rem 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.86rem; vertical-align: middle;
+}
+.prod-table tbody tr {
+  cursor: pointer;
+  transition: background 0.14s ease, box-shadow 0.14s ease;
+}
+.prod-table tbody tr:hover {
+  background: #f1f5f9;
+  box-shadow: inset 3px 0 0 #93c5fd;
+}
+.prod-table tbody tr.prod-row-selected {
+  background: linear-gradient(90deg, #eff6ff 0%, #f8fbff 55%);
+  box-shadow: inset 3px 0 0 #012B63;
+}
+.prod-table tbody tr.prod-row-selected:hover { background: #dbeafe; }
+.empty-prod { text-align: center; padding: 4rem !important; color: #94a3b8; }
+
+.prod-badge-activo {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 68px; padding: 0.28rem 0.65rem;
+  border-radius: 999px; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.prod-badge-activo.is-on {
+  background: #dcfce7; color: #15803d; border: 1px solid #86efac;
+}
+.prod-badge-activo.is-off {
+  background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5;
+}
+
+.prod-td-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.text-dark { color: #0f172a; }
+.text-muted { color: #94a3b8; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+.text-green { color: #16a34a; }
+
+.btn-prod-eliminar-fila { background: none; border: none; font-size: 1rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+.btn-prod-eliminar-fila:hover { opacity: 1; }
+
+/* ---- DRAWER LATERAL "Ver Detalle" (Precios / Similares / Complementarios / Proveedores)
+   — reemplaza al panel que antes empujaba la página hacia abajo. No tiene backdrop que
+   bloquee clics: la tabla principal se queda interactiva detrás (se puede seguir
+   filtrando/eligiendo otra fila con el drawer abierto). top:70px porque .topbar en
+   MainLayout.css mide 70px fijo — el drawer arranca justo debajo, nunca lo tapa. ---- */
+.prod-drawer {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  min-width: 420px;
+  max-width: 640px;
+  background: #f8fafc;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+  z-index: 100001;
+  display: flex;
+  flex-direction: column;
+  animation: prod-drawer-in 0.2s ease;
+}
+@keyframes prod-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.prod-drawer-header {
+  flex-shrink: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.1rem 1.5rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+.prod-drawer-header h3 { margin: 0; font-size: 1.02rem; color: #0f172a; }
+.prod-drawer-header button { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8; }
+.prod-drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; }
+
+.prod-detalle-cargando { display: flex; justify-content: center; padding: 2rem 0; }
+.prod-detalle-section { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.1rem 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.prod-detalle-section h3 { margin: 0 0 0.85rem 0; font-size: 0.92rem; font-weight: 800; color: #0f172a; }
+.prod-detalle-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.6rem; }
+.prod-detalle-section-header h3 { margin: 0; }
+/* Cada sección tiene su PROPIO tope de alto + scroll — la que antes podía crecer sin
+   límite ("Proveedores de este producto", historial completo sin .limit()) ahora nunca
+   empuja a las demás ni al drawer entero. */
+.prod-detalle-section-scroll { max-height: 240px; overflow-y: auto; }
+
+/* ---- MODAL "Agregar Similar/Complemento" ---- */
+.prod-modal-relacionado { background: white; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.prod-modal-relacionado-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.prod-modal-relacionado-header h3 { margin: 0; font-size: 1.1rem; color: #0f172a; }
+.prod-modal-relacionado-header button { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #94a3b8; }
+.prod-modal-relacionado-resultados { margin-top: 1rem; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem; }
+.prod-modal-relacionado-msg { text-align: center; padding: 1.5rem 0; font-size: 0.85rem; }
+.prod-modal-relacionado-fila {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.7rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 8px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.prod-modal-relacionado-fila:hover { background: #f8fafc; border-color: #cbd5e1; }
+.prod-modal-relacionado-fila strong { font-size: 0.88rem; color: #0f172a; }
+.prod-modal-relacionado-add { font-size: 1.1rem; font-weight: 800; color: #2563eb; flex-shrink: 0; margin-left: 0.75rem; }
+
+/* ---- MODAL "Ver Precio Proveedores" (Fase C punto 1) — más ancho que el de
+   Similar/Complemento porque muestra una tabla, no una lista de resultados clicable. ---- */
+.prod-modal-proveedores { background: white; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 900px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.prod-modal-proveedores .ss-root.prod-select { margin-bottom: 1rem; }
+.prod-modal-proveedores-tabla { max-height: 55vh; overflow-y: auto; }
+
+/* ---- MODAL "Gestionar Laboratorios" ---- */
+.prod-modal-labs { background: white; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.prod-modal-labs .prod-search-box { margin-bottom: 1rem; }
+
+.prod-labs-toolbar { display: flex; gap: 0.6rem; margin-bottom: 1rem; }
+
+.prod-labs-form-inline {
+  display: flex; gap: 0.6rem; align-items: center;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 0.75rem; margin-bottom: 1rem;
+}
+.prod-labs-form-inline input {
+  flex: 1; padding: 0.6rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px;
+  font-family: inherit; font-size: 0.88rem; outline: none;
+}
+.prod-labs-form-inline input:focus { border-color: #3b82f6; }
+
+.prod-labs-lista { flex: 1; min-height: 0; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 8px; }
+.prod-labs-lista .prod-table td, .prod-labs-lista .prod-table th { padding: 0.65rem 0.9rem; }
+.prod-labs-lista tr.prod-lab-inactivo td { color: #94a3b8; }
+.prod-lab-badge-inactivo {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #b45309;
+  background: #fef3c7;
+  vertical-align: middle;
+}
+
+/* Pagination — mismo patrón visual que AdminInventario.jsx */
+.prod-pagination { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; margin-top: 0.75rem; flex-wrap: wrap; gap: 1rem; }
+.page-controls { display: flex; gap: 0.4rem; align-items: center; }
+.page-controls button {
+  background: white; border: 1px solid #e2e8f0;
+  min-width: 36px; height: 36px; padding: 0 0.5rem;
+  border-radius: 8px; color: #475569; font-weight: 600; cursor: pointer;
+  display: flex; justify-content: center; align-items: center;
+  transition: all 0.2s ease;
+}
+.page-controls button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+.page-controls button.active { background: #0f172a; color: white; border-color: #0f172a; }
+.page-controls button:disabled { opacity: 0.4; cursor: not-allowed; background: #f8fafc; }
+.page-rows select { padding: 0.4rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; }
+
+/* ---- CUSTOM ALERT (modal-overlay-strict es global, ver MainLayout.css) ---- */
+.custom-alert-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.alert-icon-big { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.alert-title-big {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+.alert-message-big {
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.5;
+}
+.alert-btn-ok {
+  padding: 0.6rem 1.8rem;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.alert-btn-ok:hover { background: #1e293b; }
+.alert-btn-cancel {
+  padding: 0.6rem 1.4rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.alert-btn-cancel:hover { background: #f8fafc; }

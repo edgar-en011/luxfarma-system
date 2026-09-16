@@ -1,0 +1,78 @@
+.acp-page {
+  max-width: 1100px;
+}
+
+.acp-grupo {
+  margin-bottom: 1.1rem;
+  overflow: hidden;
+}
+
+.acp-grupo-head {
+  padding: 1rem 1.25rem 0.35rem;
+}
+
+.acp-grupo-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.acp-grupo-head p {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.acp-tabla-wrap {
+  overflow-x: auto;
+}
+
+.acp-codigo {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #334155;
+  white-space: nowrap;
+  width: 1%;
+}
+
+.acp-prod {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.acp-meta {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.acp-acciones {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.acp-acciones button {
+  margin-left: 0.4rem;
+}
+
+.acp-select {
+  min-width: 280px;
+  max-width: 420px;
+}
+
+.acp-btn-del {
+  padding: 6px 14px;
+  border-radius: 100px;
+  background: #fff;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acp-btn-del:hover {
+  background: #fef2f2;
+}
