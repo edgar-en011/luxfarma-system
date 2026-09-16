@@ -1,0 +1,229 @@
+{
+  "fecha": "2026-09-02T04:20:01.205Z",
+  "origen": "correccion_masiva_0_por_N_O",
+  "total": 44,
+  "pendientes": 44,
+  "ya_aplicados": 0,
+  "filas": [
+    {
+      "id_producto": 7498,
+      "nombre_anterior": "0RALFATE 1G SUSP X 200ML SUCRALFATO",
+      "nombre_nuevo": "NORALFATE 1G SUSP X 200ML SUCRALFATO"
+    },
+    {
+      "id_producto": 12501,
+      "nombre_anterior": "0FERTYL CJA X 1 AMP",
+      "nombre_nuevo": "OFERTYL CJA X 1 AMP"
+    },
+    {
+      "id_producto": 12545,
+      "nombre_anterior": "0VALGINA 500MG CJA X 50 TAB",
+      "nombre_nuevo": "NOVALGINA 500MG CJA X 50 TAB"
+    },
+    {
+      "id_producto": 12546,
+      "nombre_anterior": "0VALGINA 250MG JBE X 100ML",
+      "nombre_nuevo": "NOVALGINA 250MG JBE X 100ML"
+    },
+    {
+      "id_producto": 13456,
+      "nombre_anterior": "0TIL NF CREMA TBO X 10GR",
+      "nombre_nuevo": "OTIL NF CREMA TBO X 10GR"
+    },
+    {
+      "id_producto": 13498,
+      "nombre_anterior": "0VOTRIM BALSAMICO SUSP X 100ML",
+      "nombre_nuevo": "OVOTRIM BALSAMICO SUSP X 100ML"
+    },
+    {
+      "id_producto": 13535,
+      "nombre_anterior": "0TIZOL CREMA TBO X 20GR",
+      "nombre_nuevo": "OTIZOL CREMA TBO X 20GR"
+    },
+    {
+      "id_producto": 13536,
+      "nombre_anterior": "0TIZOL CREMA TBO X 10GR",
+      "nombre_nuevo": "OTIZOL CREMA TBO X 10GR"
+    },
+    {
+      "id_producto": 13552,
+      "nombre_anterior": "0NPIRON 100MG PLATA0 SUSP X 60ML",
+      "nombre_nuevo": "NOPIRON 100MG PLATANO SUSP X 60ML"
+    },
+    {
+      "id_producto": 13606,
+      "nombre_anterior": "0VAXON 250 MG FCO X 75 ML",
+      "nombre_nuevo": "OVAXON 250 MG FCO X 75 ML"
+    },
+    {
+      "id_producto": 14462,
+      "nombre_anterior": "0PUCID 10 / 2 EN 1 CJA X 40 SACHTS",
+      "nombre_nuevo": "NOPUCID 10 / 2 EN 1 CJA X 40 SACHTS"
+    },
+    {
+      "id_producto": 15454,
+      "nombre_anterior": "0XOM 100 MG SUSP FCO X 60 ML",
+      "nombre_nuevo": "OXOM 100 MG SUSP FCO X 60 ML"
+    },
+    {
+      "id_producto": 15458,
+      "nombre_anterior": "0XOM 500 MG COMP X 6",
+      "nombre_nuevo": "OXOM 500 MG COMP X 6"
+    },
+    {
+      "id_producto": 18469,
+      "nombre_anterior": "0PRAMAX 550GR CJA X 100 TAB NAPROXE0",
+      "nombre_nuevo": "OPRAMAX 550GR CJA X 100 TAB NAPROXENO"
+    },
+    {
+      "id_producto": 20546,
+      "nombre_anterior": "0NPIRON 100MG FRESA SUSP X 60ML",
+      "nombre_nuevo": "NOPIRON 100MG FRESA SUSP X 60ML"
+    },
+    {
+      "id_producto": 24479,
+      "nombre_anterior": "0SOTRAS NATURAL ALAS TELA GEL X 10 UND",
+      "nombre_nuevo": "NOSOTRAS NATURAL ALAS TELA GEL X 10 UND"
+    },
+    {
+      "id_producto": 24480,
+      "nombre_anterior": "0SOTRAS DIARIOS PH BALANCIADO X 15 PROTEC",
+      "nombre_nuevo": "NOSOTRAS DIARIOS PH BALANCIADO X 15 PROTEC"
+    },
+    {
+      "id_producto": 24481,
+      "nombre_anterior": "0SOTRAS NATURAL BUENAS 0CHES X 10 UND",
+      "nombre_nuevo": "NOSOTRAS NATURAL BUENAS NOCHES X 10 UND"
+    },
+    {
+      "id_producto": 24482,
+      "nombre_anterior": "0SOTRAS DESODORANTE INVISIBLE TELA X 30",
+      "nombre_nuevo": "NOSOTRAS DESODORANTE INVISIBLE TELA X 30"
+    },
+    {
+      "id_producto": 35448,
+      "nombre_anterior": "0SOTRAS DESODORTANTE INVISIBLE X 10",
+      "nombre_nuevo": "NOSOTRAS DESODORTANTE INVISIBLE X 10"
+    },
+    {
+      "id_producto": 35449,
+      "nombre_anterior": "0SOTRAS JABON INTIMO V-CONFIDENT X 200ML",
+      "nombre_nuevo": "NOSOTRAS JABON INTIMO V-CONFIDENT X 200ML"
+    },
+    {
+      "id_producto": 37475,
+      "nombre_anterior": "0VOTRIM BALSAMICO FORTE CJA X 100",
+      "nombre_nuevo": "OVOTRIM BALSAMICO FORTE CJA X 100"
+    },
+    {
+      "id_producto": 42482,
+      "nombre_anterior": "0TIPHARM CREMA TBO X 20 GR",
+      "nombre_nuevo": "OTIPHARM CREMA TBO X 20 GR"
+    },
+    {
+      "id_producto": 46491,
+      "nombre_anterior": "0NGRIPP MAXIMA POTENCIA CJA X 120 TAB",
+      "nombre_nuevo": "ONGRIPP MAXIMA POTENCIA CJA X 120 TAB"
+    },
+    {
+      "id_producto": 46492,
+      "nombre_anterior": "0NGRIPP MIGRAÑA CJA X 20 TAB",
+      "nombre_nuevo": "ONGRIPP MIGRAÑA CJA X 20 TAB"
+    },
+    {
+      "id_producto": 47472,
+      "nombre_anterior": "0SOTRAS DIARIOS PH BALANCIADO X 120UND",
+      "nombre_nuevo": "NOSOTRAS DIARIOS PH BALANCIADO X 120UND"
+    },
+    {
+      "id_producto": 47473,
+      "nombre_anterior": "0SOTRAS JABON INTIMO HERBAL X 200ML",
+      "nombre_nuevo": "NOSOTRAS JABON INTIMO HERBAL X 200ML"
+    },
+    {
+      "id_producto": 47474,
+      "nombre_anterior": "0SOTRAS NATURAL ALAS TELA GEL X 42 UND",
+      "nombre_nuevo": "NOSOTRAS NATURAL ALAS TELA GEL X 42 UND"
+    },
+    {
+      "id_producto": 47475,
+      "nombre_anterior": "0SOTRAS DIARIOS PH BALANCIADO X 15 UND",
+      "nombre_nuevo": "NOSOTRAS DIARIOS PH BALANCIADO X 15 UND"
+    },
+    {
+      "id_producto": 47621,
+      "nombre_anterior": "0SIPREX 20MG CJA X 100 TAB PREDNISONA",
+      "nombre_nuevo": "OSIPREX 20MG CJA X 100 TAB PREDNISONA"
+    },
+    {
+      "id_producto": 48719,
+      "nombre_anterior": "0NPIRON GOTAS X 15 ML",
+      "nombre_nuevo": "NOPIRON GOTAS X 15 ML"
+    },
+    {
+      "id_producto": 48751,
+      "nombre_anterior": "0GESTROL 1.5 MG CJA X 1 TAB",
+      "nombre_nuevo": "NOGESTROL 1.5 MG CJA X 1 TAB"
+    },
+    {
+      "id_producto": 48830,
+      "nombre_anterior": "0SOTRAS JABON INTIMO X 200ML HIERBABUENA",
+      "nombre_nuevo": "NOSOTRAS JABON INTIMO X 200ML HIERBABUENA"
+    },
+    {
+      "id_producto": 51136,
+      "nombre_anterior": "0VOCORTIL-L CREMA 15G+CANULA",
+      "nombre_nuevo": "NOVOCORTIL-L CREMA 15G+CANULA"
+    },
+    {
+      "id_producto": 51208,
+      "nombre_anterior": "0VOCORTIL 1% CREMA TBO X 20GR",
+      "nombre_nuevo": "NOVOCORTIL 1% CREMA TBO X 20GR"
+    },
+    {
+      "id_producto": 51224,
+      "nombre_anterior": "0VACILINA 500MG CJA X 7 COMP",
+      "nombre_nuevo": "NOVACILINA 500MG CJA X 7 COMP"
+    },
+    {
+      "id_producto": 53326,
+      "nombre_anterior": "0XAL 6MG/ML GOTAS ORAL",
+      "nombre_nuevo": "OXAL 6MG/ML GOTAS ORAL"
+    },
+    {
+      "id_producto": 58387,
+      "nombre_anterior": "0SOTRAS PROTEC DIARIOS X 150 UND",
+      "nombre_nuevo": "NOSOTRAS PROTEC DIARIOS X 150 UND"
+    },
+    {
+      "id_producto": 59502,
+      "nombre_anterior": "0RIFAM 1ML AMP",
+      "nombre_nuevo": "ORIFAM 1ML AMP"
+    },
+    {
+      "id_producto": 64727,
+      "nombre_anterior": "0SOTRAS DESODORANTE PH X 10",
+      "nombre_nuevo": "NOSOTRAS DESODORANTE PH X 10"
+    },
+    {
+      "id_producto": 72068,
+      "nombre_anterior": "0SOTRAS DIARIOS DESODORANTE X 120 UND",
+      "nombre_nuevo": "NOSOTRAS DIARIOS DESODORANTE X 120 UND"
+    },
+    {
+      "id_producto": 77168,
+      "nombre_anterior": "0SOTRAS INVISIBLES RAPIGEL X 10 UND",
+      "nombre_nuevo": "NOSOTRAS INVISIBLES RAPIGEL X 10 UND"
+    },
+    {
+      "id_producto": 94171,
+      "nombre_anterior": "0S DIARIOS PH BALANCEADO 2X15",
+      "nombre_nuevo": "NOSOTRAS DIARIOS PH BALANCIADO 2X15"
+    },
+    {
+      "id_producto": 95210,
+      "nombre_anterior": "0SOTRAS NAT TLLA TELA BOLSA X 8",
+      "nombre_nuevo": "NOSOTRAS NAT TLLA TELA BOLSA X 8"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+/* src/index.css */
+:root {
+  /* Paleta de Colores Salud Futura */
+  --color-primary: #1E3A8A; /* Azul corporativo */
+  --color-primary-hover: #1E40AF;
+  --color-marca: #1000B8; /* Azul exacto del isotipo (cruz del logo Salud Futura) */
+  --color-accent: #DC2626; /* Rojo para alertas/botones clave */
+  --color-accent-hover: #B91C1C;
+  --color-background: #F8FAFC; /* Gris muy claro/blanco para el fondo */
+  --color-surface: #FFFFFF; /* Blanco puro para tarjetas */
+  --color-text-main: #0F172A; /* Texto oscuro legible */
+  --color-text-muted: #64748B;
+  --color-border: #E2E8F0;
+  
+  /* Sombras y bordes */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --radius-md: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+}
+
+/* Ocultar flechas nativas de input[type=number] en todo el sistema
+   (mismo criterio ya usado en POS / Conteo Físico). */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Foco visible al navegar con teclado (Tab/Enter/flechas) en todo el sistema.
+   :focus-visible evita mostrarlo en clics de mouse, solo en navegación por teclado. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+}

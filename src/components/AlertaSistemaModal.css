@@ -1,0 +1,129 @@
+.asm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  /* Fallback si no llega style.zIndex; debe superar ProductoFormModal (100002). */
+  z-index: 100050;
+}
+
+.asm-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem 1.25rem;
+  width: min(400px, 100%);
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.asm-card-wide {
+  width: min(560px, 100%);
+}
+
+.asm-card-wide .asm-message {
+  text-align: left;
+}
+
+.asm-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.asm-icon.success { background: #dcfce7; color: #166534; }
+.asm-icon.info { background: #e0f2fe; color: #075985; }
+.asm-icon.warning { background: #fef3c7; color: #92400e; }
+.asm-icon.error { background: #fee2e2; color: #991b1b; }
+.asm-icon .ui-icon {
+  display: block;
+  color: inherit;
+}
+
+.asm-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.asm-message {
+  margin: 0 0 1.25rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.asm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.asm-btn-ok {
+  min-width: 120px;
+  padding: 0.7rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.asm-btn-ok:hover { background: #1e293b; }
+.asm-btn-ok:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.asm-btn-cancel {
+  min-width: 120px;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.asm-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.asm-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: -0.4rem 0 1.1rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid #bfdbfe;
+}
+
+.asm-link:hover {
+  background: #dbeafe;
+}

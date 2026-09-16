@@ -1,0 +1,83 @@
+{
+  "name": "salud-futura",
+  "private": true,
+  "version": "0.6.5",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "rebuild:native": "electron-rebuild -f -w better-sqlite3",
+    "electron:dev": "cross-env ELECTRON=1 vite",
+    "electron:build": "cross-env ELECTRON=1 vite build && electron-builder --publish never",
+    "electron:publish": "node scripts/publicar-actualizacion.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.1",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "electron-updater": "^6.8.9",
+    "fast-xml-parser": "^5.11.1",
+    "gender-detection-from-name": "^1.11.4",
+    "lucide-react": "^1.31.0",
+    "node-thermal-printer": "^4.6.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-is": "^19.2.8",
+    "react-router-dom": "^7.13.1",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.0",
+    "cross-env": "^10.1.0",
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "vite": "^8.0.0",
+    "vite-plugin-electron": "^1.1.1",
+    "vite-plugin-pwa": "^1.2.0"
+  },
+  "build": {
+    "appId": "com.saludfutura.app",
+    "productName": "Salud Futura",
+    "directories": {
+      "output": "release"
+    },
+    "npmRebuild": false,
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "electron/assets/**/*",
+      "electron/db/schema.sql",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**/*",
+      "**/node_modules/electron-updater/**/*"
+    ],
+    "publish": {
+      "provider": "generic",
+      "url": "https://pbtzxmjrwzpkligufcve.supabase.co/storage/v1/object/public/app-updates",
+      "useMultipleRangeRequest": false
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "SaludFutura-Setup-${version}.${ext}"
+    }
+  }
+}

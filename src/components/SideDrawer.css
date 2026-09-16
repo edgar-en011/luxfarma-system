@@ -1,0 +1,104 @@
+/* Drawer lateral reutilizable — patrón alineado a TomaInventario / AdminProductos:
+   fixed bajo el topbar (70px), slide-in desde la derecha, backdrop opcional. */
+
+.side-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 100000;
+  animation: side-drawer-fade-in 0.2s ease;
+}
+
+@keyframes side-drawer-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.side-drawer {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  width: min(68vw, 960px);
+  min-width: min(100vw, 640px);
+  max-width: 100vw;
+  background: #f8fafc;
+  box-shadow: -10px 0 32px rgba(1, 43, 99, 0.18);
+  z-index: 100001;
+  display: flex;
+  flex-direction: column;
+  animation: side-drawer-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes side-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.side-drawer-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.15rem 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.side-drawer-header-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.side-drawer-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.side-drawer-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.side-drawer-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.side-drawer-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.side-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 1.75rem;
+}
+
+@media (max-width: 720px) {
+  .side-drawer {
+    width: 100vw;
+    min-width: 0;
+    top: 0;
+  }
+}

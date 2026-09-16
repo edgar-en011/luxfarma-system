@@ -1,0 +1,76 @@
+.smart-date-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 0.6rem 0.85rem !important;
+  background: #fff !important;
+  transition: border-color 0.15s;
+  width: fit-content;
+  box-sizing: border-box;
+}
+.smart-date-input:focus-within {
+  border-color: #012B63 !important;
+  box-shadow: 0 0 0 3px rgba(1,43,99,0.08);
+}
+.smart-date-input input {
+  border: none !important;
+  outline: none !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  background: transparent !important;
+  text-align: center;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  box-sizing: content-box;
+  min-width: 0;
+}
+.smart-date-input input::placeholder {
+  color: #cbd5e1 !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+.smart-date-input .sdi-dia,
+.smart-date-input .sdi-mes {
+  width: 28px !important;
+}
+.smart-date-input .sdi-anio {
+  width: 52px !important;
+}
+.sdi-sep {
+  color: #cbd5e1 !important;
+  font-weight: 600;
+  font-size: 1rem;
+}
+.smart-date-input.sdi-readonly {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+.smart-date-input.sdi-readonly input {
+  color: #15803d !important;
+  font-weight: 700 !important;
+  cursor: default;
+}
+.smart-date-input.sdi-error {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
+
+/* Variante opcional más grande — opt-in vía className, no afecta a los demás usos */
+.smart-date-input.sdi-grande {
+  padding: 0.85rem 1.1rem !important;
+}
+.smart-date-input.sdi-grande input {
+  font-size: 1.15rem !important;
+}
+.smart-date-input.sdi-grande .sdi-dia,
+.smart-date-input.sdi-grande .sdi-mes {
+  width: 32px !important;
+}
+.smart-date-input.sdi-grande .sdi-anio {
+  width: 62px !important;
+}
