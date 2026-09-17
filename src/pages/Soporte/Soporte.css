@@ -298,7 +298,7 @@
   transition: all 0.2s;
 }
 
-.sop-btn-refresh:hover { background: var(--lf-border); color: var(--lf-primary-darker); }
+.sop-btn-refresh:hover { background: #F3E8FF; color: var(--lf-primary-darker); }
 
 /* ── TABLA DE REPORTES ── */
 .sop-table-card .table-responsive { overflow-x: auto; }
