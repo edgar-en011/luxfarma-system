@@ -1,4 +1,4 @@
--- Salud Futura — SQLite local (Electron). Una DB por máquina.
+-- LuxFarma — SQLite local (Electron). Una DB por máquina.
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 

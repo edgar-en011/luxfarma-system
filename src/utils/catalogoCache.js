@@ -185,8 +185,8 @@ export async function descargarCatalogo(id_sucursal, onProgreso) {
   }
 }
 
-const CATALOGO_STALE_KEY = 'saludFutura_catalogo_stale'
-const EVENTO_PRODUCTOS = 'saludfutura:productos-changed'
+const CATALOGO_STALE_KEY = 'luxfarma_catalogo_stale'
+const EVENTO_PRODUCTOS = 'luxfarma:productos-changed'
 
 /** Marca el catálogo offline como obsoleto (crear/editar producto) y notifica a POS. */
 export function marcarCatalogoOfflineStale() {

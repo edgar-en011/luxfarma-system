@@ -22,7 +22,7 @@ import { formatearPorcentajeGanancia } from '../../utils/porcentajeGanancia';
 import { assertEscritura } from '../../utils/supaWrite';
 import { notificarProveedoresChanged, suscribirProveedoresChanged, esProveedorActivo } from '../../utils/proveedoresCatalogo';
 import LogoCargandoOverlay from '../../components/LogoCargandoOverlay';
-import iconoMarca from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
 import { parsearFacturaXML } from '../../services/facturaXmlParser';
 import { emparejarItemXml, crearConstructorIndiceSimilitud, sugerirProductosPorSimilitud } from '../../services/compraXmlMatch';
 import {
@@ -45,7 +45,7 @@ const TIPOS_COMPROBANTE_COMPRA = [
 
 const MAX_PRODUCTOS_COMPRA = 70;
 const COMPRAS_DRAFT_KEY = 'compras_registro_borrador';
-const COMPRAS_DRAFT_LEGACY_KEY = 'borradorCompraSaludFutura';
+const COMPRAS_DRAFT_LEGACY_KEY = 'luxfarma_borrador_compra';
 const XML_OVERLAY_MIN_MS = 450;
 
 function estadoFilaXml(p) {
@@ -1834,7 +1834,7 @@ export default function AdminCompras() {
   };
 
   if (cargandoDatos) return (
-    <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
+    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--lf-text-muted)' }}>
       Conectando con la base de datos...
     </div>
   );
@@ -1910,7 +1910,7 @@ export default function AdminCompras() {
                     <h4 className="config-label"><UiIcon name="Pencil" size={15} /> Editando — {prodPrecio.descripcion}</h4>
                     <div className="config-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
                       <div className="conf-item">
-                        <label>P. COSTO (por unidad) <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.7rem' }}>(opcional)</span></label>
+                        <label>P. COSTO (por unidad) <span style={{ color: 'var(--lf-text-muted)', fontWeight: 400, fontSize: '0.7rem' }}>(opcional)</span></label>
                         <input type="number" step="any" min="0" placeholder="No modificar" value={nuevoCosto} onChange={e => setNuevoCosto(e.target.value)} />
                       </div>
                       <div className="conf-item">
@@ -2606,7 +2606,7 @@ export default function AdminCompras() {
                             </label>
                           )}
                           {!p.origenXml && p.bonificacion && (
-                            <span style={{ marginLeft: 6, fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ marginLeft: 6, fontSize: '0.7rem', fontWeight: 700, color: 'var(--lf-primary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                               <UiIcon name="Gift" size={12} /> Bonificación
                             </span>
                           )}
@@ -2715,7 +2715,9 @@ export default function AdminCompras() {
 
       <div className="compras-footer">
         <div className="cf-marca">
-          <img src={iconoMarca} alt="" aria-hidden="true" className="cf-logo" />
+          <span className="cf-logo" aria-hidden="true">
+            <LogoLuxFarma variant="icon" size={38} color="red" />
+          </span>
           <div className="cf-items">
             <span className="cf-items-num">{productosCarrito.length}</span>
             <span className="cf-items-txt">{productosCarrito.length === 1 ? 'producto' : 'productos'}</span>
@@ -2945,7 +2947,7 @@ export default function AdminCompras() {
                   value={motivoAnulacionCompra}
                   onChange={e => setMotivoAnulacionCompra(e.target.value)}
                   disabled={anulandoCompra}
-                  style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1.5px solid #e2e8f0' }}
+                  style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)' }}
                 >
                   {motivosAnulacionCompra.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>

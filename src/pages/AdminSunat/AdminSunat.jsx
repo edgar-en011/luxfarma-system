@@ -378,18 +378,18 @@ export default function AdminSunat() {
   const conteoSunat = contarEstadosSunat(filasSunat);
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 2.5rem' }}>
+    <div style={{ background: 'var(--lf-bg)', minHeight: '100vh', padding: '2rem 2.5rem' }}>
       <div className="asu-content" style={{ maxWidth: 1400, margin: '0 auto' }}>
 
         {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 0.4rem' }}><UiIcon name="BarChart3" size={15} /> Administración
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 0.4rem' }}><UiIcon name="BarChart3" size={15} /> Administración
             </p>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--lf-text)', margin: 0, letterSpacing: '-0.02em' }}>
               Comprobantes SUNAT
             </h1>
-            <p style={{ fontSize: '0.95rem', color: '#64748b', margin: '0.3rem 0 0' }}>
+            <p style={{ fontSize: '0.95rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>
               {tab === 'nubefact'
                 ? `${conteoSunat.total} comprobante${conteoSunat.total === 1 ? '' : 's'} electrónico${conteoSunat.total === 1 ? '' : 's'} · ${conteoSunat.enviados} enviado${conteoSunat.enviados === 1 ? '' : 's'} · ${conteoSunat.pendientes} pendiente${conteoSunat.pendientes === 1 ? '' : 's'} · ${conteoSunat.sin_confirmar} sin confirmar · ${conteoSunat.error} con error · ${conteoSunat.aceptados} aceptado${conteoSunat.aceptados === 1 ? '' : 's'} por SUNAT`
                 : `${comprobantes.length} pendiente${comprobantes.length === 1 ? '' : 's'} · ${totalVencidos} vencido${totalVencidos === 1 ? '' : 's'} (≥ ${PLAZO_DIAS_LEGAL} días)`}
@@ -416,7 +416,7 @@ export default function AdminSunat() {
         {tab === 'nubefact' && (
           <>
             <div className="asu-card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 8 }}>Estado</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 8 }}>Estado</span>
               {['todos', 'PENDIENTE', 'POR_CONFIRMAR', 'ENVIADO', 'SIN_CONFIRMAR', 'ACEPTADO', 'RECHAZADO', 'ERROR', 'REQUIERE_REVISION'].map((k) => (
                 <button key={k} type="button" onClick={() => setFiltroEstadoSunat(k)} className={`asu-chip ${filtroEstadoSunat === k ? 'active' : ''}`}>
                   {etiquetaFiltroSunat(k)}
@@ -521,7 +521,7 @@ export default function AdminSunat() {
         {/* FILTROS */}
         <div className="asu-card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-            <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 8 }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 8 }}>
               Estado
             </span>
             {[
@@ -538,17 +538,17 @@ export default function AdminSunat() {
 
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Desde</label>
+              <label style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Desde</label>
               <SmartDateInput value={fechaDesde} onChange={(val) => { setFechaDesde(val); setMsgRangoFecha(null); }} className="asu-input" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Hasta</label>
+              <label style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Hasta</label>
               <SmartDateInput value={fechaHasta} onChange={(val) => { setFechaHasta(val); setMsgRangoFecha(null); }} className="asu-input" />
             </div>
             <button
               onClick={aplicarRangoManual}
               disabled={aplicandoRango}
-              style={{ padding: '9px 18px', background: '#0f172a', color: 'white', border: 'none', borderRadius: 10, fontSize: '0.85rem', fontWeight: 600, cursor: aplicandoRango ? 'default' : 'pointer', height: 38, opacity: aplicandoRango ? 0.75 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              style={{ padding: '9px 18px', background: 'var(--lf-primary-dark)', color: 'white', border: 'none', borderRadius: 10, fontSize: '0.85rem', fontWeight: 600, cursor: aplicandoRango ? 'default' : 'pointer', height: 38, opacity: aplicandoRango ? 0.75 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}
             >
               {aplicandoRango ? (<><span className="row-action-spinner" style={{ borderColor: 'rgba(255,255,255,0.35)', borderTopColor: '#fff' }}></span> Aplicando...</>) : 'Aplicar'}
             </button>
@@ -557,16 +557,16 @@ export default function AdminSunat() {
                 {msgRangoFecha}
               </span>
             )}
-            <div style={{ width: 1, height: 38, background: '#e2e8f0', margin: '0 0.4rem' }} />
+            <div style={{ width: 1, height: 38, background: 'var(--lf-border)', margin: '0 0.4rem' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Sucursal</label>
+              <label style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Sucursal</label>
               <select value={filtroSucursal} onChange={e => setFiltroSucursal(e.target.value)} className="asu-input">
                 <option value="todas">Todas las sedes</option>
                 {sucursales.map(s => <option key={s.id_sucursal} value={s.id_sucursal}>{s.nombre_comercial}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Vendedor</label>
+              <label style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Vendedor</label>
               <select value={filtroVendedor} onChange={e => setFiltroVendedor(e.target.value)} className="asu-input">
                 <option value="todos">Todos los vendedores</option>
                 {vendedoresActivos.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
@@ -635,12 +635,12 @@ export default function AdminSunat() {
 
       {/* MODAL CONFIRMAR ENVIAR TODOS */}
       {confirmarEnviarTodos && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, padding: '1rem' }} onClick={() => setConfirmarEnviarTodos(false)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(31, 26, 27, 0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, padding: '1rem' }} onClick={() => setConfirmarEnviarTodos(false)}>
           <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 440, padding: '2rem', boxShadow: '0 25px 80px rgba(0,0,0,0.25)', animation: 'asuSlideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><UiIcon name="Upload" size={16} /></div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>Enviar todos a SUNAT</h3>
-              <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0 0 4px' }}>Enviar todos a SUNAT</h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--lf-text-muted)', margin: 0 }}>
                 Se enviarán {comprobantesFiltrados.length} comprobante{comprobantesFiltrados.length === 1 ? '' : 's'} ({filtroEstado === 'vencidos' ? 'vencidos' : filtroEstado === 'todos' ? 'todos los filtrados' : filtroEstado}).
               </p>
             </div>
@@ -649,10 +649,10 @@ export default function AdminSunat() {
               </p>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => setConfirmarEnviarTodos(false)} style={{ flex: 1, padding: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 12, fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer', color: '#475569' }}>
+              <button onClick={() => setConfirmarEnviarTodos(false)} style={{ flex: 1, padding: '0.85rem', background: 'var(--lf-info-bg)', border: 'none', borderRadius: 12, fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer', color: '#52525B' }}>
                 Cancelar
               </button>
-              <button onClick={enviarTodos} style={{ flex: 1, padding: '0.85rem', background: '#0f172a', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer', color: 'white' }}>
+              <button onClick={enviarTodos} style={{ flex: 1, padding: '0.85rem', background: 'var(--lf-primary-dark)', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer', color: 'white' }}>
                 Confirmar envío
               </button>
             </div>

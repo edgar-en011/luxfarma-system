@@ -1,22 +1,5 @@
 /* src/index.css */
-:root {
-  /* Paleta de Colores Salud Futura */
-  --color-primary: #1E3A8A; /* Azul corporativo */
-  --color-primary-hover: #1E40AF;
-  --color-marca: #1000B8; /* Azul exacto del isotipo (cruz del logo Salud Futura) */
-  --color-accent: #DC2626; /* Rojo para alertas/botones clave */
-  --color-accent-hover: #B91C1C;
-  --color-background: #F8FAFC; /* Gris muy claro/blanco para el fondo */
-  --color-surface: #FFFFFF; /* Blanco puro para tarjetas */
-  --color-text-main: #0F172A; /* Texto oscuro legible */
-  --color-text-muted: #64748B;
-  --color-border: #E2E8F0;
-  
-  /* Sombras y bordes */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --radius-md: 8px;
-}
+@import './theme.css';
 
 * {
   box-sizing: border-box;
@@ -26,8 +9,8 @@
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-text-main);
+  background-color: var(--lf-bg);
+  color: var(--lf-text);
 }
 
 /* Ocultar flechas nativas de input[type=number] en todo el sistema
@@ -49,7 +32,24 @@ select:focus-visible,
 textarea:focus-visible,
 button:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--lf-primary);
   outline-offset: 1px;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 0 4px var(--lf-primary-soft);
+}
+
+table thead th {
+  background: var(--lf-info-bg);
+}
+table tbody tr:hover {
+  background: var(--lf-primary-light);
+}
+
+button, a, input, select, textarea {
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, a, input, select, textarea {
+    transition: none;
+  }
 }

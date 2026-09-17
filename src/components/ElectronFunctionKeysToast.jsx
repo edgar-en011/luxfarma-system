@@ -53,14 +53,14 @@ export default function ElectronFunctionKeysToast() {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 100000,
-        background: '#0f172a',
-        color: '#f8fafc',
+        background: 'var(--lf-primary-dark)',
+        color: 'var(--lf-bg)',
         padding: '0.75rem 1.25rem',
         borderRadius: 12,
         fontWeight: 700,
         fontSize: '0.95rem',
-        boxShadow: '0 12px 40px rgba(15,23,42,0.35)',
-        border: '1px solid #334155',
+        boxShadow: '0 12px 40px rgba(31, 26, 27, 0.35)',
+        border: '1px solid #3F3F46',
         pointerEvents: 'none',
       }}
     >

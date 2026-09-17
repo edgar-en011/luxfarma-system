@@ -9,11 +9,11 @@
   min-width: 220px;
   max-width: min(320px, calc(100vw - 32px));
   padding: 0.45rem 0.7rem;
-  background: rgba(15, 23, 42, 0.88);
-  color: #e2e8f0;
+  background: rgba(31, 26, 27, 0.88);
+  color: var(--lf-border);
   border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 999px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 8px 24px rgba(31, 26, 27, 0.28);
   pointer-events: none;
   font-size: 0.72rem;
   font-weight: 650;
@@ -29,7 +29,7 @@
   height: 4px;
   min-width: 56px;
   border-radius: 999px;
-  background: #334155;
+  background: #3F3F46;
   overflow: hidden;
 }
 
@@ -37,7 +37,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #38bdf8, #22c55e);
+  background: linear-gradient(90deg, var(--lf-primary), #22c55e);
   transition: width 0.25s ease;
 }
 
@@ -47,7 +47,7 @@
 
 .sf-update-pill-pct {
   font-variant-numeric: tabular-nums;
-  color: #94a3b8;
+  color: var(--lf-text-muted);
   min-width: 2.2em;
   text-align: right;
 }

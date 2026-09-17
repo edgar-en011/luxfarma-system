@@ -6,6 +6,7 @@ import {
   printTicketVenta,
   abrirImpresionHtmlTicket,
 } from '../../utils/ticketPrint'
+import { facturacionElectronica } from '../../config/empresa'
 import UiIcon from '../../components/UiIcon'
 import './AdminImpresora.css'
 
@@ -22,7 +23,7 @@ export default function AdminImpresora() {
   const [testing, setTesting] = useState(false)
   const [printingTicket, setPrintingTicket] = useState(false)
   const [msg, setMsg] = useState(null)
-  const [tipoPrueba, setTipoPrueba] = useState('Boleta')
+  const [tipoPrueba, setTipoPrueba] = useState(facturacionElectronica ? 'Boleta' : 'Nota de Venta')
 
   const payloadPrueba = useMemo(() => buildTicketPruebaPayload(tipoPrueba), [tipoPrueba])
   const previewHtml = useMemo(
@@ -246,13 +247,14 @@ export default function AdminImpresora() {
       <div className="ai-card ai-ticket-card">
         <h2 className="ai-section-title">Imprimir ticket de prueba</h2>
         <p className="ai-muted">
-          Boleta o factura de ejemplo (cliente ficticio, 3 productos, IGV) con la misma
-          plantilla que una venta real, incluyendo QR, HASH y línea CPE SUNAT.
-          No hace falta tener la impresora conectada para ver la vista previa.
+          {facturacionElectronica
+            ? 'Boleta, factura o nota de venta de ejemplo (cliente ficticio, 3 productos) con la misma plantilla que una venta real.'
+            : 'Nota de venta de ejemplo (cliente ficticio, 3 productos) con la misma plantilla que una venta real. Documento interno, sin QR ni textos tributarios.'}
+          {' '}No hace falta tener la impresora conectada para ver la vista previa.
         </p>
 
         <div className="ai-tipo-row" role="group" aria-label="Tipo de comprobante de prueba">
-          {['Boleta', 'Factura'].map((tipo) => (
+          {['Nota de Venta', 'Boleta', 'Factura'].map((tipo) => (
             <button
               key={tipo}
               type="button"

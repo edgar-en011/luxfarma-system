@@ -102,7 +102,7 @@ export default function HistorialNotas() {
                     </span>
                   </td>
                   <td className="text-muted">
-                    <span className="hist-notas-truncate" title={n.motivo || 'Sin motivo'} style={!n.motivo ? { fontStyle: 'italic', color: '#cbd5e1' } : undefined}>
+                    <span className="hist-notas-truncate" title={n.motivo || 'Sin motivo'} style={!n.motivo ? { fontStyle: 'italic', color: '#E4E4E7' } : undefined}>
                       {n.motivo || 'Sin motivo'}
                     </span>
                   </td>

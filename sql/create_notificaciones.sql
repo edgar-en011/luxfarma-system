@@ -24,7 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_notif_created_at  ON notificaciones(created_at DE
 -- Tabla de configuración del sistema (fila única, id=1)
 CREATE TABLE IF NOT EXISTS configuracion (
   id                   INTEGER PRIMARY KEY DEFAULT 1,
-  nombre_farmacia      TEXT    NOT NULL DEFAULT 'Salud Futura',
+  nombre_farmacia      TEXT    NOT NULL DEFAULT 'LuxFarma',
   ruc                  TEXT    NOT NULL DEFAULT '',
   direccion            TEXT    NOT NULL DEFAULT '',
   modo_mantenimiento   BOOLEAN NOT NULL DEFAULT FALSE,
@@ -34,5 +34,5 @@ CREATE TABLE IF NOT EXISTS configuracion (
 
 -- Insertar fila por defecto solo si no existe
 INSERT INTO configuracion (id, nombre_farmacia, ruc, direccion)
-VALUES (1, 'Salud Futura', '', '')
+VALUES (1, 'LuxFarma', '20610381198', 'Jr. San Lucas Nro. 904, Urb. Jerusalén Bl. 4, La Esperanza, Trujillo, La Libertad')
 ON CONFLICT (id) DO NOTHING;

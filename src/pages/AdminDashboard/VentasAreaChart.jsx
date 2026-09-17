@@ -60,8 +60,8 @@ export default function VentasAreaChart({ puntos = [] }) {
     return (
       <div className="vac-chart vac-chart-empty">
         <svg className="vac-empty-icon" viewBox="0 0 48 32" aria-hidden>
-          <path d="M2 26 L14 18 L22 22 L34 10 L46 16" fill="none" stroke="#012B63" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.35" />
-          <path d="M2 26 L14 18 L22 22 L34 10 L46 16 L46 30 L2 30 Z" fill="#012B63" opacity="0.08" />
+          <path d="M2 26 L14 18 L22 22 L34 10 L46 16" fill="none" stroke="var(--lf-primary-darker)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.35" />
+          <path d="M2 26 L14 18 L22 22 L34 10 L46 16 L46 30 L2 30 Z" fill="var(--lf-primary-darker)" opacity="0.08" />
         </svg>
         <p className="vac-empty-title">Aún no hay ventas registradas en este período</p>
         <p className="vac-empty-sub">Cuando se registren ventas, verás aquí la curva por hora o por día.</p>
@@ -85,8 +85,8 @@ export default function VentasAreaChart({ puntos = [] }) {
       >
         <defs>
           <linearGradient id="vacAreaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#012B63" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#012B63" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="var(--lf-primary-darker)" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="var(--lf-primary-darker)" stopOpacity="0.02" />
           </linearGradient>
         </defs>
 

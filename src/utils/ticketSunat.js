@@ -3,7 +3,7 @@
  * La plantilla de venta real y el ticket de prueba usan las mismas funciones.
  */
 
-import { TICKET_EMISOR, etiquetaComprobante, etiquetaDocCliente, desgloseTicket } from './ticketFarmacia.js'
+import { TICKET_EMISOR, etiquetaComprobante, etiquetaDocCliente, desgloseTicket, facturacionElectronica } from './ticketFarmacia.js'
 
 export function esTicketElectronico(tipo) {
   const t = String(tipo || '').toUpperCase().trim()
@@ -34,7 +34,7 @@ export function padComprobanteTicket(serie, numero) {
 }
 
 /**
- * Número del encabezado: SUNAT (B003/F003) si ya existe; si no, interno (B001/F001).
+ * Número del encabezado: serie SUNAT (p. ej. B001/F001) si ya existe; si no, interno.
  * Nota de venta nunca usa serie SUNAT.
  */
 export function numeroEncabezadoTicket(payload = {}) {
@@ -102,6 +102,7 @@ function tipoDocNubefactDesdeLabel(tipoComprobante, nroDoc) {
  * Normaliza campos Nubefact / reimpresión para la plantilla del ticket.
  */
 export function datosSunatTicket(payload = {}) {
+  if (!facturacionElectronica) return null
   const tipo = payload.tipoComprobante || payload.comprobanteTipo
   if (!esTicketElectronico(tipo)) return null
 
@@ -161,9 +162,11 @@ function fechaTicketAhora() {
  * Incluye QR / hash / enlace al estilo Nubefact para validar la plantilla.
  */
 export function buildTicketPruebaPayload(tipo = 'Boleta') {
-  const esFactura = String(tipo).toUpperCase().includes('FACTURA')
-  const tipoComprobante = esFactura ? 'Factura' : 'Boleta'
-  const serie = esFactura ? 'F002' : 'B002'
+  const t = String(tipo || '').toUpperCase()
+  const esNota = t.includes('NOTA')
+  const esFactura = t.includes('FACTURA')
+  const tipoComprobante = esNota ? 'Nota de Venta' : esFactura ? 'Factura' : 'Boleta'
+  const serie = esNota ? 'NV01' : esFactura ? 'F001' : 'B001'
   const numero = 1
   const items = [
     { producto: 'PARACETAMOL 500 MG TAB', cantidad: 2, precio: 4.5, subtotal: 9 },
@@ -187,8 +190,7 @@ export function buildTicketPruebaPayload(tipo = 'Boleta') {
     hash,
   })
   const cpe = `${serie}-${String(numero).padStart(8, '0')}`
-
-  return {
+  const base = {
     esPrueba: true,
     tipoComprobante,
     comprobante: cpe,
@@ -199,13 +201,17 @@ export function buildTicketPruebaPayload(tipo = 'Boleta') {
     cliente,
     clienteDoc,
     clienteDocLabel: etiquetaDocCliente(tipoComprobante),
-    clienteDireccion: esFactura ? 'Av. Ejemplo 123, Julcan' : '',
+    clienteDireccion: esFactura ? 'Av. Ejemplo 123, La Esperanza' : '',
     puntosAcum: 0,
     items,
     total,
     descuento: 0,
     montoRecibido: 25,
     vuelto: 4.5,
+  }
+  if (esNota) return base
+  return {
+    ...base,
     sunatSerie: serie,
     sunatNumero: numero,
     sunatHash: hash,

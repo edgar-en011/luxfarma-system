@@ -83,7 +83,7 @@ export default function Kardex() {
     const blob = new Blob(['\uFEFF' + enc + filas], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Kardex_SaludFutura_${new Date().toLocaleDateString('es-PE')}.csv`;
+    link.download = `Kardex_LuxFarma_${new Date().toLocaleDateString('es-PE')}.csv`;
     link.click();
   };
 
@@ -115,7 +115,7 @@ export default function Kardex() {
       {/* KPIs */}
       <div className="kardex-kpis">
         <div className="kardex-kpi-card border-blue">
-          <div className="kpi-icon-k bg-blue-soft"><UiIcon name="ClipboardList" size={16} /></div>
+          <div className="kpi-icon-k bg-brand-soft"><UiIcon name="ClipboardList" size={16} /></div>
           <div className="kpi-info-k">
             <p>TOTAL MOVIMIENTOS</p>
             <h2>{movimientosFiltrados.length}</h2>
@@ -218,7 +218,7 @@ export default function Kardex() {
                     <small>{m.usuarios ? `${m.usuarios.nombres} ${m.usuarios.apellidos}` : 'Sistema'}</small>
                   </td>
                   <td>
-                    <small style={{ color: '#64748b' }}>{m.observacion || '—'}</small>
+                    <small style={{ color: 'var(--lf-text-muted)' }}>{m.observacion || '—'}</small>
                   </td>
                 </tr>
               ))

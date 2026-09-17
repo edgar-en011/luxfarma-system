@@ -45,7 +45,7 @@ export default function ListaDiasMes({
 
       <div className={`av-dias-lista${wide ? ' av-dias-lista-wide' : ''}`}>
         {cargando ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '2.5rem', gridColumn: '1 / -1' }}>Cargando días…</p>
+          <p style={{ textAlign: 'center', color: 'var(--lf-text-muted)', padding: '2.5rem', gridColumn: '1 / -1' }}>Cargando días…</p>
         ) : (
           dias.map((d) => {
             const sel = diaSeleccionado === d.fecha;

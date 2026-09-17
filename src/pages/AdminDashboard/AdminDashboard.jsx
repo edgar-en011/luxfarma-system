@@ -10,9 +10,10 @@ import { gananciaDesdeDetallesVenta } from '../../utils/productoPrecios';
 import VentasAreaChart from './VentasAreaChart';
 import './AdminDashboard.css';
 import UiIcon from '../../components/UiIcon';
-import icono from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
+import { facturacionElectronica } from '../../config/empresa';
 
-const AVATAR_COLORS = ['#3b82f6', '#a855f7', '#22c55e', '#f59e0b', '#ef4444', '#0ea5e9', '#8b5cf6', '#ec4899'];
+const AVATAR_COLORS = ['#E11D2E', '#F2B84B', '#1F8A4C', '#B7791F', '#6B6264', '#C8102E', '#F2B84B', '#52525B'];
 
 // Descarta turnos "fantasma": el embed a usuarios viene null cuando el
 // id_usuario_vendedor ya no existe en la tabla usuarios (usuario eliminado
@@ -54,6 +55,7 @@ export default function AdminDashboard() {
   // aparte: un ENVIADO puede tardar días en ser aceptado. anulados sale de
   // ventas.estado_anulacion, que es donde vive ese dato.
   const [sunatStatus, setSunatStatus] = useState({ enviados: 0, aceptados: 0, pendientes: 0, error: 0, sin_confirmar: 0, anulados: 0 });
+  const [notasVentaStatus, setNotasVentaStatus] = useState({ cantidad: 0, total: 0, anuladas: 0 });
   const [metodosPago, setMetodosPago] = useState({ efectivo: 0, yape: 0, tarjeta: 0, otros: 0, total: 0 });
   const [datosGrafico, setDatosGrafico] = useState({});
   const [ventasPorTrabajador, setVentasPorTrabajador] = useState([]);
@@ -120,12 +122,13 @@ export default function AdminDashboard() {
     }
   }, [filtroTiempo, sucursalFiltro]);
 
-  useEffect(() => { cargarEstadoSunat(); }, [cargarEstadoSunat]);
+  useEffect(() => { if (facturacionElectronica) cargarEstadoSunat(); }, [cargarEstadoSunat]);
 
   // Realtime en comprobantes_sunat → el panel se corrige solo cuando el POS emite, el
   // reintento automático reenvía, o el Admin toca "Consultar estado" en la pantalla
   // SUNAT. Activo en todos los periodos (es un conteo barato), no solo en "Hoy".
   useEffect(() => {
+    if (!facturacionElectronica) return undefined;
     let timeoutId = null;
     const canalSunat = supabase
       .channel('admin-dashboard-sunat-watch')
@@ -148,6 +151,7 @@ export default function AdminDashboard() {
   // Red de seguridad si Realtime se cayó o el equipo estuvo suspendido: al volver a la
   // pestaña/ventana se relee el conteo.
   useEffect(() => {
+    if (!facturacionElectronica) return undefined;
     const refrescar = () => {
       if (document.visibilityState === 'visible') cargarEstadoSunat();
     };
@@ -325,6 +329,13 @@ export default function AdminDashboard() {
     // caché Hoy). El resto de KPIs sigue excluyendo ANULADO.
     const anuladosPeriodo = cruda.filter(v => v.estado_anulacion === 'ANULADO').length;
     const ventasData = cruda.filter(v => v.estado_anulacion !== 'ANULADO');
+    const esNota = (v) => String(v.tipo_comprobante || '').toUpperCase().includes('NOTA');
+    const notasActivas = ventasData.filter(esNota);
+    setNotasVentaStatus({
+      cantidad: notasActivas.length,
+      total: notasActivas.reduce((s, v) => s + Number(v.total || 0), 0),
+      anuladas: cruda.filter((v) => v.estado_anulacion === 'ANULADO' && esNota(v)).length,
+    });
 
     const usuariosMap = {};
     (usuariosData || []).forEach(u => {
@@ -469,7 +480,7 @@ export default function AdminDashboard() {
       let queryVentas = supabase
         .from('ventas')
         .select(`
-          id_venta, total, created_at, estado_sunat, estado_anulacion, id_usuario_vendedor, id_sucursal, id_turno,
+          id_venta, total, created_at, estado_sunat, estado_anulacion, tipo_comprobante, id_usuario_vendedor, id_sucursal, id_turno,
           pagos_venta (metodo, monto),
           venta_detalle (cantidad, subtotal, factor, costo_unitario, productos(descripcion, producto_precios(costo)))
         `)
@@ -500,7 +511,7 @@ export default function AdminDashboard() {
   const pctYape     = metodosPago.total > 0 ? Math.round((metodosPago.yape / metodosPago.total) * 100) : 0;
   const pctTarjeta  = metodosPago.total > 0 ? Math.round((metodosPago.tarjeta / metodosPago.total) * 100) : 0;
   const pctOtros    = metodosPago.total > 0 ? 100 - pctEfectivo - pctYape - pctTarjeta : 0;
-  const conicGradientStr = `conic-gradient(#3b82f6 0% ${pctEfectivo}%, #a855f7 ${pctEfectivo}% ${pctEfectivo + pctYape}%, #f59e0b ${pctEfectivo + pctYape}% ${pctEfectivo + pctYape + pctTarjeta}%, #cbd5e1 ${pctEfectivo + pctYape + pctTarjeta}% 100%)`;
+  const conicGradientStr = `conic-gradient(#E11D2E 0% ${pctEfectivo}%, #FFB020 ${pctEfectivo}% ${pctEfectivo + pctYape}%, #3F3F46 ${pctEfectivo + pctYape}% ${pctEfectivo + pctYape + pctTarjeta}%, #A1A1AA ${pctEfectivo + pctYape + pctTarjeta}% 100%)`;
 
   let etiquetasX = [];
   if (filtroTiempo === 'Hoy' || filtroTiempo === 'Ayer') {
@@ -534,10 +545,10 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="dash-loading">
-        <img src={icono} alt="" />
-        <span>Cargando métricas consolidadas...</span>
-      </div>
+        <div className="dash-loading">
+          <LogoLuxFarma variant="icon" size={44} color="red" />
+          <span>Cargando métricas consolidadas...</span>
+        </div>
     );
   }
 
@@ -582,23 +593,23 @@ export default function AdminDashboard() {
           <div className="kpi-copy">
             <p className="kpi-label">GANANCIA NETA <UiIcon name="Lock" size={12} /></p>
             <h3>S/ {kpis.gananciaNeta.toFixed(2)}</h3>
-            <div className="kpi-trend neutral"><span style={{ color: '#94a3b8' }}>*Según costo de catálogo</span></div>
+            <div className="kpi-trend neutral"><span style={{ color: 'var(--lf-text-muted)' }}>*Según costo de catálogo</span></div>
           </div>
         </div>
         <div className="kpi-card glow-red" style={{ cursor: alertasUrgentes.total > 0 ? 'pointer' : 'default' }}>
           <div className="kpi-icon-box red"><UiIcon name="AlertTriangle" size={28} /></div>
           <div className="kpi-copy">
             <p className="kpi-label">ALERTAS URGENTES</p>
-            <h3 style={{ color: alertasUrgentes.total > 0 ? '#ef4444' : '#0f172a' }}>{alertasUrgentes.total}</h3>
-            <div className="kpi-trend neutral"><span style={{ color: alertasUrgentes.total > 0 ? '#ef4444' : '#94a3b8', fontSize: '0.72rem' }}>{alertasUrgentes.detalle}</span></div>
+            <h3 style={{ color: alertasUrgentes.total > 0 ? '#ef4444' : 'var(--lf-text)' }}>{alertasUrgentes.total}</h3>
+            <div className="kpi-trend neutral"><span style={{ color: alertasUrgentes.total > 0 ? '#ef4444' : 'var(--lf-text-muted)', fontSize: '0.72rem' }}>{alertasUrgentes.detalle}</span></div>
           </div>
         </div>
-        <div className="kpi-card glow-blue-light">
-          <div className="kpi-icon-box indigo"><UiIcon name="ClipboardList" size={28} /></div>
+        <div className="kpi-card glow-brand-light">
+          <div className="kpi-icon-box amber"><UiIcon name="ClipboardList" size={28} /></div>
           <div className="kpi-copy">
             <p className="kpi-label">OPERACIONES</p>
             <h3>{kpis.operaciones} ventas</h3>
-            <div className="kpi-trend neutral"><span style={{ color: '#94a3b8' }}>Ticket prom. S/ {kpis.ticketPromedio.toFixed(2)}</span></div>
+            <div className="kpi-trend neutral"><span style={{ color: 'var(--lf-text-muted)' }}>Ticket prom. S/ {kpis.ticketPromedio.toFixed(2)}</span></div>
           </div>
         </div>
       </div>
@@ -662,7 +673,7 @@ export default function AdminDashboard() {
                 : (turno.usuarios ? limpiarNombre(`${turno.usuarios.nombres || ''} ${turno.usuarios.apellidos || ''}`.trim()) : `Vendedor #${turno.id_usuario_vendedor}`);
               return (
                 <div className="turno-card" key={turno.id_turno}>
-                  <div className="circle-icon bg-blue-soft">CA</div>
+                  <div className="circle-icon bg-brand-soft">CA</div>
                   <div className="turno-info">
                     <strong>{nombreVendedor || `Caja #${turno.id_turno}`}</strong>
                     <p>Sede ID: {turno.id_sucursal}<br />Desde {new Date(turno.apertura_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })} · {diffHrs}h {diffMins}min</p>
@@ -674,14 +685,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {facturacionElectronica ? (
         <div className="admin-panel sunat-panel">
           <div className="panel-header-admin"><h3>ESTADO SUNAT - {filtroTiempo.toUpperCase()}</h3></div>
           <div className="sunat-boxes">
-            <div className="sunat-box green"><p>ENVIADOS</p><h2>{sunatStatus.enviados}</h2></div>
+            <div className="sunat-box gray"><p>ENVIADOS</p><h2>{sunatStatus.enviados}</h2></div>
             <div className="sunat-box yellow"><p>PENDIENTES</p><h2>{sunatStatus.pendientes}</h2></div>
             <div className="sunat-box orange"><p>SIN CONFIRMAR</p><h2>{sunatStatus.sin_confirmar}</h2></div>
-            <div className="sunat-box red"><p>ERROR</p><h2>{sunatStatus.error}</h2></div>
-            <div className="sunat-box blue"><p>ACEPTADOS</p><h2>{sunatStatus.aceptados}</h2></div>
+            <div className="sunat-box red"><p><UiIcon name="AlertCircle" size={12} /> ERROR</p><h2>{sunatStatus.error}</h2></div>
+            <div className="sunat-box green"><p>ACEPTADOS</p><h2>{sunatStatus.aceptados}</h2></div>
             <div className="sunat-box gray"><p>ANULADOS</p><h2>{sunatStatus.anulados}</h2></div>
           </div>
           <p className="sunat-note">
@@ -691,11 +703,24 @@ export default function AdminDashboard() {
             Anulados: ventas anuladas del periodo ({filtroTiempo}). Las notas de venta no van a SUNAT.
           </p>
         </div>
+        ) : (
+        <div className="admin-panel sunat-panel">
+          <div className="panel-header-admin"><h3>NOTAS DE VENTA - {filtroTiempo.toUpperCase()}</h3></div>
+          <div className="sunat-boxes">
+            <div className="sunat-box gray"><p>EMITIDAS</p><h2>{notasVentaStatus.cantidad}</h2></div>
+            <div className="sunat-box green"><p>TOTAL S/</p><h2>{notasVentaStatus.total.toFixed(0)}</h2></div>
+            <div className="sunat-box gray"><p>ANULADAS</p><h2>{notasVentaStatus.anuladas}</h2></div>
+          </div>
+          <p className="sunat-note">
+            Resumen de notas de venta del periodo ({filtroTiempo}). Documento interno, sin envío a SUNAT.
+          </p>
+        </div>
+        )}
 
         <div className="admin-panel chart-donut-panel">
           <h3>Métodos de pago</h3>
           <div className="donut-wrapper">
-            <div className={`donut-chart${metodosPago.total > 0 ? '' : ' is-empty'}`} style={{ background: metodosPago.total > 0 ? conicGradientStr : '#e8eef5' }}>
+            <div className={`donut-chart${metodosPago.total > 0 ? '' : ' is-empty'}`} style={{ background: metodosPago.total > 0 ? conicGradientStr : 'var(--lf-border)' }}>
               <div className="donut-inner">
                 <span>S/ {metodosPago.total.toFixed(0)}</span>
                 <small>Total</small>
@@ -704,7 +729,7 @@ export default function AdminDashboard() {
             <div className="donut-legend">
               <div className="leg-item"><span className="dot bg-blue"></span> Efectivo <strong>{pctEfectivo}%</strong></div>
               <div className="leg-item"><span className="dot bg-purple"></span> Yape <strong>{pctYape}%</strong></div>
-              <div className="leg-item"><span className="dot bg-orange"></span> Tarjeta <strong>{pctTarjeta}%</strong></div>
+              <div className="leg-item"><span className="dot bg-gray"></span> Tarjeta <strong>{pctTarjeta}%</strong></div>
               {pctOtros > 0 && <div className="leg-item"><span className="dot bg-gray"></span> Otros <strong>{pctOtros}%</strong></div>}
             </div>
           </div>
@@ -796,7 +821,7 @@ export default function AdminDashboard() {
                             </td>
                             <td className="worker-total-cell">S/ {trabajador.total.toFixed(2)}</td>
                             <td className="worker-bar-cell">
-                              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{pct.toFixed(0)}%</span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)' }}>{pct.toFixed(0)}%</span>
                               <div className="worker-mini-bar-bg">
                                 <div className="worker-mini-bar-fill" style={{ width: `${pct}%` }}></div>
                               </div>
@@ -825,7 +850,7 @@ export default function AdminDashboard() {
           onClick={() => setBubbleAbierta(v => !v)}
         >
           <span className="worker-bubble-logo-bg">
-            <img src={icono} alt="Salud Futura" />
+            <LogoLuxFarma variant="icon" size={28} color="white" showBadge={false} />
           </span>
           {ventasPorTrabajador.filter(t => t.activo).length > 0 && (
             <span className="worker-bubble-count">{ventasPorTrabajador.filter(t => t.activo).length}</span>

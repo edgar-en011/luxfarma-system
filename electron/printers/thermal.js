@@ -1,5 +1,5 @@
 /**
- * Impresión térmica ESC/POS (USB) — formato ticket Salud Futura.
+ * Impresión térmica ESC/POS (USB) — formato ticket LuxFarma.
  *
  * Orden de resolución de impresora:
  * 1) THERMAL_PRINTER_INTERFACE (env, debug)
@@ -21,7 +21,7 @@ import {
   LEGACY_DEFAULT_PRINTER,
 } from '../printerConfig.js'
 import { numeroALetras } from '../../src/utils/numeroALetras.js'
-import { TICKET_EMISOR, etiquetaComprobante, etiquetaDocCliente, desgloseTicket, primerNombreTicket } from '../../src/utils/ticketFarmacia.js'
+import { TICKET_EMISOR, etiquetaComprobante, etiquetaDocCliente, desgloseTicket, primerNombreTicket, facturacionElectronica, lineasContactoEmisor, LEYENDA_DOCUMENTO_INTERNO } from '../../src/utils/ticketFarmacia.js'
 import { formatPrecioUnitario } from '../../src/utils/precioExacto.js'
 import { datosSunatTicket, numeroEncabezadoTicket } from '../../src/utils/ticketSunat.js'
 import { encodeQr } from '../../src/utils/qrEncode.js'
@@ -105,6 +105,11 @@ export function resolveInterface(opts = {}) {
 
 function resolveLogoPath() {
   const candidates = [
+    path.join(__dirname, 'assets/ticket-logo.png'),
+    path.join(__dirname, '../assets/ticket-logo.png'),
+    path.join(process.cwd(), 'electron/assets/ticket-logo.png'),
+    path.join(process.cwd(), 'public/ticket-logo.png'),
+    path.join(process.cwd(), 'dist/ticket-logo.png'),
     path.join(__dirname, 'assets/icono.png'),
     path.join(__dirname, '../assets/icono.png'),
     path.join(process.cwd(), 'electron/assets/icono.png'),
@@ -236,34 +241,40 @@ function qrToPngBuffer(text, modulePx = 6) {
 
 async function printSunatBlock(printer, payload) {
   const sunat = datosSunatTicket(payload)
-  if (!sunat) return
+  if (sunat) {
+    printer.drawLine()
+    printer.alignCenter()
 
-  printer.drawLine()
-  printer.alignCenter()
-
-  if (sunat.cadenaQr) {
-    try {
-      const png = centerPngOnPaper(qrToPngBuffer(sunat.cadenaQr, 5), PAPER_WIDTH_PX)
-      printer.alignCenter()
-      await printer.printImageBuffer(png)
-      printer.newLine()
-    } catch (err) {
-      console.warn(`${LOG} QR raster falló, intento printQR nativo:`, errMessage(err))
+    if (sunat.cadenaQr) {
       try {
+        const png = centerPngOnPaper(qrToPngBuffer(sunat.cadenaQr, 5), PAPER_WIDTH_PX)
         printer.alignCenter()
-        printer.printQR(sunat.cadenaQr, { cellSize: 6, correction: 'M', model: 2 })
+        await printer.printImageBuffer(png)
         printer.newLine()
-      } catch (errQr) {
-        console.warn(`${LOG} printQR nativo falló:`, errMessage(errQr))
+      } catch (err) {
+        console.warn(`${LOG} QR raster falló, intento printQR nativo:`, errMessage(err))
+        try {
+          printer.alignCenter()
+          printer.printQR(sunat.cadenaQr, { cellSize: 6, correction: 'M', model: 2 })
+          printer.newLine()
+        } catch (errQr) {
+          console.warn(`${LOG} printQR nativo falló:`, errMessage(errQr))
+        }
       }
     }
-  }
 
-  printer.alignCenter()
-  printer.println(sunat.leyenda)
-  if (sunat.cpe) printer.println(`CPE SUNAT: ${sunat.cpe}`)
-  if (sunat.codigoHash) {
-    printer.println(`HASH: ${sunat.codigoHash}`)
+    printer.alignCenter()
+    printer.println(sunat.leyenda)
+    if (sunat.cpe) printer.println(`CPE SUNAT: ${sunat.cpe}`)
+    if (sunat.codigoHash) {
+      printer.println(`HASH: ${sunat.codigoHash}`)
+    }
+    return
+  }
+  if (!facturacionElectronica) {
+    printer.drawLine()
+    printer.alignCenter()
+    printer.println(LEYENDA_DOCUMENTO_INTERNO)
   }
 }
 
@@ -309,8 +320,7 @@ async function printHeader(printer) {
   }
   printer.alignCenter()
 
-  // "BOTICAS" debajo de la cruz (no superpuesto): alto doble, ancho normal — más chico
-  // que "SALUD FUTURA" (quad) y legible en 80 mm.
+  // "BOTICA" debajo de la cruz; "LUXFARMA" en quad (8 chars, cabe en 80 mm).
   printer.bold(true)
   printer.setTextDoubleHeight()
   printer.println(TICKET_EMISOR.rubro)
@@ -318,18 +328,15 @@ async function printHeader(printer) {
   printer.bold(false)
   printer.newLine()
 
-  // Marca grande (doble alto + doble ancho). "SALUD FUTURA" = 13 chars → ~26 en
-  // ancho de 48: cabe sin cortar en 80mm. Luego volver a texto normal.
   printer.bold(true)
   printer.setTextQuadArea()
   printer.println(TICKET_EMISOR.nombreComercial)
   printer.setTextNormal()
   printer.bold(false)
 
-  printer.println(TICKET_EMISOR.razonSocial)
-  printer.println(`RUC: ${TICKET_EMISOR.ruc}`)
-  printer.println(TICKET_EMISOR.correo)
-  printer.println(TICKET_EMISOR.direccion)
+  for (const linea of lineasContactoEmisor(TICKET_EMISOR)) {
+    printer.println(linea)
+  }
   printer.drawLine()
 }
 

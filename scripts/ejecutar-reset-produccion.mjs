@@ -1,5 +1,5 @@
 /**
- * PASO 2 — reset de producción Julcán.
+ * PASO 2 — reset de stock de producción.
  * Confirmado por el usuario. No toca productos, proveedores,
  * series_correlativos ni configuración Nubefact.
  */
@@ -151,17 +151,17 @@ const stock0 = await supabase
   .eq('id_sucursal', 1)
   .gt('id_lote', 0)
   .select('id_lote');
-const lotesJulcan = await count('inventario_lotes');
+const lotesInventario = await count('inventario_lotes');
 const { data: stockCheck } = await supabase
   .from('inventario_lotes')
   .select('cantidad_actual')
   .eq('id_sucursal', 1)
   .gt('cantidad_actual', 0);
 report({
-  accion: 'stock_julcan_cero',
+  accion: 'stock_cero',
   ok: !stock0.error && (stockCheck || []).length === 0,
   filas_actualizadas: (stock0.data || []).length,
-  lotes_restantes: lotesJulcan.filas,
+  lotes_restantes: lotesInventario.filas,
   lotes_con_stock: (stockCheck || []).length,
   error: stock0.error?.message,
 });

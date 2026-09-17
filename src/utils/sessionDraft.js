@@ -70,7 +70,7 @@ export function limpiarStorageAlLogout() {
   try {
     limpiarSessionDraft(...SESSION_DRAFT_KEYS, ...POS_SESSION_KEYS);
   } catch { /* ignore */ }
-  try { localStorage.removeItem('saludFutura_turnoActivo'); } catch { /* ignore */ }
-  try { localStorage.removeItem('borradorCompraSaludFutura'); } catch { /* ignore */ }
+  try { localStorage.removeItem('luxfarma_turnoActivo'); } catch { /* ignore */ }
+  try { localStorage.removeItem('luxfarma_borrador_compra'); } catch { /* ignore */ }
   try { resetWelcomeVoice(); } catch { /* ignore */ }
 }

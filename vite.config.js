@@ -15,7 +15,6 @@ const isElectron = process.env.ELECTRON === '1' || process.env.ELECTRON === 'tru
 
 const electronExternals = [
   'electron',
-  'electron-updater',
   'better-sqlite3',
   'node-thermal-printer',
 ]
@@ -150,10 +149,10 @@ export default defineConfig({
       injectRegister: null,
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Salud Futura',
-        short_name: 'SaludFutura',
-        description: 'Sistema de gestión de farmacia',
-        theme_color: '#172545',
+        name: 'LuxFarma',
+        short_name: 'LuxFarma',
+        description: 'Sistema de Gestión de Farmacia',
+        theme_color: '#E11D2E',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',

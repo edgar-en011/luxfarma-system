@@ -6,7 +6,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children, onLogin, onLogout }) => {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('saludFuturaUser');
+      const saved = localStorage.getItem('luxfarmaUser');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -26,13 +26,13 @@ export const AuthProvider = ({ children, onLogin, onLogout }) => {
 
   const login = useCallback((userData) => {
     setUser(userData);
-    localStorage.setItem('saludFuturaUser', JSON.stringify(userData));
+    localStorage.setItem('luxfarmaUser', JSON.stringify(userData));
     if (onLogin) onLogin(userData);
   }, [onLogin]);
 
   const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem('saludFuturaUser');
+    localStorage.removeItem('luxfarmaUser');
     // POS, borradores Compras/Pedidos/Notas, filtro Conteo Físico, turno activo
     limpiarStorageAlLogout();
     if (onLogout) onLogout();

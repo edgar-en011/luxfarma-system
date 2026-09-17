@@ -381,7 +381,7 @@ export default function NotaInventarioForm({ tipo, onGuardado, retiroVencido = n
               </div>
             )}
             <div className="nota-inv-group nota-inv-span-full">
-              <label>Motivo / Observación <span style={{ color: '#94a3b8', fontWeight: 400 }}>(opcional)</span></label>
+              <label>Motivo / Observación <span style={{ color: 'var(--lf-text-muted)', fontWeight: 400 }}>(opcional)</span></label>
               <textarea value={form.motivo} onChange={e => setForm({ ...form, motivo: e.target.value })} placeholder="Ej: Regalo del proveedor, muestra médica, rotura, consumo interno..." rows={2} />
             </div>
           </div>

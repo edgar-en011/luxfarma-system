@@ -59,6 +59,18 @@ function startupLog(msg, extra) {
   }
 }
 
+function resolveWindowIcon() {
+  const candidates = [
+    path.join(__dirname, 'assets/icon.ico'),
+    path.join(__dirname, '../electron/assets/icon.ico'),
+    path.join(process.cwd(), 'electron/assets/icon.ico'),
+    path.join(process.cwd(), 'build/icon.ico'),
+  ]
+  return candidates.find((p) => {
+    try { return fs.existsSync(p) } catch { return false }
+  })
+}
+
 function createWindow() {
   const preloadPath = path.join(__dirname, 'preload.cjs')
   startupLog('preload path:', preloadPath)
@@ -68,7 +80,8 @@ function createWindow() {
     height: 800,
     minWidth: 1024,
     minHeight: 680,
-    title: 'Salud Futura',
+    title: 'LuxFarma',
+    icon: resolveWindowIcon(),
     show: false,
     webPreferences: {
       // .cjs: el proyecto es "type":"module"; un preload.mjs con require() falla en silencio.

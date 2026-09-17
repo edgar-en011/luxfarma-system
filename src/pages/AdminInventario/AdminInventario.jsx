@@ -284,7 +284,7 @@ export default function AdminInventario() {
         return `"${p.codigo_barras || ''}","${p.descripcion}",${stock},${fp?.costo || 0},${fp?.precio_venta || 0}`;
       }).join("\n");
       const blob = new Blob(["\uFEFF" + encabezados + filas], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Inventario_SaludFutura.csv`; link.click();
+      const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Inventario_LuxFarma.csv`; link.click();
       setAlertaSistema(null);
     } catch (err) { mostrarAlerta('Error al exportar: ' + err.message, 'error'); }
   };
@@ -356,7 +356,7 @@ export default function AdminInventario() {
       </div>
 
       <div className="inv-kpis-grid">
-        <div className="inv-kpi-card border-blue"><div className="kpi-icon bg-blue-soft"><UiIcon name="FileText" size={16} /></div><div className="kpi-info"><p>TOTAL PRODUCTOS</p><h2>{kpis.totalCatalogo.toLocaleString()}</h2><span>en catálogo</span></div></div>
+        <div className="inv-kpi-card border-blue"><div className="kpi-icon bg-brand-soft"><UiIcon name="FileText" size={16} /></div><div className="kpi-info"><p>TOTAL PRODUCTOS</p><h2>{kpis.totalCatalogo.toLocaleString()}</h2><span>en catálogo</span></div></div>
         <div className="inv-kpi-card border-yellow"><div className="kpi-icon bg-yellow-soft"><UiIcon name="AlertTriangle" size={16} /></div><div className="kpi-info"><p>STOCK BAJO</p><h2>{kpis.stockBajo}</h2><span>bajo mínimo</span></div></div>
         <div className="inv-kpi-card border-red"><div className="kpi-icon bg-red-soft"><UiIcon name="XCircle" size={16} /></div><div className="kpi-info"><p>VENCIDOS</p><h2>{kpis.vencidos}</h2><span>requieren acción</span></div></div>
         <div className="inv-kpi-card border-green"><div className="kpi-icon bg-green-soft"><UiIcon name="Package" size={16} /></div><div className="kpi-info"><p>VALOR INVENTARIO</p><h2>S/ {kpis.valorInv.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h2><span>costo total</span></div></div>
@@ -378,7 +378,7 @@ export default function AdminInventario() {
       <div className="inv-table-container" style={{ position: 'relative' }}>
         {cargandoTabla && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, borderRadius: 8 }}>
-            <span style={{ color: '#2563eb', fontWeight: 600 }}>Cargando...</span>
+            <span style={{ color: 'var(--lf-primary)', fontWeight: 600 }}>Cargando...</span>
           </div>
         )}
         <table className="inv-table">

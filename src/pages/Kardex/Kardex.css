@@ -57,7 +57,7 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
-.kardex-kpi-card.border-blue { border-left-color: #3b82f6; }
+.kardex-kpi-card.border-blue { border-left-color: var(--lf-primary); }
 .kardex-kpi-card.border-green { border-left-color: #10b981; }
 .kardex-kpi-card.border-red { border-left-color: #ef4444; }
 .kardex-kpi-card.border-yellow { border-left-color: #f59e0b; }
@@ -70,7 +70,7 @@
   flex-shrink: 0;
 }
 
-.bg-blue-soft { background: #eff6ff; }
+.bg-brand-soft { background: var(--lf-primary-light); }
 .bg-green-soft { background: #ecfdf5; }
 .bg-red-soft { background: #fef2f2; }
 .bg-yellow-soft { background: #fffbeb; }
@@ -186,7 +186,7 @@
 }
 
 .kardex-table thead tr {
-  background: #f8fafc;
+  background: var(--lf-bg);
   border-bottom: 1.5px solid #e5e7eb;
 }
 

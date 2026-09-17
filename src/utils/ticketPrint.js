@@ -4,7 +4,7 @@
  */
 
 import { printTicket, isElectronApp } from './electronBridge'
-import { etiquetaComprobante, etiquetaDocCliente, TICKET_EMISOR, desgloseTicket, primerNombreTicket } from './ticketFarmacia'
+import { etiquetaComprobante, etiquetaDocCliente, TICKET_EMISOR, desgloseTicket, primerNombreTicket, facturacionElectronica, lineasContactoEmisor, LEYENDA_DOCUMENTO_INTERNO, EMPRESA } from './ticketFarmacia'
 import { formatPrecioUnitario } from './precioExacto'
 import { numeroALetras } from './numeroALetras'
 import { datosSunatTicket, numeroEncabezadoTicket, padComprobanteTicket } from './ticketSunat'
@@ -164,6 +164,15 @@ function bloqueSunatHtml(payload) {
 </div>`
 }
 
+function pieComprobanteHtml(payload) {
+  const sunat = bloqueSunatHtml(payload)
+  if (sunat) return sunat
+  if (!facturacionElectronica) {
+    return `<div class="line"></div><div class="center sunat">${escapeHtml(LEYENDA_DOCUMENTO_INTERNO)}</div>`
+  }
+  return ''
+}
+
 /**
  * HTML del ticket (misma plantilla que venta real y ticket de prueba).
  * @param {{ autoPrint?: boolean }} [opts]
@@ -201,13 +210,10 @@ th{border-bottom:1px solid #000;text-align:left}.brand{font-size:18px;font-weigh
 </style></head><body>
 ${bannerPrueba}
 <div class="center">
-  <img class="cruz" src="/icono.png" alt="" />
+  <img class="cruz" src="${escapeHtml(EMPRESA.logo)}" alt="" />
   <div class="boticas">${escapeHtml(TICKET_EMISOR.rubro)}</div>
   <div class="brand">${escapeHtml(TICKET_EMISOR.nombreComercial)}</div>
-  <div>${escapeHtml(TICKET_EMISOR.razonSocial)}</div>
-  <div>RUC: ${escapeHtml(TICKET_EMISOR.ruc)}</div>
-  <div>${escapeHtml(TICKET_EMISOR.correo)}</div>
-  <div>${escapeHtml(TICKET_EMISOR.direccion)}</div>
+  ${lineasContactoEmisor(TICKET_EMISOR).map((l) => `<div>${escapeHtml(l)}</div>`).join('\n  ')}
 </div>
 <div class="line"></div>
 <div class="center bold">${escapeHtml(tipoLabel)}</div>
@@ -233,7 +239,7 @@ ${payload.montoRecibido != null ? `<div>RECIBIDO <span style="float:right">${Num
 ${payload.vuelto != null ? `<div>VUELTO <span style="float:right">${Number(payload.vuelto).toFixed(2)}</span></div>` : ''}
 <div class="line"></div>
 <div class="bold" style="font-size:9px">${escapeHtml(numeroALetras(d.importeTotal))}</div>
-${bloqueSunatHtml(payload)}
+${pieComprobanteHtml(payload)}
 ${numeroEncabezadoTicket(payload).provisional
     ? '<div class="center" style="font-size:8px;margin-top:4px">Nro. definitivo disponible al sincronizar</div>'
     : ''}

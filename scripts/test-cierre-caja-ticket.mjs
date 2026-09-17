@@ -25,7 +25,7 @@ const turno = {
 const user = {
   nombres: 'EDGAR',
   apellidos: 'SICCHA PRUEBA',
-  sucursales: { nombre_comercial: 'Sede Julcan' },
+  sucursales: { nombre_comercial: 'La Esperanza' },
 }
 
 // ── 1) Caja cuadrada ──

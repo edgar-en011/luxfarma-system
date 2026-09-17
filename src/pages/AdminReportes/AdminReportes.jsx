@@ -157,7 +157,7 @@ export default function AdminReportes() {
 
   // ================= 3. EXPORTAR A EXCEL =================
   const exportarReporte = () => {
-    let csv = "REPORTE FINANCIERO SALUD FUTURA\n\n";
+    let csv = "REPORTE FINANCIERO LUXFARMA\n\n";
     csv += `Rango:;${fechaDesde};hasta;${fechaHasta}\n`;
     csv += `Sucursal:;${sucursalFiltro === 'TODAS' ? 'TODAS' : sucursales.find(s=>s.id_sucursal == sucursalFiltro)?.nombre_comercial}\n\n`;
     

@@ -25,9 +25,9 @@ export default function ListaAniosMeses({
       </div>
       <div>
         {cargando ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '2.5rem' }}>Cargando…</p>
+          <p style={{ textAlign: 'center', color: 'var(--lf-text-muted)', padding: '2.5rem' }}>Cargando…</p>
         ) : items.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '2.5rem' }}>{emptyText}</p>
+          <p style={{ textAlign: 'center', color: 'var(--lf-text-muted)', padding: '2.5rem' }}>{emptyText}</p>
         ) : (
           items.map((it) => {
             const sel = seleccionado === it.key;

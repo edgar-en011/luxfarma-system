@@ -131,12 +131,12 @@ export default function HistorialFiltros({
             ))}
           </select>
         </div>
-        <div style={{ width: 1, height: 38, background: '#e2e8f0', margin: '0 0.15rem' }} />
+        <div style={{ width: 1, height: 38, background: 'var(--lf-border)', margin: '0 0.15rem' }} />
         <div className="av-filtros-field">
           <label>Buscar por N° de boleta/factura</label>
           <input
             type="text"
-            placeholder="Ej: B004-10 o NV01-5"
+            placeholder="Ej: NV01-10"
             value={busquedaComprobante}
             onChange={(e) => onBusquedaComprobante?.(e.target.value)}
             className="av-input-apple"

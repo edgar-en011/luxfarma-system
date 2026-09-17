@@ -3,7 +3,7 @@
 .fs-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(31, 26, 27, 0.55);
   backdrop-filter: blur(4px);
   z-index: 100020;
   display: flex;
@@ -22,9 +22,9 @@
   width: min(1680px, calc(100vw - 2rem));
   height: min(980px, calc(100vh - 1.5rem));
   max-height: calc(100vh - 1.5rem);
-  background: #f8fafc;
+  background: var(--lf-bg);
   border-radius: 18px;
-  box-shadow: 0 25px 80px rgba(1, 43, 99, 0.28);
+  box-shadow: 0 25px 80px rgba(225, 29, 46, 0.28);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -44,7 +44,7 @@
   justify-content: space-between;
   gap: 1.25rem;
   padding: 0.95rem 1.4rem 1rem;
-  background: linear-gradient(135deg, #012B63 0%, #0a3d7a 100%);
+  background: linear-gradient(135deg, var(--lf-primary-darker) 0%, var(--lf-primary-dark) 100%);
   color: #fff;
 }
 
@@ -97,7 +97,7 @@
   flex-shrink: 0;
   padding: 0.7rem 1.4rem;
   background: #fff;
-  border-bottom: 1px solid #e8eef5;
+  border-bottom: 1px solid var(--lf-border);
   display: flex;
   flex-wrap: wrap;
   gap: 0.85rem;
@@ -112,7 +112,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 40%, #f8fafc 100%);
+  background: linear-gradient(180deg, var(--lf-info-bg) 0%, var(--lf-bg) 40%, var(--lf-bg) 100%);
 }
 
 @media (max-width: 720px) {

@@ -33,7 +33,7 @@ function resolveSchemaPath() {
 }
 
 function dbPath() {
-  return path.join(app.getPath('userData'), 'saludfutura.sqlite')
+  return path.join(app.getPath('userData'), 'luxfarma.sqlite')
 }
 
 export function getDbPath() {

@@ -12,6 +12,7 @@ import { obtenerFormasVentaOffline, obtenerUnidadesOffline } from "../../utils/o
 /** Umbral de stock bajo (unidades base del snapshot local) para aviso offline entre cajeros. */
 const STOCK_BAJO_OFFLINE = 3;
 import { esComprobanteSunat, procesarEmisionSunat, reintentarComprobantesSunat } from "../../services/comprobantesSunat";
+import { facturacionElectronica, EMPRESA } from "../../config/empresa";
 import { obtenerStockDisponible } from "../../utils/notasInventarioAjustes";
 import { armarPayloadSincronizacion } from "../../utils/ventaUuid";
 import { registrarVentaEnServidor } from "../../utils/registrarVentaServidor";
@@ -40,13 +41,16 @@ import AlertaSistemaModal from "../../components/AlertaSistemaModal";
 import SelectorFormaVentaModal from "./SelectorFormaVentaModal";
 import "./POS.css";
 import UiIcon from '../../components/UiIcon';
-import iconoApp from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
 
 import { consultarDocumento } from '../../utils/consultaDocIdentidad';
 import { typewriteFields } from '../../utils/typewriteText';
 import { playNotifSound } from '../../utils/notifSound';
 import { resolverSexoAutofill } from '../../utils/sexoPorNombre';
-const TIPOS_COMPROBANTE = ["Boleta", "Factura", "Nota de Venta"];
+const TIPOS_COMPROBANTE = facturacionElectronica
+  ? ["Boleta", "Factura", "Nota de Venta"]
+  : ["Nota de Venta"];
+const TIPO_COMPROBANTE_DEFAULT = facturacionElectronica ? "Boleta" : "Nota de Venta";
 const OPCIONES_SEXO = [
   { value: 'M', label: 'Masculino' },
   { value: 'F', label: 'Femenino' },
@@ -77,7 +81,7 @@ function _imprimirRecibo(venta, carritoSnap, totalSnap, metodoPagoSnap, mixtoSna
   const fechaStr = fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const horaStr = fecha.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
   const comprobante = venta.serie + '-' + String(venta.correlativo).padStart(8, '0');
-  const nombreSede = (userSnap && userSnap.sucursales && userSnap.sucursales.nombre_comercial) || 'SALUD FUTURA';
+  const nombreSede = (userSnap && userSnap.sucursales && userSnap.sucursales.nombre_comercial) || EMPRESA.nombreComercial;
   const vendedor = (userSnap ? userSnap.nombres || '' : '') + ' ' + ((userSnap && userSnap.apellidos) ? userSnap.apellidos.split(' ')[0] : '');
   const clienteStr = (clienteNombreSnap && String(clienteNombreSnap).trim()) || 'CLIENTE GENERAL';
 
@@ -115,9 +119,9 @@ function _imprimirRecibo(venta, carritoSnap, totalSnap, metodoPagoSnap, mixtoSna
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + comprobante + '</title>' +
     '<style>' + css + '</style></head><body>' +
-    '<div class="center bold" style="font-size:17px;letter-spacing:1px">SALUD FUTURA</div>' +
+    '<div class="center bold" style="font-size:17px;letter-spacing:1px">' + EMPRESA.ticketMarca + '</div>' +
     '<div class="center" style="font-size:12px">' + nombreSede + '</div>' +
-    '<div class="center" style="font-size:11px;color:#555">Farmacia y Botica</div>' +
+    '<div class="center" style="font-size:11px;color:#555">' + EMPRESA.ticketRubro + '</div>' +
     '<div class="line"></div>' +
     '<div class="center bold" style="font-size:14px">' + (venta.tipo_comprobante === 'NOTA DE VENTA' ? 'NOTA DE VENTA' : (venta.tipo_comprobante || 'BOLETA') + ' DE VENTA') + '</div>' +
     '<div class="center bold" style="font-size:15px;letter-spacing:2px">' + comprobante + '</div>' +
@@ -142,7 +146,7 @@ function _imprimirRecibo(venta, carritoSnap, totalSnap, metodoPagoSnap, mixtoSna
     '<div class="line"></div>' +
     '<div class="center" style="font-size:11px;margin-top:6px">\u00a1Gracias por su compra!</div>' +
     '<div class="center" style="font-size:10px;color:#555">Conserve su comprobante</div><br/>' +
-    '<div class="center"><button onclick="window.print()" style="padding:6px 20px;font-size:12px;cursor:pointer;background:#172545;color:white;border:none;border-radius:4px">Imprimir</button></div>' +
+    '<div class="center"><button onclick="window.print()" style="padding:6px 20px;font-size:12px;cursor:pointer;background:var(--lf-primary-dark);color:white;border:none;border-radius:4px">Imprimir</button></div>' +
     '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print();},400);}' + '<' + '/scr' + 'ipt>' +
     '</body></html>';
 
@@ -219,7 +223,7 @@ export default function POS() {
   useEffect(() => {
     if (idTurnoPos) return;
     try {
-      const t = JSON.parse(localStorage.getItem('saludFutura_turnoActivo') || 'null');
+      const t = JSON.parse(localStorage.getItem('luxfarma_turnoActivo') || 'null');
       if (t?.id_turno) setIdTurnoPos(t.id_turno);
     } catch { /* solo lectura para la franja */ }
   }, [idTurnoPos]);
@@ -250,7 +254,11 @@ export default function POS() {
   const [descargaProgreso, setDescargaProgreso] = useState(null);
   // { fase: 'productos'|'stock'|'guardando'|'listo', descargados: 0, total: 0 }
 
-  const [tipoComprobante, setTipoComprobante] = useState(() => getSavedState("pos_tipo", "Boleta"));
+  const [tipoComprobante, setTipoComprobante] = useState(() => {
+    const saved = getSavedState("pos_tipo", TIPO_COMPROBANTE_DEFAULT);
+    if (!facturacionElectronica && (saved === "Boleta" || saved === "Factura")) return "Nota de Venta";
+    return saved;
+  });
   // Booleanos derivados, calculados una sola vez por render — evitan repetir
   // `tipoComprobante === "Boleta"` en ~14 lugares distintos y que alguno quede
   // desactualizado al agregar un tipo nuevo. Nota de Venta comparte formulario/
@@ -261,7 +269,11 @@ export default function POS() {
   const esNotaVenta = tipoComprobante === "Nota de Venta";
   // Toggle "Tipo de comprobante": tipoEnfocado es el resaltado visual mientras el
   // contenedor tiene foco, independiente de tipoComprobante (la selección confirmada).
-  const [tipoEnfocado, setTipoEnfocado] = useState(() => getSavedState("pos_tipo", "Boleta"));
+  const [tipoEnfocado, setTipoEnfocado] = useState(() => {
+    const saved = getSavedState("pos_tipo", TIPO_COMPROBANTE_DEFAULT);
+    if (!facturacionElectronica && (saved === "Boleta" || saved === "Factura")) return "Nota de Venta";
+    return saved;
+  });
   /** Dirección slide al cambiar Boleta ↔ Factura ↔ Nota (no bloquea teclado). */
   const [tipoTabDir, setTipoTabDir] = useState("forward");
   const docInputRef = useRef(null);
@@ -443,12 +455,14 @@ export default function POS() {
     const timer = setTimeout(ejecutarSync, 1500);
     // Mientras el POS esté online, reintentar comprobantes SUNAT cada minuto
     // (sin tope; el propio job ya espera 1.5 s entre uno y otro).
-    const interval = setInterval(() => {
-      reintentarComprobantesSunat().catch(() => {});
-    }, 60_000);
+    const interval = facturacionElectronica
+      ? setInterval(() => {
+        reintentarComprobantesSunat().catch(() => {});
+      }, 60_000)
+      : null;
     return () => {
       clearTimeout(timer);
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
   }, [isOnline, actualizarContadorPendientes]);
 
@@ -1485,11 +1499,11 @@ export default function POS() {
     // ─────────────────────────────────────────────────────────
     if (!isOnline) {
       try {
-        // Turno: misma fuente que online (Dashboard/POS escriben saludFutura_turnoActivo).
+        // Turno: misma fuente que online (Dashboard/POS escriben luxfarma_turnoActivo).
         // Sin id_turno NO se encola — evita ventas huérfanas de turno.
         let turnoGuardado = null;
         try {
-          const raw = localStorage.getItem('saludFutura_turnoActivo');
+          const raw = localStorage.getItem('luxfarma_turnoActivo');
           turnoGuardado = raw ? JSON.parse(raw) : null;
         } catch { turnoGuardado = null; }
         if (!turnoGuardado?.id_turno) {
@@ -1641,7 +1655,7 @@ export default function POS() {
         throw new Error("No tienes un turno abierto.");
       }
 
-      localStorage.setItem('saludFutura_turnoActivo', JSON.stringify(turno));
+      localStorage.setItem('luxfarma_turnoActivo', JSON.stringify(turno));
 
       const idSucursalVenta = turno?.id_sucursal || user.id_sucursal || user.sucursales?.id_sucursal;
       const idTurnoVenta = turno?.id_turno || null;
@@ -1711,7 +1725,7 @@ export default function POS() {
       let avisoSunat = null;
       let enlacePdfSunat = null;
       let emisionSunat = null;
-      if (esComprobanteSunat(tipoComprobante)) {
+      if (facturacionElectronica && esComprobanteSunat(tipoComprobante)) {
         try {
           const clienteSunat = {
             dni: (tipoComprobante === 'Boleta' && !ventaSinDoc) ? docInput : null,
@@ -1783,7 +1797,7 @@ export default function POS() {
         clienteDoc: (ventaSinDoc || !docInput) ? '' : docInput,
         clienteDireccion: clienteDireccion || '',
         puntosAcum: 0,
-        sunat: (esComprobanteSunat(tipoComprobante) && emisionSunat?.ok)
+        sunat: (facturacionElectronica && esComprobanteSunat(tipoComprobante) && emisionSunat?.ok)
           ? {
               serie: emisionSunat.serie,
               numero: emisionSunat.numero,
@@ -1873,7 +1887,7 @@ export default function POS() {
           bottom: 24px;
           right: 24px;
           z-index: 99999;
-          background: #1e293b;
+          background: var(--lf-text);
           color: white;
           padding: 12px 20px;
           border-radius: 12px;
@@ -1926,12 +1940,12 @@ export default function POS() {
       {descargaProgreso && (
         <div style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 99999,
-          background: descargaProgreso.fase === 'listo' ? '#14532d' : '#1e293b',
+          background: descargaProgreso.fase === 'listo' ? '#14532d' : 'var(--lf-text)',
           color: 'white', borderRadius: '14px', padding: '14px 18px',
           boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
           minWidth: '280px', maxWidth: '320px',
           animation: 'slideInRight 0.3s ease',
-          border: `1.5px solid ${descargaProgreso.fase === 'listo' ? '#16a34a' : '#334155'}`,
+          border: `1.5px solid ${descargaProgreso.fase === 'listo' ? '#16a34a' : '#3F3F46'}`,
         }}>
           {descargaProgreso.fase === 'listo' ? (
             <>
@@ -1954,22 +1968,22 @@ export default function POS() {
                   {descargaProgreso.fase === 'guardando' && 'Guardando en tu dispositivo...'}
                 </span>
               </div>
-              <div style={{ background: '#334155', borderRadius: 999, height: 6, marginBottom: 6, overflow: 'hidden' }}>
+              <div style={{ background: 'var(--lf-border)', borderRadius: 999, height: 6, marginBottom: 6, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', borderRadius: 999,
-                  background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
+                  background: 'linear-gradient(90deg, var(--lf-primary), var(--lf-accent))',
                   width: `${Math.min((descargaProgreso.descargados / Math.max(descargaProgreso.total, 1)) * 100, 100)}%`,
                   transition: 'width 0.4s ease',
                 }} />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#94a3b8' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--lf-text-muted)' }}>
                 <span>
                   {descargaProgreso.fase === 'productos' && `${descargaProgreso.descargados.toLocaleString()} / ${descargaProgreso.total.toLocaleString()} productos`}
                   {descargaProgreso.fase === 'formas' && `${descargaProgreso.descargados.toLocaleString()} / ${descargaProgreso.total.toLocaleString()}`}
                   {descargaProgreso.fase === 'stock' && `Lote ${descargaProgreso.descargados} / ${descargaProgreso.total}`}
                   {descargaProgreso.fase === 'guardando' && 'Guardando...'}
                 </span>
-                <span style={{ color: '#60a5fa', fontWeight: 600 }}>
+                <span style={{ color: 'var(--lf-primary-soft)', fontWeight: 600 }}>
                   {Math.round((descargaProgreso.descargados / Math.max(descargaProgreso.total, 1)) * 100)}%
                 </span>
               </div>
@@ -2180,13 +2194,9 @@ export default function POS() {
         >
           <div className="pos-search-wrapper">
             <div className="pos-search-bar">
-              <img
-                src={iconoApp}
-                alt=""
-                className="pos-search-brand-logo"
-                aria-hidden="true"
-                draggable={false}
-              />
+              <span className="pos-search-brand-logo" aria-hidden="true">
+                <LogoLuxFarma variant="icon" size={32} color="red" />
+              </span>
               <span className="pos-search-divider" aria-hidden="true" />
               <UiIcon name="Search" size={22} className="search-icon" aria-hidden="true" />
               <input ref={buscadorProductoRef} type="text"
@@ -2515,9 +2525,11 @@ export default function POS() {
         >
           <div className={`pos-cobro-modal pos-cobro-cliente ${cobroAnimDir === "back" ? "pos-cobro-panel-enter-back" : "pos-cobro-panel-enter"}`} role="dialog" aria-modal="true" aria-label="Datos del cliente">
             <div className="pos-cliente-brand-banner">
-              <img src={iconoApp} alt="" className="pos-cliente-brand-logo" />
+              <span className="pos-cliente-brand-logo">
+                <LogoLuxFarma variant="icon" size={28} color="red" />
+              </span>
               <div className="pos-cliente-brand-text">
-                <span className="pos-cliente-brand-name">SALUD FUTURA</span>
+                <span className="pos-cliente-brand-name">LuxFarma</span>
                 <span className="pos-cliente-brand-tag">Farmacia · Punto de venta</span>
               </div>
             </div>
@@ -2545,16 +2557,20 @@ export default function POS() {
                   onFocus={() => setTipoEnfocado(tipoComprobante)}
                   onKeyDown={handleTipoToggleKeyDown}
                 >
+                  {facturacionElectronica && (
                   <button type="button" tabIndex={-1} data-enter-skip="true"
                     className={`toggle-btn ${esBoleta ? "active" : ""} ${tipoEnfocado === "Boleta" ? "focused" : ""}`}
                     onClick={() => { handleTipoComprobante("Boleta"); setTipoEnfocado("Boleta"); }}>
                     <UiIcon name="Receipt" size={14} /> Boleta / DNI
                   </button>
+                  )}
+                  {facturacionElectronica && (
                   <button type="button" tabIndex={-1} data-enter-skip="true"
                     className={`toggle-btn ${esFactura ? "active" : ""} ${tipoEnfocado === "Factura" ? "focused" : ""}`}
                     onClick={() => { handleTipoComprobante("Factura"); setTipoEnfocado("Factura"); }}>
                     <UiIcon name="Building2" size={14} /> Factura / RUC
                   </button>
+                  )}
                   <button type="button" tabIndex={-1} data-enter-skip="true"
                     className={`toggle-btn ${esNotaVenta ? "active" : ""} ${tipoEnfocado === "Nota de Venta" ? "focused" : ""}`}
                     onClick={() => { handleTipoComprobante("Nota de Venta"); setTipoEnfocado("Nota de Venta"); }}>
@@ -2876,9 +2892,11 @@ export default function POS() {
             onKeyDown={handleKeyDownPagoGrid}
           >
             <div className="pos-cliente-brand-banner">
-              <img src={iconoApp} alt="" className="pos-cliente-brand-logo" />
+              <span className="pos-cliente-brand-logo">
+                <LogoLuxFarma variant="icon" size={28} color="red" />
+              </span>
               <div className="pos-cliente-brand-text">
-                <span className="pos-cliente-brand-name">SALUD FUTURA</span>
+                <span className="pos-cliente-brand-name">LuxFarma</span>
                 <span className="pos-cliente-brand-tag">Farmacia · Punto de venta</span>
               </div>
             </div>
@@ -2933,8 +2951,8 @@ export default function POS() {
         const theme = esEfectivo
           ? { grad: 'linear-gradient(135deg,#14532d 0%,#16a34a 50%,#15803d 100%)', btn: 'linear-gradient(135deg,#16a34a,#15803d)', shadow: 'rgba(22,163,74,0.4)', icon: 'Banknote', label: 'Efectivo' }
           : esYape
-            ? { grad: 'linear-gradient(135deg,#5b21b6 0%,#7c3aed 50%,#6d28d9 100%)', btn: 'linear-gradient(135deg,#7c3aed,#6d28d9)', shadow: 'rgba(124,58,237,0.4)', icon: 'Smartphone', label: 'Yape' }
-            : { grad: 'linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#1d4ed8 100%)', btn: 'linear-gradient(135deg,#2563eb,#1d4ed8)', shadow: 'rgba(37,99,235,0.4)', icon: 'CreditCard', label: 'Tarjeta' };
+            ? { grad: 'linear-gradient(135deg,var(--lf-warning) 0%,var(--lf-accent) 50%,var(--lf-accent) 100%)', btn: 'linear-gradient(135deg,var(--lf-accent),var(--lf-accent))', shadow: 'rgba(242, 184, 75, 0.4)', icon: 'Smartphone', label: 'Yape' }
+            : { grad: 'linear-gradient(135deg,var(--lf-primary) 0%,var(--lf-primary) 50%,var(--lf-primary-dark) 100%)', btn: 'linear-gradient(135deg,var(--lf-primary),var(--lf-primary-dark))', shadow: 'rgba(225, 29, 46, 0.4)', icon: 'CreditCard', label: 'Tarjeta' };
 
         return (
           <div
@@ -2943,12 +2961,12 @@ export default function POS() {
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, backdropFilter: 'blur(4px)' }}
           >
             <div role="dialog" aria-modal="true" aria-label="Confirmar pago" style={{ background: 'white', borderRadius: '20px', width: '380px', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.4)' }}>
-              <div style={{ padding: '1.2rem 1.5rem 0.8rem', borderBottom: '1px solid #f1f5f9' }}>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '1.5px', marginBottom: '2px' }}>TOTAL A COBRAR</p>
+              <div style={{ padding: '1.2rem 1.5rem 0.8rem', borderBottom: '1px solid var(--lf-info-bg)' }}>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--lf-text-muted)', letterSpacing: '1.5px', marginBottom: '2px' }}>TOTAL A COBRAR</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#0f172a' }}>S/ {total.toFixed(2)}</span>
+                  <span style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--lf-text)' }}>S/ {total.toFixed(2)}</span>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>{tipoComprobante} · {esFactura ? 'F001' : esNotaVenta ? 'NV01' : 'B001'} · {metodoPago}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', fontWeight: 600 }}>{tipoComprobante} · {esFactura ? 'F001' : esNotaVenta ? 'NV01' : 'B001'} · {metodoPago}</span>
                     {!isOnline && <span style={{ fontSize: '0.7rem', color: '#b45309', fontWeight: 700, background: '#fef3c7', padding: '2px 8px', borderRadius: 20, display: 'inline-flex', alignItems: 'center', gap: 4 }}><UiIcon name="WifiOff" size={12} /> Se guardará offline</span>}
                   </div>
                 </div>
@@ -2957,13 +2975,13 @@ export default function POS() {
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   padding: '0.4rem 0.85rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700,
-                  background: '#eff6ff', color: '#012B63', border: '1px solid #bfdbfe'
+                  background: 'var(--lf-primary-light)', color: 'var(--lf-primary-darker)', border: '1px solid var(--lf-primary-soft)'
                 }}>
                   <UiIcon name={theme.icon} size={15} /> {theme.label}
                 </span>
               </div>
               <div style={{ margin: '0.9rem 1.5rem', background: theme.grad, borderRadius: '16px', padding: '1.5rem', color: 'white', position: 'relative', overflow: 'hidden' }}>
-                {[{ top: '8%', left: '8%', c: '#fbbf24', s: 8, r: 30 }, { top: '15%', left: '25%', c: '#ffffff', s: 6, r: -20 }, { top: '5%', left: '70%', c: '#f472b6', s: 7, r: 45 }, { top: '20%', right: '10%', c: 'rgba(255,255,255,0.5)', s: 9, r: -40 }, { bottom: '20%', left: '5%', c: '#fb923c', s: 7, r: 60 }, { bottom: '10%', left: '30%', c: 'rgba(255,255,255,0.4)', s: 5, r: -30 }, { bottom: '15%', right: '20%', c: '#fbbf24', s: 8, r: 20 }, { top: '50%', right: '5%', c: 'rgba(255,255,255,0.6)', s: 6, r: -50 }].map((c, i) => (
+                {[{ top: '8%', left: '8%', c: '#fbbf24', s: 8, r: 30 }, { top: '15%', left: '25%', c: '#ffffff', s: 6, r: -20 }, { top: '5%', left: '70%', c: 'var(--lf-accent)', s: 7, r: 45 }, { top: '20%', right: '10%', c: 'rgba(255,255,255,0.5)', s: 9, r: -40 }, { bottom: '20%', left: '5%', c: '#fb923c', s: 7, r: 60 }, { bottom: '10%', left: '30%', c: 'rgba(255,255,255,0.4)', s: 5, r: -30 }, { bottom: '15%', right: '20%', c: '#fbbf24', s: 8, r: 20 }, { top: '50%', right: '5%', c: 'rgba(255,255,255,0.6)', s: 6, r: -50 }].map((c, i) => (
                   <div key={i} style={{ position: 'absolute', top: c.top, left: c.left, right: c.right, bottom: c.bottom, width: c.s, height: c.s * 1.6, background: c.c, borderRadius: '2px', transform: `rotate(${c.r}deg)`, opacity: 0.8 }} />
                 ))}
                 <div style={{ textAlign: 'center', marginBottom: '0.6rem' }}>
@@ -2973,7 +2991,7 @@ export default function POS() {
                   <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: '3px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UiIcon name={theme.icon} size={28} /></div>
                 </div>
                 <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                  <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0 }}>Salud Futura</p>
+                  <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0 }}>LuxFarma</p>
                   <p style={{ fontSize: '0.75rem', opacity: 0.75, margin: 0 }}>{user?.sucursales?.nombre_comercial || 'Sede Principal'}</p>
                 </div>
                 {esYape && (<div style={{ textAlign: 'center', marginBottom: '0.5rem' }}><p style={{ fontSize: '1.9rem', fontWeight: 800, letterSpacing: '4px', margin: 0 }}>{YAPE_NUMERO}</p></div>)}
@@ -3008,7 +3026,7 @@ export default function POS() {
                 >
                   <span><UiIcon name="Check" size={16} /></span> {procesandoVenta ? 'Procesando...' : (isOnline ? 'Confirmar pago recibido →' : 'Guardar offline →')}
                 </button>
-                <button onClick={() => { setShowPagoModal(false); setPasoCobro('pago'); setTimeout(() => pagoGridRef.current?.focus(), 50); }} data-enter-skip="true" tabIndex={-1} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer', padding: '0.3rem' }}>Cancelar</button>
+                <button onClick={() => { setShowPagoModal(false); setPasoCobro('pago'); setTimeout(() => pagoGridRef.current?.focus(), 50); }} data-enter-skip="true" tabIndex={-1} style={{ background: 'none', border: 'none', color: 'var(--lf-text-muted)', fontSize: '0.9rem', cursor: 'pointer', padding: '0.3rem' }}>Cancelar</button>
               </div>
             </div>
           </div>

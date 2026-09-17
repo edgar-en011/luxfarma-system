@@ -51,18 +51,18 @@ const esActivoLab = (l) => l.activo === 1 || l.activo === true || String(l.activ
 const s = {
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100035, padding: '1rem' },
   card: { background: 'white', padding: '1.5rem 2rem', borderRadius: '12px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', maxHeight: '95vh', overflowY: 'auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem' },
-  headerH3: { margin: 0, color: '#0f172a', fontSize: '1.3rem' },
-  closeBtn: { background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#94a3b8' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--lf-border)', paddingBottom: '0.75rem' },
+  headerH3: { margin: 0, color: 'var(--lf-text)', fontSize: '1.3rem' },
+  closeBtn: { background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--lf-text-muted)' },
   group: { display: 'flex', flexDirection: 'column', gap: '0.3rem' },
-  label: { fontSize: '0.7rem', fontWeight: 800, color: '#475569' },
-  input: { padding: '0.6rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', color: '#0f172a', outline: 'none', backgroundColor: '#fff' },
-  textarea: { padding: '0.6rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', color: '#0f172a', outline: 'none', backgroundColor: '#fff', fontFamily: 'inherit', resize: 'vertical', minHeight: '52px' },
+  label: { fontSize: '0.7rem', fontWeight: 800, color: '#52525B' },
+  input: { padding: '0.6rem 0.7rem', border: '1px solid #E4E4E7', borderRadius: '8px', fontSize: '0.9rem', color: 'var(--lf-text)', outline: 'none', backgroundColor: '#fff' },
+  textarea: { padding: '0.6rem 0.7rem', border: '1px solid #E4E4E7', borderRadius: '8px', fontSize: '0.9rem', color: 'var(--lf-text)', outline: 'none', backgroundColor: '#fff', fontFamily: 'inherit', resize: 'vertical', minHeight: '52px' },
   checkboxRow: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.3rem' },
-  inputDisabled: { padding: '0.6rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', backgroundColor: '#f1f5f9', color: '#64748b', cursor: 'not-allowed' },
-  footer: { display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '0.25rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' },
-  cancelBtn: { background: 'white', color: '#475569', border: '1px solid #cbd5e1', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
-  primaryBtn: { background: '#0f172a', color: 'white', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' },
+  inputDisabled: { padding: '0.6rem 0.7rem', border: '1px solid #E4E4E7', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', backgroundColor: 'var(--lf-info-bg)', color: 'var(--lf-text-muted)', cursor: 'not-allowed' },
+  footer: { display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '0.25rem', borderTop: '1px solid var(--lf-border)', paddingTop: '1rem' },
+  cancelBtn: { background: 'white', color: '#52525B', border: '1px solid #E4E4E7', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
+  primaryBtn: { background: 'var(--lf-primary-dark)', color: 'white', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' },
 };
 
 export default function ProductoFormModal({ visible, modo, productoInicial, onClose, onGuardado, mostrarAlerta }) {
@@ -468,7 +468,7 @@ export default function ProductoFormModal({ visible, modo, productoInicial, onCl
                   {!modoEdicion && (
                     <label style={{ ...s.checkboxRow, cursor: 'pointer' }}>
                       <input type="checkbox" checked={generarCodigoAuto} onChange={e => handleToggleCodigoAuto(e.target.checked)} />
-                      <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}><UiIcon name="RefreshCw" size={15} /> Generar código automático</span>
+                      <span style={{ fontSize: '0.78rem', color: '#52525B', fontWeight: 600 }}><UiIcon name="RefreshCw" size={15} /> Generar código automático</span>
                     </label>
                   )}
                 </div>
@@ -511,10 +511,10 @@ export default function ProductoFormModal({ visible, modo, productoInicial, onCl
                       onClick={() => { setNombreNuevoLab(''); setMostrarNuevoLab(true); }}
                       style={{
                         padding: '0 0.9rem',
-                        border: '1px solid #cbd5e1',
+                        border: '1px solid #E4E4E7',
                         borderRadius: '8px',
-                        background: '#f8fafc',
-                        color: '#0f172a',
+                        background: 'var(--lf-bg)',
+                        color: 'var(--lf-text)',
                         fontWeight: 700,
                         fontSize: '0.85rem',
                         cursor: 'pointer',
@@ -579,7 +579,7 @@ export default function ProductoFormModal({ visible, modo, productoInicial, onCl
                     style={s.input}
                   />
                 </div>
-                <div className="pfm-span-full" style={{ fontSize: '0.78rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.4rem 0' }}>
+                <div className="pfm-span-full" style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontStyle: 'italic', padding: '0.4rem 0' }}>
                   {modoEdicion
                     ? 'Los ajustes de stock a productos existentes ahora se hacen desde Toma de Inventario → Nota de Ingreso/Salida (con contraseña y motivo registrado).'
                     : 'El producto se crea sin stock. Para agregarlo, usa Compras (si tiene factura) o Toma de Inventario → Nota de Ingreso (si no la tiene).'}

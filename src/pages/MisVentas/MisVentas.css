@@ -1,27 +1,25 @@
 /* =============================================
    MI CAJA — HISTORIAL DEL TURNO
-   Salud Futura · Rediseño premium
+   LuxFarma · Rediseño premium
    ============================================= */
 
 :root {
-  --sf-navy:     #0C2D6B;
-  --sf-blue:     #1A56DB;
-  --sf-blue-lt:  #EBF2FF;
+  --sf-navy:     var(--lf-primary-dark);
+  --sf-blue:     var(--lf-primary);
   --sf-green:    #059669;
   --sf-green-lt: #D1FAE5;
   --sf-red:      #DC2626;
   --sf-red-lt:   #FEE2E2;
   --sf-amber:    #D97706;
   --sf-amber-lt: #FEF3C7;
-  --sf-purple:   #7C3AED;
-  --sf-purple-lt:#EDE9FE;
-  --sf-gray-50:  #F8FAFC;
-  --sf-gray-100: #F1F5F9;
-  --sf-gray-200: #E2E8F0;
-  --sf-gray-400: #94A3B8;
-  --sf-gray-500: #64748B;
-  --sf-gray-700: #334155;
-  --sf-gray-900: #0F172A;
+  --sf-purple:   var(--lf-accent);
+  --sf-gray-50:  var(--lf-bg);
+  --sf-gray-100: var(--lf-info-bg);
+  --sf-gray-200: var(--lf-border);
+  --sf-gray-400: var(--lf-text-muted);
+  --sf-gray-500: var(--lf-text-muted);
+  --sf-gray-700: #3F3F46;
+  --sf-gray-900: var(--lf-text);
   --sf-white:    #FFFFFF;
 }
 
@@ -56,7 +54,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #08184A 0%, var(--sf-navy) 60%, #1A3A7C 100%);
+  background: linear-gradient(135deg, var(--lf-primary-darker) 0%, var(--sf-navy) 60%, var(--lf-primary-dark) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -230,7 +228,7 @@
   font-weight: 800;
   font-size: 0.82rem;
   color: var(--sf-navy);
-  background: var(--sf-blue-lt);
+  background: var(--lf-primary-light);
   padding: 3px 9px;
   border-radius: 20px;
   font-variant-numeric: tabular-nums;
@@ -264,8 +262,8 @@
 }
 
 .mv-metodo-efectivo { background: var(--sf-green-lt); color: var(--sf-green); }
-.mv-metodo-yape     { background: var(--sf-purple-lt); color: var(--sf-purple); }
-.mv-metodo-tarjeta  { background: var(--sf-blue-lt); color: var(--sf-blue); }
+.mv-metodo-yape     { background: var(--lf-warning-bg); color: var(--sf-purple); }
+.mv-metodo-tarjeta  { background: var(--lf-primary-light); color: var(--sf-blue); }
 .mv-metodo-mixto    { background: var(--sf-amber-lt); color: var(--sf-amber); }
 
 /* Total */
@@ -321,8 +319,8 @@
 }
 
 .mv-btn-accion:hover {
-  background: var(--sf-blue-lt);
-  border-color: #93C5FD;
+  background: var(--lf-primary-light);
+  border-color: var(--lf-primary-soft);
   color: var(--sf-blue);
 }
 
@@ -360,7 +358,7 @@
 }
 
 .ticket-modal-header {
-  background: linear-gradient(135deg, #08184A 0%, var(--sf-navy) 100%);
+  background: linear-gradient(135deg, var(--lf-primary-darker) 0%, var(--sf-navy) 100%);
   color: white;
   padding: 1rem 1.4rem;
   display: flex;

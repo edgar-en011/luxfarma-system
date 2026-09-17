@@ -1,6 +1,6 @@
-import icono from '../assets/icono.png';
+import LogoLuxFarma from './LogoLuxFarma';
 
-// Pantalla de carga a pantalla completa con el logo de Salud Futura + barra animada —
+// Pantalla de carga a pantalla completa con el logo de LuxFarma + barra animada —
 // extraída de la "AppLoadingScreen" que ya se ve al entrar a la app ("Preparando tu
 // sesión..."), para reutilizar el mismo estilo en cualquier operación que tarde y
 // necesite feedback visible (ej. anular un comprobante), en vez de duplicar el JSX o
@@ -15,29 +15,25 @@ export default function LogoCargandoOverlay({ mensaje = 'Cargando...', exito = f
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: '#f5f5f7',
+      background: 'var(--lf-bg)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       gap: '20px', zIndex: 999999,
       fontFamily: '-apple-system, BlinkMacSystemFont, SF Pro Text, sans-serif',
     }}>
-      <img
-        src={icono}
-        alt="Salud Futura"
-        style={{ width: 72, height: 72, borderRadius: 18, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
-      />
+      <LogoLuxFarma variant="icon" size={72} color="red" />
       <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: 17, fontWeight: 600, color: '#1a1a1a', margin: '0 0 8px', letterSpacing: -0.3 }}>
-          Salud Futura
+        <p className="lf-brand-font" style={{ fontSize: 17, fontWeight: 700, color: 'var(--lf-text)', margin: '0 0 8px', letterSpacing: -0.3 }}>
+          LuxFarma
         </p>
-        <p style={{ fontSize: 16, fontWeight: 600, color: exito ? '#059669' : '#475569', margin: 0 }}>{mensaje}</p>
+        <p style={{ fontSize: 16, fontWeight: 600, color: exito ? 'var(--lf-success)' : 'var(--lf-text-muted)', margin: 0 }}>{mensaje}</p>
       </div>
       {exito ? (
         <div style={{
           width: 48, height: 48, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #10b981, #059669)',
+          background: 'linear-gradient(135deg, var(--lf-success), #15803d)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(16,185,129,0.35)',
+          boxShadow: '0 8px 24px rgba(31, 138, 76, 0.35)',
           animation: 'lco-success-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
         }}>
           <svg viewBox="0 0 24 24" width="26" height="26">
@@ -47,13 +43,13 @@ export default function LogoCargandoOverlay({ mensaje = 'Cargando...', exito = f
       ) : (
         <div style={{
           width: 200, height: 4,
-          background: '#e5e5ea',
+          background: 'var(--lf-primary-light)',
           borderRadius: 999,
           overflow: 'hidden',
         }}>
           <div style={{
             height: '100%',
-            background: '#022b5e',
+            background: 'var(--lf-primary)',
             borderRadius: 999,
             animation: 'lco-loadBar 1.6s ease-in-out infinite',
           }} />
