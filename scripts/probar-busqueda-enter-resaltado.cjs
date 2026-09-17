@@ -87,7 +87,7 @@ async function sembrarSesion(win, admin) {
   await win.loadURL(`${URL_BASE}/login`);
   await esperar(400);
   await win.webContents.executeJavaScript(
-    `localStorage.setItem('saludFuturaUser', ${JSON.stringify(JSON.stringify(admin))}); true`,
+    `localStorage.setItem('luxfarmaUser', ${JSON.stringify(JSON.stringify(admin))}); true`,
   );
 }
 

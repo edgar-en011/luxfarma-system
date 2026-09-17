@@ -342,7 +342,7 @@ export default function MisVentas() {
   const nombreCorto = `${user?.nombres?.split(' ')[0] || ''} ${user?.apellidos?.split(' ')[0] || ''}`.trim();
 
   const badgeMetodo = (m) => m.toLowerCase().includes('yape') ? 'yape' : m.toLowerCase().includes('tarjeta') ? 'tarjeta' : m.toLowerCase().includes('mixto') ? 'mixto' : 'efectivo';
-  const estadoColor = (e) => e==='ACEPTADO'?{bg:'#dcfce7',c:'#16a34a'}:e==='ANULADO'?{bg:'#f1f5f9',c:'#64748b'}:e==='ERROR'||e==='RECHAZADO'?{bg:'#fee2e2',c:'#b91c1c'}:e==='SIN_CONFIRMAR'?{bg:'#ffedd5',c:'#c2410c'}:{bg:'#fef3c7',c:'#b45309'};
+  const estadoColor = (e) => e==='ACEPTADO'?{bg:'#dcfce7',c:'#16a34a'}:e==='ANULADO'?{bg:'var(--lf-info-bg)',c:'var(--lf-text-muted)'}:e==='ERROR'||e==='RECHAZADO'?{bg:'#fee2e2',c:'#b91c1c'}:e==='SIN_CONFIRMAR'?{bg:'#ffedd5',c:'#c2410c'}:{bg:'#fef3c7',c:'#b45309'};
 
   // En períodos (Hoy/Ayer/…) con >1 turno: agrupar; en "Mi turno" o un solo turno: lista plana.
   const agruparPorTurno = !esModoTurno && contarTurnosUnicos(ventasFiltradas) > 1;
@@ -354,17 +354,17 @@ export default function MisVentas() {
     const chip = chipTurno(v.id_turno);
     return (
       <tr key={v.id_venta}>
-        <td style={{color:'#94a3b8',fontWeight:600}}>{idx + 1}</td>
+        <td style={{color:'var(--lf-text-muted)',fontWeight:600}}>{idx + 1}</td>
         <td>
           <strong>{etiquetaComprobanteVisible(v)}</strong>
-          <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '2px 0 0' }}>{v.tipo_comprobante}</p>
+          <p style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>{v.tipo_comprobante}</p>
         </td>
         <td>
           {chip
             ? <span className="mv-turno-chip" title="Turno de caja en el que se registró esta venta">{chip}</span>
-            : <span style={{ color: '#cbd5e1', fontSize: '0.78rem' }}>—</span>}
+            : <span style={{ color: '#E4E4E7', fontSize: '0.78rem' }}>—</span>}
         </td>
-        <td style={{color:'#64748b'}}>{new Date(v.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</td>
+        <td style={{color:'var(--lf-text-muted)'}}>{new Date(v.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</td>
         <td><span className={`mv-pill mv-pill-${badgeMetodo(metodo)}`}>{metodo}</span></td>
         <td><strong>S/ {Number(v.total).toFixed(2)}</strong></td>
         <td>
@@ -391,39 +391,39 @@ export default function MisVentas() {
   };
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 2.5rem' }}>
+    <div style={{ background: 'var(--lf-bg)', minHeight: '100vh', padding: '2rem 2.5rem' }}>
 
       <style>{`
         @keyframes mvFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes mvSlideUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .mv-card-apple { background: white; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(15,23,42,0.04); }
+        .mv-card-apple { background: white; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(31, 26, 27, 0.04); }
         .mv-table-apple { width: 100%; border-collapse: collapse; }
-        .mv-table-apple thead th { background: transparent; color: #94a3b8; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        .mv-table-apple thead th { background: transparent; color: var(--lf-text-muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid var(--lf-info-bg); }
         .mv-table-apple tbody tr { transition: background 0.15s ease; }
-        .mv-table-apple tbody tr:hover { background: #f8fafc; }
-        .mv-table-apple tbody td { padding: 1rem 1.25rem; font-size: 0.88rem; color: #0f172a; border-bottom: 1px solid #f1f5f9; }
+        .mv-table-apple tbody tr:hover { background: var(--lf-bg); }
+        .mv-table-apple tbody td { padding: 1rem 1.25rem; font-size: 0.88rem; color: var(--lf-text); border-bottom: 1px solid var(--lf-info-bg); }
         .mv-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2px; }
         .mv-pill-efectivo { background: #dcfce7; color: #166534; }
-        .mv-pill-yape { background: #f3e8ff; color: #6b21a8; }
-        .mv-pill-tarjeta { background: #dbeafe; color: #1e40af; }
+        .mv-pill-yape { background: var(--lf-warning-bg); color: var(--lf-warning); }
+        .mv-pill-tarjeta { background: var(--lf-primary-soft); color: var(--lf-primary-dark); }
         .mv-pill-mixto { background: #fef3c7; color: #92400e; }
-        .mv-chip { padding: 8px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: white; color: #64748b; transition: all 0.2s ease; }
-        .mv-chip:hover { background: #f8fafc; border-color: #cbd5e1; }
-        .mv-chip.active { background: #0f172a; color: white; border-color: #0f172a; }
-        .mv-chip.mv-chip-turno.active { background: #012B63; border-color: #012B63; }
-        .mv-turno-chip { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; color: #475569; background: #f1f5f9; border: 1px solid #e2e8f0; white-space: nowrap; font-variant-numeric: tabular-nums; }
-        .mv-turno-section-row td { padding: 0.55rem 1.25rem !important; background: #f1f5f9; border-bottom: 1px solid #e2e8f0 !important; }
-        .mv-turno-section-label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-size: 0.78rem; font-weight: 800; color: #012B63; letter-spacing: 0.02em; }
-        .mv-turno-section-label strong { color: #0f172a; font-variant-numeric: tabular-nums; }
-        .mv-btn-icon-apple { width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
-        .mv-btn-icon-apple:hover { background: #e2e8f0; transform: scale(1.08); }
-        .mv-input-apple { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 14px; font-size: 0.88rem; color: #0f172a; outline: none; transition: all 0.2s ease; font-family: inherit; width: 280px; }
-        .mv-input-apple:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .mv-chip { padding: 8px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid var(--lf-border); background: white; color: var(--lf-text-muted); transition: all 0.2s ease; }
+        .mv-chip:hover { background: var(--lf-bg); border-color: #E4E4E7; }
+        .mv-chip.active { background: var(--lf-primary-dark); color: white; border-color: var(--lf-primary-dark); }
+        .mv-chip.mv-chip-turno.active { background: var(--lf-primary-darker); border-color: var(--lf-primary-darker); }
+        .mv-turno-chip { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; color: #52525B; background: var(--lf-info-bg); border: 1px solid var(--lf-border); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .mv-turno-section-row td { padding: 0.55rem 1.25rem !important; background: var(--lf-info-bg); border-bottom: 1px solid var(--lf-border) !important; }
+        .mv-turno-section-label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-size: 0.78rem; font-weight: 800; color: var(--lf-primary-darker); letter-spacing: 0.02em; }
+        .mv-turno-section-label strong { color: var(--lf-text); font-variant-numeric: tabular-nums; }
+        .mv-btn-icon-apple { width: 32px; height: 32px; border-radius: 50%; background: var(--lf-info-bg); border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
+        .mv-btn-icon-apple:hover { background: var(--lf-border); transform: scale(1.08); }
+        .mv-input-apple { background: white; border: 1px solid var(--lf-border); border-radius: 10px; padding: 9px 14px; font-size: 0.88rem; color: var(--lf-text); outline: none; transition: all 0.2s ease; font-family: inherit; width: 280px; }
+        .mv-input-apple:focus { border-color: var(--lf-primary); box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.1); }
         .mv-content { animation: mvFadeIn 0.4s ease-out; }
         .mv-btn-anular { padding: 6px 14px; border-radius: 100px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
         .mv-btn-anular:hover { background: #fee2e2; transform: scale(1.03); }
-        .mv-btn-reimprimir { padding: 6px 14px; border-radius: 100px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-        .mv-btn-reimprimir:hover { background: #dbeafe; transform: scale(1.03); }
+        .mv-btn-reimprimir { padding: 6px 14px; border-radius: 100px; background: var(--lf-primary-light); color: var(--lf-primary-dark); border: 1px solid var(--lf-primary-soft); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .mv-btn-reimprimir:hover { background: var(--lf-primary-soft); transform: scale(1.03); }
         .mv-btn-reimprimir:disabled { opacity: 0.55; cursor: wait; transform: none; }
       `}</style>
 
@@ -432,19 +432,19 @@ export default function MisVentas() {
         {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 0.4rem' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 0.4rem' }}>
               {esModoTurno ? <><UiIcon name="Receipt" size={14} /> Mi turno</> : <><UiIcon name="ClipboardList" size={14} /> Historial</>}
             </p>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--lf-text)', margin: 0, letterSpacing: '-0.02em' }}>
               Mis Ventas
             </h1>
-            <p style={{ fontSize: '0.95rem', color: '#64748b', margin: '0.3rem 0 0' }}>
+            <p style={{ fontSize: '0.95rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>
               {nombreCorto || 'Vendedor'} · {fechaHoyStr}
               {esModoTurno && idTurnoActual != null && <> · Turno #{String(idTurnoActual).padStart(4, '0')}</>}
               {esModoTurno && horaAperturaStr && horaAperturaStr !== '—' && <> · desde las {horaAperturaStr}</>}
               {!esModoTurno && <> · Período: {modoVista}</>}
             </p>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0.35rem 0 0' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.35rem 0 0' }}>
               {esModoTurno
                 ? 'Solo ventas del turno abierto (útil para cuadre de caja).'
                 : 'Todas tus ventas del período, sin importar en qué turno se hicieron.'}
@@ -455,7 +455,7 @@ export default function MisVentas() {
         {/* SELECTOR DE MODO / PERÍODO */}
         <div className="mv-card-apple" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 2 }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 2 }}>
               Ver
             </span>
             <button
@@ -466,7 +466,7 @@ export default function MisVentas() {
             >
               Mi turno actual
             </button>
-            <span style={{ width: 1, height: 22, background: '#e2e8f0', margin: '0 2px' }} aria-hidden />
+            <span style={{ width: 1, height: 22, background: 'var(--lf-border)', margin: '0 2px' }} aria-hidden />
             {PERIODOS.map(p => (
               <button
                 key={p}
@@ -485,44 +485,44 @@ export default function MisVentas() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
           <div className="mv-card-apple" style={{ padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Total cobrado</p>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#dbeafe,#bfdbfe)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Wallet" size={16} /></div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Total cobrado</p>
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,var(--lf-primary-soft),var(--lf-primary-soft))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Wallet" size={16} /></div>
             </div>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
               S/ {totalTurno.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.3rem 0 0' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>
               {esModoTurno ? 'Tu turno actual' : `Período: ${modoVista}`}
             </p>
           </div>
 
           <div className="mv-card-apple" style={{ padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Operaciones</p>
+              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Operaciones</p>
               <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#dcfce7,#bbf7d0)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Receipt" size={16} /></div>
             </div>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
               {operacionesTurno}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.3rem 0 0' }}>Ventas realizadas</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>Ventas realizadas</p>
           </div>
 
           <div className="mv-card-apple" style={{ padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Ticket promedio</p>
+              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Ticket promedio</p>
               <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#fef3c7,#fde68a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="BarChart3" size={16} /></div>
             </div>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
               S/ {ticketPromedio.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.3rem 0 0' }}>Por venta</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>Por venta</p>
           </div>
         </div>
 
         {/* RESUMEN POR MÉTODO DE PAGO */}
         {operacionesTurno > 0 && (
           <div className="mv-card-apple" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: '0 0 0.85rem' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: '0 0 0.85rem' }}>
               {esModoTurno ? <><UiIcon name="CreditCard" size={14} /> Resumen para cuadre de caja</> : <><UiIcon name="CreditCard" size={14} /> Resumen por método de pago</>}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
@@ -530,13 +530,13 @@ export default function MisVentas() {
                 <span style={{ fontSize: '0.72rem', color: '#166534', fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase' }}><UiIcon name="Banknote" size={15} /> Efectivo</span>
                 <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#166534', margin: '4px 0 0' }}>S/ {totalEfectivo.toFixed(2)}</p>
               </div>
-              <div style={{ padding: '0.85rem 1rem', background: '#faf5ff', borderRadius: 12, border: '1px solid #e9d5ff' }}>
-                <span style={{ fontSize: '0.72rem', color: '#6b21a8', fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: 4 }}><UiIcon name="Smartphone" size={14} /> Yape</span>
-                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#6b21a8', margin: '4px 0 0' }}>S/ {totalYape.toFixed(2)}</p>
+              <div style={{ padding: '0.85rem 1rem', background: '#faf5ff', borderRadius: 12, border: '1px solid var(--lf-warning-bg)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--lf-warning)', fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: 4 }}><UiIcon name="Smartphone" size={14} /> Yape</span>
+                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--lf-warning)', margin: '4px 0 0' }}>S/ {totalYape.toFixed(2)}</p>
               </div>
-              <div style={{ padding: '0.85rem 1rem', background: '#eff6ff', borderRadius: 12, border: '1px solid #bfdbfe' }}>
-                <span style={{ fontSize: '0.72rem', color: '#1e40af', fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase' }}><UiIcon name="CreditCard" size={15} /> Tarjeta</span>
-                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e40af', margin: '4px 0 0' }}>S/ {totalTarjeta.toFixed(2)}</p>
+              <div style={{ padding: '0.85rem 1rem', background: 'var(--lf-primary-light)', borderRadius: 12, border: '1px solid var(--lf-primary-soft)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--lf-primary-dark)', fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase' }}><UiIcon name="CreditCard" size={15} /> Tarjeta</span>
+                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--lf-primary-dark)', margin: '4px 0 0' }}>S/ {totalTarjeta.toFixed(2)}</p>
               </div>
               <div style={{ padding: '0.85rem 1rem', background: '#fffbeb', borderRadius: 12, border: '1px solid #fde68a' }}>
                 <span style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: 4 }}><UiIcon name="Shuffle" size={14} /> Mixto</span>
@@ -550,14 +550,14 @@ export default function MisVentas() {
             actual; solo encuentra comprobantes tuyos (filtrado server-side por
             id_usuario_vendedor). Reutiliza la misma función de anulación que Admin. */}
         <div className="mv-card-apple" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
-          <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.25rem' }}><UiIcon name="Search" size={15} /> Buscar y anular un comprobante</p>
-          <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0 0 1rem' }}>
+          <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--lf-text)', margin: '0 0 0.25rem' }}><UiIcon name="Search" size={15} /> Buscar y anular un comprobante</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0 0 1rem' }}>
             Busca por N° de boleta/factura, de cualquiera de tus turnos — no solo el actual.
           </p>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
             <input
               type="text"
-              placeholder="N° de boleta/factura (ej: B004-10)"
+              placeholder="N° de comprobante (ej: NV01-10)"
               value={busquedaAnular}
               onChange={e => setBusquedaAnular(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') buscarComprobantePropio(); }}
@@ -567,7 +567,7 @@ export default function MisVentas() {
             <button
               onClick={buscarComprobantePropio}
               disabled={buscandoAnular}
-              style={{ padding: '9px 18px', background: '#0f172a', color: 'white', border: 'none', borderRadius: 10, fontSize: '0.85rem', fontWeight: 600, cursor: buscandoAnular ? 'default' : 'pointer' }}
+              style={{ padding: '9px 18px', background: 'var(--lf-primary-dark)', color: 'white', border: 'none', borderRadius: 10, fontSize: '0.85rem', fontWeight: 600, cursor: buscandoAnular ? 'default' : 'pointer' }}
             >
               {buscandoAnular ? 'Buscando...' : 'Buscar'}
             </button>
@@ -580,15 +580,15 @@ export default function MisVentas() {
           )}
 
           {resultadoAnular && (
-            <div style={{ marginTop: '1rem', padding: '1rem 1.2rem', background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ marginTop: '1rem', padding: '1rem 1.2rem', background: 'var(--lf-bg)', borderRadius: 12, border: '1px solid var(--lf-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
-                <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{etiquetaComprobanteVisible(resultadoAnular)}</strong>
-                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '4px 0 0' }}>
+                <strong style={{ fontSize: '0.95rem', color: 'var(--lf-text)' }}>{etiquetaComprobanteVisible(resultadoAnular)}</strong>
+                <p style={{ fontSize: '0.8rem', color: 'var(--lf-text-muted)', margin: '4px 0 0' }}>
                   {new Date(resultadoAnular.created_at).toLocaleString('es-PE')} · Consumidor final · S/ {Number(resultadoAnular.total).toFixed(2)}
                 </p>
               </div>
               {resultadoAnular.estado_anulacion === 'ANULADO' ? (
-                <span className="mv-pill" style={{ background: '#f1f5f9', color: '#64748b' }}>ANULADA</span>
+                <span className="mv-pill" style={{ background: 'var(--lf-info-bg)', color: 'var(--lf-text-muted)' }}>ANULADA</span>
               ) : (
                 <button
                   className="mv-btn-anular"
@@ -605,7 +605,7 @@ export default function MisVentas() {
         <div className="mv-card-apple" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 4 }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginRight: 4 }}>
                 Filtrar
               </span>
               {['Todas', 'Efectivo', 'Yape', 'Tarjeta', 'Mixto'].map(f => (
@@ -620,7 +620,7 @@ export default function MisVentas() {
             </div>
             <input
               type="text"
-              placeholder="Buscar ticket (Ej: B004-10)"
+              placeholder="Buscar ticket (Ej: NV01-10)"
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
               className="mv-input-apple"
@@ -630,11 +630,11 @@ export default function MisVentas() {
 
         {/* TABLA PRINCIPAL */}
         <div className="mv-card-apple" style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9' }}>
-            <p style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--lf-info-bg)' }}>
+            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--lf-text)', margin: 0 }}>
               {esModoTurno ? 'Mis comprobantes del turno' : `Mis comprobantes · ${modoVista}`}
             </p>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 0' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>
               {ventasFiltradas.length} {ventasFiltradas.length === 1 ? 'venta' : 'ventas'}
               {!esModoTurno && ' · pueden incluir varios turnos'}
             </p>
@@ -656,11 +656,11 @@ export default function MisVentas() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="8" style={{textAlign:'center',padding:'3rem',color:'#94a3b8'}}>Cargando historial...</td></tr>
+                  <tr><td colSpan="8" style={{textAlign:'center',padding:'3rem',color:'var(--lf-text-muted)'}}>Cargando historial...</td></tr>
                 ) : ventasFiltradas.length === 0 ? (
-                  <tr><td colSpan="8" style={{textAlign:'center',padding:'3rem',color:'#94a3b8'}}>
+                  <tr><td colSpan="8" style={{textAlign:'center',padding:'3rem',color:'var(--lf-text-muted)'}}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><UiIcon name="Receipt" size={16} /></div>
-                    <p style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569', margin: 0 }}>No se encontraron ventas</p>
+                    <p style={{ fontSize: '0.95rem', fontWeight: 600, color: '#52525B', margin: 0 }}>No se encontraron ventas</p>
                     <p style={{ fontSize: '0.8rem', margin: '4px 0 0' }}>
                       {busqueda
                         ? 'Prueba con otro término de búsqueda.'
@@ -695,11 +695,11 @@ export default function MisVentas() {
           </div>
 
           {ventasFiltradas.length > 0 && (
-            <div style={{ padding: '1rem 1.5rem', background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', margin: 0 }}>
+            <div style={{ padding: '1rem 1.5rem', background: 'linear-gradient(135deg, var(--lf-bg), var(--lf-info-bg))', borderTop: '1px solid var(--lf-info-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', margin: 0 }}>
                 Total filtrado
               </p>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--lf-text)' }}>
                 S/ {ventasFiltradas.filter(v => v.estado_anulacion !== 'ANULADO').reduce((s,v) => s + Number(v.total||0), 0).toLocaleString('en-US',{minimumFractionDigits:2})}
               </div>
             </div>
@@ -710,15 +710,15 @@ export default function MisVentas() {
 
       {/* MODAL DETALLE DE COMPROBANTE */}
       {ticketSeleccionado && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, padding: '1rem' }} onClick={() => setTicketSeleccionado(null)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(31, 26, 27, 0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, padding: '1rem' }} onClick={() => setTicketSeleccionado(null)}>
           <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520, maxHeight: '90vh', overflow: 'hidden', boxShadow: '0 25px 80px rgba(0,0,0,0.25)', animation: 'mvSlideUp 0.3s ease', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
 
-            <div style={{ padding: '1.5rem 1.75rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '1.5rem 1.75rem', borderBottom: '1px solid var(--lf-info-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>
+                <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>
                   Comprobante
                 </p>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: '2px 0 0' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--lf-text)', margin: '2px 0 0' }}>
                   {etiquetaComprobanteVisible(ticketSeleccionado)}
                 </h3>
               </div>
@@ -728,25 +728,25 @@ export default function MisVentas() {
             <div style={{ overflowY: 'auto', padding: '1.5rem 1.75rem' }}>
 
               {cargandoTicket ? (
-                <p style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando ticket...</p>
+                <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--lf-text-muted)' }}>Cargando ticket...</p>
               ) : (
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
                     <div>
-                      <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Tipo</p>
-                      <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{ticketSeleccionado.tipo_comprobante}</p>
+                      <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Tipo</p>
+                      <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{ticketSeleccionado.tipo_comprobante}</p>
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Sucursal</p>
-                      <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{user?.sucursales?.nombre_comercial || 'Principal'}</p>
+                      <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Sucursal</p>
+                      <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{user?.sucursales?.nombre_comercial || 'Principal'}</p>
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Fecha y hora</p>
-                      <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{new Date(ticketSeleccionado.created_at).toLocaleString('es-PE')}</p>
+                      <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Fecha y hora</p>
+                      <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{new Date(ticketSeleccionado.created_at).toLocaleString('es-PE')}</p>
                     </div>
                   </div>
 
-                  <div style={{ background: '#f8fafc', borderRadius: 12, overflow: 'hidden', marginBottom: '1rem' }}>
+                  <div style={{ background: 'var(--lf-bg)', borderRadius: 12, overflow: 'hidden', marginBottom: '1rem' }}>
                     <table className="mv-table-apple">
                       <thead><tr><th>Cant.</th><th>Producto</th><th style={{textAlign:'right'}}>Subtotal</th></tr></thead>
                       <tbody>
@@ -755,7 +755,7 @@ export default function MisVentas() {
                             <td><strong>{d.cantidad}</strong></td>
                             <td>
                               {d.productos?.descripcion}
-                              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '2px 0 0' }}>P. unit: {formatSolesUnitario(d.precio_unitario)}</p>
+                              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>P. unit: {formatSolesUnitario(d.precio_unitario)}</p>
                             </td>
                             <td style={{textAlign:'right'}}><strong>S/ {Number(d.subtotal).toFixed(2)}</strong></td>
                           </tr>
@@ -765,27 +765,27 @@ export default function MisVentas() {
                   </div>
 
                   {pagosTicket.length > 0 && (
-                    <div style={{ padding: '1rem 1.2rem', background: '#f8fafc', borderRadius: 12, marginBottom: '1rem' }}>
-                      <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', margin: '0 0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}><UiIcon name="CreditCard" size={15} /> Forma de pago
+                    <div style={{ padding: '1rem 1.2rem', background: 'var(--lf-bg)', borderRadius: 12, marginBottom: '1rem' }}>
+                      <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#52525B', margin: '0 0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}><UiIcon name="CreditCard" size={15} /> Forma de pago
                       </p>
 
                       {pagosTicket.length === 1 ? (
                         <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
-                            <span style={{ color: '#64748b' }}>Método</span>
+                            <span style={{ color: 'var(--lf-text-muted)' }}>Método</span>
                             <strong>{pagosTicket[0].metodo}</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
-                            <span style={{ color: '#64748b' }}>Monto del cobro</span>
+                            <span style={{ color: 'var(--lf-text-muted)' }}>Monto del cobro</span>
                             <strong>S/ {Number(pagosTicket[0].monto).toFixed(2)}</strong>
                           </div>
                           {pagosTicket[0].metodo === 'EFECTIVO' && (
                             <>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
-                                <span style={{ color: '#64748b' }}>Recibido del cliente</span>
+                                <span style={{ color: 'var(--lf-text-muted)' }}>Recibido del cliente</span>
                                 <strong>S/ {(Number(ticketSeleccionado.total) + Number(ticketSeleccionado.vuelto || 0)).toFixed(2)}</strong>
                               </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: Number(ticketSeleccionado.vuelto || 0) > 0 ? '#16a34a' : '#64748b' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: Number(ticketSeleccionado.vuelto || 0) > 0 ? '#16a34a' : 'var(--lf-text-muted)' }}>
                                 <span style={{ fontWeight: 600 }}>Vuelto entregado</span>
                                 <strong>S/ {Number(ticketSeleccionado.vuelto || 0).toFixed(2)}</strong>
                               </div>
@@ -794,10 +794,10 @@ export default function MisVentas() {
                         </>
                       ) : (
                         <div>
-                          <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>PAGO MIXTO:</p>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>PAGO MIXTO:</p>
                           {pagosTicket.map((p, i) => (
                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
-                              <span style={{ color: '#64748b' }}>{p.metodo}</span>
+                              <span style={{ color: 'var(--lf-text-muted)' }}>{p.metodo}</span>
                               <strong>S/ {Number(p.monto).toFixed(2)}</strong>
                             </div>
                           ))}
@@ -810,7 +810,7 @@ export default function MisVentas() {
 
             </div>
 
-            <div style={{ padding: '1.25rem 1.75rem', background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '1.25rem 1.75rem', background: 'linear-gradient(135deg, var(--lf-text), var(--lf-text))', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <p style={{ fontSize: '0.78rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: 0, opacity: 0.8 }}>Total</p>
               <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' }}>
                 S/ {Number(ticketSeleccionado.total).toFixed(2)}
@@ -822,12 +822,12 @@ export default function MisVentas() {
 
       {/* MODAL ANULAR (comprobante propio, buscado por número) */}
       {ventaParaAnular && (
-        <div role="dialog" aria-modal="true" data-keyboard-trap style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, padding: '1rem' }} onClick={() => !anulandoPropia && setVentaParaAnular(null)}>
+        <div role="dialog" aria-modal="true" data-keyboard-trap style={{ position: 'fixed', inset: 0, background: 'rgba(31, 26, 27, 0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100030, padding: '1rem' }} onClick={() => !anulandoPropia && setVentaParaAnular(null)}>
           <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 440, padding: '2rem', boxShadow: '0 25px 80px rgba(0,0,0,0.25)', animation: 'mvSlideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><UiIcon name="AlertTriangle" size={16} /></div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>Anular comprobante</h3>
-              <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0 0 4px' }}>Anular comprobante</h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--lf-text-muted)', margin: 0 }}>
                 {etiquetaComprobanteVisible(ventaParaAnular)} · S/ {Number(ventaParaAnular.total).toFixed(2)}
               </p>
             </div>
@@ -837,13 +837,13 @@ export default function MisVentas() {
               </p>
             </div>
             <div style={{ marginBottom: '1.2rem' }}>
-              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '0.4rem' }}>Motivo de anulación</label>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '0.4rem' }}>Motivo de anulación</label>
               <select value={motivoAnulacionPropia} onChange={e => setMotivoAnulacionPropia(e.target.value)} disabled={anulandoPropia} className="mv-input-apple" style={{ width: '100%' }}>
                 {MOTIVOS_ANULACION.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             {cargandoAvisoPropia && (
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', textAlign: 'center', marginBottom: '1rem' }}>Verificando datos de la venta...</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--lf-text-muted)', textAlign: 'center', marginBottom: '1rem' }}>Verificando datos de la venta...</p>
             )}
             {avisoAnulacionPropia?.requiereAviso && (
               <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px', marginBottom: '1.2rem' }}>
@@ -862,7 +862,7 @@ export default function MisVentas() {
               </div>
             )}
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => { setVentaParaAnular(null); setMsgAnulacionPropia(null); setMotivoAnulacionPropia(MOTIVOS_ANULACION[0]); }} disabled={anulandoPropia} data-enter-skip="true" tabIndex={-1} style={{ flex: 1, padding: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 12, fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer', color: '#475569' }}>
+              <button onClick={() => { setVentaParaAnular(null); setMsgAnulacionPropia(null); setMotivoAnulacionPropia(MOTIVOS_ANULACION[0]); }} disabled={anulandoPropia} data-enter-skip="true" tabIndex={-1} style={{ flex: 1, padding: '0.85rem', background: 'var(--lf-info-bg)', border: 'none', borderRadius: 12, fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer', color: '#52525B' }}>
                 Cancelar
               </button>
               <button data-enter-primary="true" onClick={handleAnularPropia} disabled={anulandoPropia || cargandoAvisoPropia || (avisoAnulacionPropia?.requiereAviso && !avisoLeidoPropia)} style={{ flex: 1, padding: '0.85rem', background: anulandoPropia ? '#fecaca' : '#dc2626', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: '0.92rem', cursor: (anulandoPropia || cargandoAvisoPropia || (avisoAnulacionPropia?.requiereAviso && !avisoLeidoPropia)) ? 'not-allowed' : 'pointer', color: 'white' }}>

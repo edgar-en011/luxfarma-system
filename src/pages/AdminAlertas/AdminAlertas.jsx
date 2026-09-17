@@ -599,7 +599,7 @@ export default function AdminAlertas() {
     try {
       const parsed = parsearBusquedaComprobante(comprobante);
       if (!parsed || parsed.modo !== 'serie-numero') {
-        throw new Error('Formato inválido. Usa: B004-10');
+        throw new Error('Formato inválido. Usa: NV01-10');
       }
       const ids = await resolverIdsVentaPorComprobante(supabase, comprobante);
       if (ids.length === 0) throw new Error(`No se encontró el comprobante ${comprobante}.`);
@@ -968,11 +968,11 @@ export default function AdminAlertas() {
               <p>Productos con stock por debajo del umbral mínimo (20 unds). Ordenados por criticidad.</p>
             </div>
             <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
-              <label style={{fontSize:'0.82rem', fontWeight:600, color:'#64748b'}}>Filtrar sede:</label>
+              <label style={{fontSize:'0.82rem', fontWeight:600, color:'var(--lf-text-muted)'}}>Filtrar sede:</label>
               <select
                 value={sedeFiltroReab}
                 onChange={e => setSedeFiltroReab(e.target.value)}
-                style={{padding:'0.4rem 0.7rem', borderRadius:'6px', border:'1px solid #e2e8f0', fontSize:'0.85rem', background:'#f8fafc', cursor:'pointer'}}
+                style={{padding:'0.4rem 0.7rem', borderRadius:'6px', border:'1px solid var(--lf-border)', fontSize:'0.85rem', background:'var(--lf-bg)', cursor:'pointer'}}
               >
                 <option value="TODAS">Todas las sedes</option>
                 {diccionarios.sucursales.map(s => (
@@ -989,7 +989,7 @@ export default function AdminAlertas() {
                 <div style={{fontWeight:800, fontSize:'1.6rem', color}}>
                   {reabFiltrado.filter(r => r.criticidad === key).length}
                 </div>
-                <div style={{fontSize:'0.75rem', color:'#64748b', fontWeight:600}}>{label}</div>
+                <div style={{fontSize:'0.75rem', color:'var(--lf-text-muted)', fontWeight:600}}>{label}</div>
               </div>
             ))}
           </div>
@@ -1012,16 +1012,16 @@ export default function AdminAlertas() {
                   reabFiltrado.map((item, i) => (
                     <tr key={i}>
                       <td>
-                        <strong style={{color:'#0f172a', display:'block'}}>{item.nombreProd}</strong>
-                        {item.codigoProd && <small style={{color:'#94a3b8'}}>Cód: {item.codigoProd}</small>}
+                        <strong style={{color:'var(--lf-text)', display:'block'}}>{item.nombreProd}</strong>
+                        {item.codigoProd && <small style={{color:'var(--lf-text-muted)'}}>Cód: {item.codigoProd}</small>}
                       </td>
-                      <td style={{color:'#475569', fontWeight:600}}>{item.sede || '—'}</td>
+                      <td style={{color:'#52525B', fontWeight:600}}>{item.sede || '—'}</td>
                       <td className="text-center">
                         <strong style={{fontSize:'1.1rem', color: item.color}}>
                           {item.stockTotal}
                         </strong>
                       </td>
-                      <td className="text-center" style={{color:'#94a3b8'}}>{item.umbral} unds</td>
+                      <td className="text-center" style={{color:'var(--lf-text-muted)'}}>{item.umbral} unds</td>
                       <td className="text-center">
                         <span style={{
                           background: item.color + '20',
@@ -1290,7 +1290,7 @@ export default function AdminAlertas() {
                         <button
                           onClick={() => buscarVentaDevolucion(datosTicket.comprobante || '')}
                           disabled={buscandoVenta || ticketActivo.estado === 'RESUELTO'}
-                          style={{width:'100%', padding:'0.7rem', background:'#172545', color:'white', border:'none', borderRadius:'8px', fontWeight:700, cursor:'pointer'}}
+                          style={{width:'100%', padding:'0.7rem', background:'var(--lf-primary-dark)', color:'white', border:'none', borderRadius:'8px', fontWeight:700, cursor:'pointer'}}
                         >
                           {buscandoVenta ? 'Buscando...' : ticketActivo.estado === 'RESUELTO' ? 'Ya fue procesado' : <><UiIcon name="Search" size={15} /> Cargar venta y procesar</>}
                         </button>
@@ -1308,9 +1308,9 @@ export default function AdminAlertas() {
                             {['ANULACION','NOTA_CREDITO'].map(t => (
                               <button key={t} type="button" onClick={() => setTipoDev(t)} style={{
                                 flex:1, padding:'0.4rem', borderRadius:'6px', fontWeight:600, fontSize:'0.8rem',
-                                border: tipoDev === t ? '2px solid #172545' : '2px solid #e2e8f0',
-                                background: tipoDev === t ? '#172545' : '#f8fafc',
-                                color: tipoDev === t ? 'white' : '#64748b', cursor:'pointer'
+                                border: tipoDev === t ? '2px solid var(--lf-primary-dark)' : '2px solid var(--lf-border)',
+                                background: tipoDev === t ? 'var(--lf-primary-dark)' : 'var(--lf-bg)',
+                                color: tipoDev === t ? 'white' : 'var(--lf-text-muted)', cursor:'pointer'
                               }}>
                                 {t === 'ANULACION' ? <><UiIcon name="Ban" size={14} /> Anulación total</> : <><UiIcon name="FileText" size={14} /> Nota de crédito</>}
                               </button>
@@ -1319,21 +1319,21 @@ export default function AdminAlertas() {
 
                           {/* Tabla de ítems con selector de cantidad */}
                           <table style={{width:'100%', borderCollapse:'collapse', marginBottom:'1rem', fontSize:'0.83rem'}}>
-                            <thead><tr style={{background:'#f1f5f9'}}>
+                            <thead><tr style={{background:'var(--lf-info-bg)'}}>
                               <th style={{padding:'6px 8px', textAlign:'left'}}>Producto</th>
                               <th style={{padding:'6px 8px', textAlign:'center'}}>Cant. vendida</th>
                               <th style={{padding:'6px 8px', textAlign:'center'}}>Cant. a devolver</th>
                             </tr></thead>
                             <tbody>
                               {detallesDev.map(d => (
-                                <tr key={d.id} style={{borderBottom:'1px solid #f1f5f9'}}>
+                                <tr key={d.id} style={{borderBottom:'1px solid var(--lf-info-bg)'}}>
                                   <td style={{padding:'6px 8px'}}>{d.nombreProducto}</td>
                                   <td style={{padding:'6px 8px', textAlign:'center'}}>{d.cantidad}</td>
                                   <td style={{padding:'6px 8px', textAlign:'center'}}>
                                     <input type="number" min="0" max={d.cantidad}
                                       value={cantidadesDev[d.id] ?? d.cantidad}
                                       onChange={e => setCantidadesDev(prev => ({...prev, [d.id]: Math.min(Number(e.target.value), d.cantidad)}))}
-                                      style={{width:'60px', textAlign:'center', border:'1px solid #cbd5e1', borderRadius:'4px', padding:'2px'}}
+                                      style={{width:'60px', textAlign:'center', border:'1px solid #E4E4E7', borderRadius:'4px', padding:'2px'}}
                                     />
                                   </td>
                                 </tr>
@@ -1342,7 +1342,7 @@ export default function AdminAlertas() {
                           </table>
 
                           <div style={{display:'flex', gap:'0.5rem'}}>
-                            <button type="button" data-enter-skip="true" tabIndex={-1} onClick={() => setVentaDev(null)} style={{flex:1, padding:'0.6rem', background:'#f1f5f9', border:'1px solid #e2e8f0', borderRadius:'8px', cursor:'pointer', fontWeight:600, color:'#64748b'}}>
+                            <button type="button" data-enter-skip="true" tabIndex={-1} onClick={() => setVentaDev(null)} style={{flex:1, padding:'0.6rem', background:'var(--lf-info-bg)', border:'1px solid var(--lf-border)', borderRadius:'8px', cursor:'pointer', fontWeight:600, color:'var(--lf-text-muted)'}}>
                               ← Cambiar comprobante
                             </button>
                             <button type="button" data-enter-primary="true" onClick={handleProcesarDevolucion} disabled={procesandoDev} style={{flex:2, padding:'0.6rem', background:'#dc2626', color:'white', border:'none', borderRadius:'8px', fontWeight:700, cursor:'pointer'}}>
@@ -1402,7 +1402,7 @@ export default function AdminAlertas() {
             </div>
             <button
               onClick={cargarDatos}
-              style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.4rem 0.9rem', fontSize: '0.82rem', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+              style={{ background: 'var(--lf-info-bg)', border: '1px solid var(--lf-border)', borderRadius: '8px', padding: '0.4rem 0.9rem', fontSize: '0.82rem', fontWeight: 600, color: '#52525B', cursor: 'pointer' }}
             ><UiIcon name="RefreshCw" size={15} /> Actualizar
             </button>
           </div>

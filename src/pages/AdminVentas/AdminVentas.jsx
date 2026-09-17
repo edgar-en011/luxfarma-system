@@ -43,9 +43,9 @@ import { nubefactIpcDisponible } from '../../services/nubefactService';
 
 /* Paleta con mejor contraste para barras apiladas / ranking */
 const AVATAR_COLORS = [
-  '#012B63', '#2563eb', '#0ea5e9', '#14b8a6',
-  '#22c55e', '#eab308', '#f97316', '#ef4444',
-  '#a855f7', '#ec4899',
+  '#A50F22', '#E11D2E', '#C8102E', '#1F8A4C',
+  '#1F8A4C', '#F2B84B', '#B7791F', '#B42318',
+  '#F2B84B', '#6B6264',
 ];
 
 /** Inicial + primer apellido, con trim (evita ". CABRERA" si nombres viene con espacio inicial). */
@@ -539,7 +539,7 @@ export default function AdminVentas() {
     }
   };
 
-  // Búsqueda por el número visible (SUNAT B004-10, NV01-5). También resuelve el interno
+  // Búsqueda por el número visible (NV01-10). También resuelve el interno
   // B001-x si alguien lo escribe. Sin filtro de fecha: encuentra aunque esté fuera del período.
   const buscarComprobanteGlobal = async (texto) => {
     setBuscandoComprobante(true);
@@ -753,7 +753,7 @@ export default function AdminVentas() {
     : vendedores.filter(v => ventas.some(vt => vt.id_usuario_vendedor === v.id && vt.id_sucursal === Number(filtroSucursal)));
 
   const badgeMetodo = (m) => m.toLowerCase().includes('yape') ? 'yape' : m.toLowerCase().includes('tarjeta') ? 'tarjeta' : m.toLowerCase().includes('mixto') ? 'mixto' : 'efectivo';
-  const estadoColor = (e) => e==='ACEPTADO'?{bg:'#dcfce7',c:'#16a34a'}:e==='ANULADO'?{bg:'#f1f5f9',c:'#64748b'}:e==='ERROR'||e==='RECHAZADO'?{bg:'#fee2e2',c:'#b91c1c'}:e==='SIN_CONFIRMAR'?{bg:'#ffedd5',c:'#c2410c'}:{bg:'#fef3c7',c:'#b45309'};
+  const estadoColor = (e) => e==='ACEPTADO'?{bg:'#dcfce7',c:'#16a34a'}:e==='ANULADO'?{bg:'var(--lf-info-bg)',c:'var(--lf-text-muted)'}:e==='ERROR'||e==='RECHAZADO'?{bg:'#fee2e2',c:'#b91c1c'}:e==='SIN_CONFIRMAR'?{bg:'#ffedd5',c:'#c2410c'}:{bg:'#fef3c7',c:'#b45309'};
 
   const labelFiltros = [
     `${fechaDesde} al ${fechaHasta}`,
@@ -778,17 +778,17 @@ export default function AdminVentas() {
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
       <title>Historial de Ventas - ${labelFiltros}</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 11px; color: #0f172a; margin: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 11px; color: var(--lf-text); margin: 20px; }
         h2 { font-size: 16px; margin-bottom: 4px; }
-        .sub { color: #64748b; font-size: 10px; margin-bottom: 16px; }
+        .sub { color: var(--lf-text-muted); font-size: 10px; margin-bottom: 16px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #172545; color: white; padding: 8px 6px; text-align: left; font-size: 10px; }
-        td { padding: 7px 6px; border-bottom: 1px solid #e2e8f0; }
-        tr:nth-child(even) td { background: #f8fafc; }
+        th { background: var(--lf-primary-dark); color: white; padding: 8px 6px; text-align: left; font-size: 10px; }
+        td { padding: 7px 6px; border-bottom: 1px solid var(--lf-border); }
+        tr:nth-child(even) td { background: var(--lf-bg); }
         .totales { margin-top: 16px; text-align: right; font-size: 13px; font-weight: bold; }
         @media print { button { display: none; } }
       </style></head><body>
-      <h2>Historial de Ventas - SALUD FUTURA</h2>
+      <h2>Historial de Ventas - LuxFarma</h2>
       <p class="sub">Filtros: ${labelFiltros}</p>
       <table>
         <thead><tr><th>#</th><th>Comprobante</th><th>Tipo</th><th>Sucursal</th><th>Vendedor</th><th>Fecha / Hora</th><th>Metodo</th><th>Total</th><th>Estado</th></tr></thead>
@@ -863,12 +863,12 @@ export default function AdminVentas() {
   const renderFilasComprobantes = (lista, { compact = false } = {}) => {
     const cols = compact ? 7 : 10;
     if (cargandoDia && compact) {
-      return <tr><td colSpan={cols} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando…</td></tr>;
+      return <tr><td colSpan={cols} style={{ textAlign: 'center', padding: '2rem', color: 'var(--lf-text-muted)' }}>Cargando…</td></tr>;
     }
     if (!lista.length) {
       return (
         <tr>
-          <td colSpan={cols} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+          <td colSpan={cols} style={{ textAlign: 'center', padding: '2rem', color: 'var(--lf-text-muted)' }}>
             Sin comprobantes este día
           </td>
         </tr>
@@ -885,14 +885,14 @@ export default function AdminVentas() {
               {etiquetaComprobanteVisible(v)}
             </strong>
             {!compact && (
-              <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '2px 0 0' }}>{v.tipo_comprobante}</p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>{v.tipo_comprobante}</p>
             )}
           </td>
-          {!compact && <td style={{ color: '#64748b' }}>{v.sucursal}</td>}
-          <td style={{ color: '#64748b', whiteSpace: 'nowrap' }} title={v.nombreCompleto || v.cajero}>
+          {!compact && <td style={{ color: 'var(--lf-text-muted)' }}>{v.sucursal}</td>}
+          <td style={{ color: 'var(--lf-text-muted)', whiteSpace: 'nowrap' }} title={v.nombreCompleto || v.cajero}>
             {v.cajero}
           </td>
-          <td style={{ color: '#64748b', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{hora}</td>
+          <td style={{ color: 'var(--lf-text-muted)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{hora}</td>
           <td>
             <span className={`av-pill av-pill-${badgeMetodo(v.metodoStr)}`} title={v.metodoStr}>
               {compact ? metodoCorto(v.metodoStr) : v.metodoStr}
@@ -956,31 +956,31 @@ export default function AdminVentas() {
   };
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 2.5rem' }}>
+    <div style={{ background: 'var(--lf-bg)', minHeight: '100vh', padding: '2rem 2.5rem' }}>
 
       <style>{`
         @keyframes appleFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes appleSlideUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .av-card-apple { background: white; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(15,23,42,0.04); }
+        .av-card-apple { background: white; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(31, 26, 27, 0.04); }
         .av-table-apple { width: 100%; border-collapse: collapse; }
-        .av-table-apple thead th { background: transparent; color: #94a3b8; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        .av-table-apple thead th { background: transparent; color: var(--lf-text-muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid var(--lf-info-bg); }
         .av-table-apple tbody tr { transition: background 0.15s ease; }
-        .av-table-apple tbody tr:hover { background: #f8fafc; }
-        .av-table-apple tbody td { padding: 1rem 1.25rem; font-size: 0.88rem; color: #0f172a; border-bottom: 1px solid #f1f5f9; }
+        .av-table-apple tbody tr:hover { background: var(--lf-bg); }
+        .av-table-apple tbody td { padding: 1rem 1.25rem; font-size: 0.88rem; color: var(--lf-text); border-bottom: 1px solid var(--lf-info-bg); }
         .av-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2px; }
         .av-pill-efectivo { background: #dcfce7; color: #166534; }
-        .av-pill-yape { background: #f3e8ff; color: #6b21a8; }
-        .av-pill-tarjeta { background: #dbeafe; color: #1e40af; }
+        .av-pill-yape { background: var(--lf-warning-bg); color: var(--lf-warning); }
+        .av-pill-tarjeta { background: var(--lf-primary-soft); color: var(--lf-primary-dark); }
         .av-pill-mixto { background: #fef3c7; color: #92400e; }
-        .av-btn-icon-apple { width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
-        .av-btn-icon-apple:hover { background: #e2e8f0; transform: scale(1.08); }
+        .av-btn-icon-apple { width: 32px; height: 32px; border-radius: 50%; background: var(--lf-info-bg); border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
+        .av-btn-icon-apple:hover { background: var(--lf-border); transform: scale(1.08); }
         .av-btn-anular { padding: 6px 14px; border-radius: 100px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
         .av-btn-anular:hover { background: #fee2e2; transform: scale(1.03); }
-        .av-btn-reimprimir { padding: 6px 14px; border-radius: 100px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-        .av-btn-reimprimir:hover { background: #dbeafe; transform: scale(1.03); }
+        .av-btn-reimprimir { padding: 6px 14px; border-radius: 100px; background: var(--lf-primary-light); color: var(--lf-primary-dark); border: 1px solid var(--lf-primary-soft); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .av-btn-reimprimir:hover { background: var(--lf-primary-soft); transform: scale(1.03); }
         .av-btn-reimprimir:disabled { opacity: 0.55; cursor: wait; transform: none; }
-        .av-input-apple { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 14px; font-size: 0.88rem; color: #0f172a; outline: none; transition: all 0.2s ease; font-family: inherit; }
-        .av-input-apple:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .av-input-apple { background: white; border: 1px solid var(--lf-border); border-radius: 10px; padding: 9px 14px; font-size: 0.88rem; color: var(--lf-text); outline: none; transition: all 0.2s ease; font-family: inherit; }
+        .av-input-apple:focus { border-color: var(--lf-primary); box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.1); }
         .av-content { animation: appleFadeIn 0.4s ease-out; }
       `}</style>
 
@@ -989,19 +989,19 @@ export default function AdminVentas() {
         {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 0.4rem' }}><UiIcon name="BarChart3" size={15} /> Administración
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 0.4rem' }}><UiIcon name="BarChart3" size={15} /> Administración
             </p>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--lf-text)', margin: 0, letterSpacing: '-0.02em' }}>
               Historial de Ventas
             </h1>
-            <p style={{ fontSize: '0.95rem', color: '#64748b', margin: '0.3rem 0 0' }}>
+            <p style={{ fontSize: '0.95rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>
               Administra y supervisa todas las transacciones · {fechaHoyStr}
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.6rem' }}>
-            <button type="button" onClick={exportarPDF} style={{ padding: '10px 18px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: '0.85rem', fontWeight: 600, color: '#475569', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}><UiIcon name="FileText" size={15} /> PDF
+            <button type="button" onClick={exportarPDF} style={{ padding: '10px 18px', background: 'white', border: '1px solid var(--lf-border)', borderRadius: 12, fontSize: '0.85rem', fontWeight: 600, color: '#52525B', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}><UiIcon name="FileText" size={15} /> PDF
             </button>
-            <button type="button" onClick={exportarExcel} style={{ padding: '10px 18px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: '0.85rem', fontWeight: 600, color: '#475569', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}><UiIcon name="BarChart3" size={15} /> Excel
+            <button type="button" onClick={exportarExcel} style={{ padding: '10px 18px', background: 'white', border: '1px solid var(--lf-border)', borderRadius: 12, fontSize: '0.85rem', fontWeight: 600, color: '#52525B', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}><UiIcon name="BarChart3" size={15} /> Excel
             </button>
           </div>
         </div>
@@ -1058,35 +1058,35 @@ export default function AdminVentas() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
           <div className="av-card-apple" style={{ padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Total ventas</p>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#dbeafe,#bfdbfe)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Wallet" size={16} /></div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Total ventas</p>
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,var(--lf-primary-soft),var(--lf-primary-soft))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Wallet" size={16} /></div>
             </div>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
               S/ {kpisFiltrados.total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.3rem 0 0' }}>Período seleccionado</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>Período seleccionado</p>
           </div>
 
           <div className="av-card-apple" style={{ padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Operaciones</p>
+              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Operaciones</p>
               <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#dcfce7,#bbf7d0)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Receipt" size={16} /></div>
             </div>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
               {kpisFiltrados.operaciones}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.3rem 0 0' }}>Ventas registradas</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>Ventas registradas</p>
           </div>
 
           <div className="av-card-apple" style={{ padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Ticket promedio</p>
+              <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Ticket promedio</p>
               <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#fef3c7,#fde68a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="BarChart3" size={16} /></div>
             </div>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0.3rem 0 0', letterSpacing: '-0.02em' }}>
               S/ {ticketPromedio.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.3rem 0 0' }}>Por operación</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '0.3rem 0 0' }}>Por operación</p>
           </div>
         </div>
 
@@ -1132,13 +1132,13 @@ export default function AdminVentas() {
               </button>
               {anioTodo != null && (
                 <>
-                  <span style={{ color: '#94a3b8' }}>›</span>
+                  <span style={{ color: 'var(--lf-text-muted)' }}>›</span>
                   <button type="button" className="av-chip" onClick={() => { cargarTodoMeses(anioTodo); setDiaSeleccionado(null); }}>{anioTodo}</button>
                 </>
               )}
               {mesTodo != null && anioTodo != null && (
                 <>
-                  <span style={{ color: '#94a3b8' }}>›</span>
+                  <span style={{ color: 'var(--lf-text-muted)' }}>›</span>
                   <button
                     type="button"
                     className="av-chip"
@@ -1230,40 +1230,40 @@ export default function AdminVentas() {
           <div className="av-card-apple" style={{ marginBottom: '1.5rem', overflow: 'hidden' }}>
             <button onClick={() => setMostrarVendedores(!mostrarVendedores)} style={{ width: '100%', padding: '1.25rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#e0e7ff,#c7d2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Users" size={16} /></div>
+                <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,var(--lf-primary-light),var(--lf-primary-soft))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}><UiIcon name="Users" size={16} /></div>
                 <div>
-                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Rendimiento por vendedor</p>
-                  <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 0' }}>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--lf-text)', margin: 0 }}>Rendimiento por vendedor</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>
                     {vendedores.filter(v=>v.activo).length} en turno · {vendedores.length} {vendedores.length === 1 ? 'vendedor' : 'vendedores'}
                   </p>
                 </div>
               </div>
-              <span style={{ fontSize: '1.3rem', color: '#94a3b8', transform: mostrarVendedores ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }}>⌄</span>
+              <span style={{ fontSize: '1.3rem', color: 'var(--lf-text-muted)', transform: mostrarVendedores ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }}>⌄</span>
             </button>
 
             {mostrarVendedores && (
-              <div style={{ borderTop: '1px solid #f1f5f9', padding: '1.5rem', animation: 'appleFadeIn 0.3s ease-out' }}>
+              <div style={{ borderTop: '1px solid var(--lf-info-bg)', padding: '1.5rem', animation: 'appleFadeIn 0.3s ease-out' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
                   {vendedores.map((v, i) => {
                     const pct = maxVendedor > 0 ? (v.total/maxVendedor)*100 : 0;
                     const seleccionado = vendedorExpandido?.id === v.id;
                     return (
                       <div key={v.id} onClick={() => toggleVendedor(v)}
-                        style={{ background: seleccionado ? 'linear-gradient(135deg, #f8fafc, #ffffff)' : 'white', border: seleccionado ? `2px solid ${v.color}` : '1px solid #f1f5f9', borderRadius: 14, padding: '1rem 1.1rem', cursor: 'pointer', position: 'relative', transition: 'all 0.2s ease', boxShadow: seleccionado ? `0 8px 24px ${v.color}25` : '0 1px 2px rgba(0,0,0,0.03)' }}>
+                        style={{ background: seleccionado ? 'linear-gradient(135deg, var(--lf-bg), #ffffff)' : 'white', border: seleccionado ? `2px solid ${v.color}` : '1px solid var(--lf-info-bg)', borderRadius: 14, padding: '1rem 1.1rem', cursor: 'pointer', position: 'relative', transition: 'all 0.2s ease', boxShadow: seleccionado ? `0 8px 24px ${v.color}25` : '0 1px 2px rgba(0,0,0,0.03)' }}>
                         {v.activo && <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 0 3px rgba(16,185,129,0.2)' }} />}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                           <div style={{ width: 42, height: 42, borderRadius: '50%', background: v.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem' }}>{getInitials(v.nombre)}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '0.92rem', fontWeight: 700, color: '#0f172a', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.nombre}</p>
-                            <p style={{ fontSize: '0.72rem', color: v.activo ? '#10b981' : '#94a3b8', margin: '2px 0 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>{v.activo ? <><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} /> En turno</> : '○ Cerrado'} · Rank #{i+1}</p>
+                            <p style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--lf-text)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.nombre}</p>
+                            <p style={{ fontSize: '0.72rem', color: v.activo ? '#10b981' : 'var(--lf-text-muted)', margin: '2px 0 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>{v.activo ? <><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} /> En turno</> : '○ Cerrado'} · Rank #{i+1}</p>
                           </div>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 10 }}>
-                          <div><p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: 0, fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Total</p><p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: '2px 0 0' }}>S/ {v.total.toFixed(2)}</p></div>
-                          <div><p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: 0, fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Ventas</p><p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: '2px 0 0' }}>{v.operaciones}</p></div>
-                          <div><p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: 0, fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Ticket</p><p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: '2px 0 0' }}>S/ {v.ticketPromedio.toFixed(2)}</p></div>
+                          <div><p style={{ fontSize: '0.65rem', color: 'var(--lf-text-muted)', margin: 0, fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Total</p><p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--lf-text)', margin: '2px 0 0' }}>S/ {v.total.toFixed(2)}</p></div>
+                          <div><p style={{ fontSize: '0.65rem', color: 'var(--lf-text-muted)', margin: 0, fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Ventas</p><p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--lf-text)', margin: '2px 0 0' }}>{v.operaciones}</p></div>
+                          <div><p style={{ fontSize: '0.65rem', color: 'var(--lf-text-muted)', margin: 0, fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Ticket</p><p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--lf-text)', margin: '2px 0 0' }}>S/ {v.ticketPromedio.toFixed(2)}</p></div>
                         </div>
-                        <div style={{ height: 6, background: '#f1f5f9', borderRadius: 100, overflow: 'hidden' }}>
+                        <div style={{ height: 6, background: 'var(--lf-info-bg)', borderRadius: 100, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: v.color, transition: 'width 0.5s ease', borderRadius: 100 }} />
                         </div>
                       </div>
@@ -1272,17 +1272,17 @@ export default function AdminVentas() {
                 </div>
 
                 {vendedorExpandido && (
-                  <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: 14, animation: 'appleSlideUp 0.3s ease-out' }}>
+                  <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'var(--lf-bg)', borderRadius: 14, animation: 'appleSlideUp 0.3s ease-out' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{ width: 32, height: 32, borderRadius: '50%', background: vendedorExpandido.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.78rem' }}>{getInitials(vendedorExpandido.nombre)}</div>
-                        <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Ventas de {vendedorExpandido.nombre}</p>
+                        <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--lf-text)', margin: 0 }}>Ventas de {vendedorExpandido.nombre}</p>
                       </div>
                       <button onClick={() => { setVendedorExpandido(null); setVentasVendedor([]); }} className="av-btn-icon-apple"><UiIcon name="X" size={16} /></button>
                     </div>
 
                     {ventasVendedor.length === 0 ? (
-                      <p style={{ textAlign: 'center', color: '#94a3b8', padding: '1rem', fontSize: '0.85rem' }}>No hay ventas en este período.</p>
+                      <p style={{ textAlign: 'center', color: 'var(--lf-text-muted)', padding: '1rem', fontSize: '0.85rem' }}>No hay ventas en este período.</p>
                     ) : (
                       <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                         <table className="av-table-apple">
@@ -1297,9 +1297,9 @@ export default function AdminVentas() {
                                   <td>
                                     {vt.id_turno != null
                                       ? <span className="av-turno-chip">#{String(vt.id_turno).padStart(4, '0')}</span>
-                                      : <span style={{ color: '#cbd5e1' }}>—</span>}
+                                      : <span style={{ color: '#E4E4E7' }}>—</span>}
                                   </td>
-                                  <td style={{color:'#64748b'}}>{new Date(vt.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</td>
+                                  <td style={{color:'var(--lf-text-muted)'}}>{new Date(vt.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</td>
                                   <td><span className={`av-pill av-pill-${badgeMetodo(vt.metodoStr)}`}>{vt.metodoStr}</span></td>
                                   <td><strong>S/ {Number(vt.total).toFixed(2)}</strong></td>
                                   <td><span className="av-pill" style={{ background: sc.bg, color: sc.c }}>{anulada ? 'ANULADO' : (vt.estado_sunat||'PENDIENTE')}</span></td>
@@ -1332,22 +1332,22 @@ export default function AdminVentas() {
 
         {/* TABLA PRINCIPAL — vista clásica (bajo el explorador fullscreen) */}
         <div className="av-card-apple" style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--lf-info-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <p style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+              <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--lf-text)', margin: 0 }}>
                 {enBusquedaComprobante ? `Resultados para "${busquedaComprobante.trim()}"` : 'Comprobantes registrados'}
               </p>
-              <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 0' }}>
+              <p style={{ fontSize: '0.78rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>
                 {enBusquedaComprobante
                   ? `${filasTabla.length} ${filasTabla.length === 1 ? 'resultado' : 'resultados'} · todo el historial, sin importar el período`
                   : `${ventasFiltradas.length} ${ventasFiltradas.length === 1 ? 'venta' : 'ventas'}`}
               </p>
             </div>
             {enBusquedaComprobante ? (
-              <button onClick={() => setBusquedaComprobante('')} style={{ padding: '8px 14px', background: '#f1f5f9', border: 'none', borderRadius: 10, fontSize: '0.8rem', fontWeight: 600, color: '#475569', cursor: 'pointer' }}><UiIcon name="X" size={15} /> Limpiar búsqueda
+              <button onClick={() => setBusquedaComprobante('')} style={{ padding: '8px 14px', background: 'var(--lf-info-bg)', border: 'none', borderRadius: 10, fontSize: '0.8rem', fontWeight: 600, color: '#52525B', cursor: 'pointer' }}><UiIcon name="X" size={15} /> Limpiar búsqueda
               </button>
             ) : (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--lf-text-muted)', fontWeight: 600 }}>
                 <input type="checkbox" checked={mostrarGanancia} onChange={e => setMostrarGanancia(e.target.checked)} />
                 Mostrar ganancia (costo catálogo)
               </label>
@@ -1373,11 +1373,11 @@ export default function AdminVentas() {
               </thead>
               <tbody>
                 {loading || (enBusquedaComprobante && buscandoComprobante) ? (
-                  <tr><td colSpan={mostrarGanancia ? 11 : 10} style={{textAlign:'center',padding:'3rem',color:'#94a3b8'}}>{enBusquedaComprobante ? 'Buscando...' : 'Cargando registros...'}</td></tr>
+                  <tr><td colSpan={mostrarGanancia ? 11 : 10} style={{textAlign:'center',padding:'3rem',color:'var(--lf-text-muted)'}}>{enBusquedaComprobante ? 'Buscando...' : 'Cargando registros...'}</td></tr>
                 ) : filasTabla.length === 0 ? (
-                  <tr><td colSpan={mostrarGanancia ? 11 : 10} style={{textAlign:'center',padding:'3rem',color:'#94a3b8'}}>
+                  <tr><td colSpan={mostrarGanancia ? 11 : 10} style={{textAlign:'center',padding:'3rem',color:'var(--lf-text-muted)'}}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><UiIcon name="ClipboardList" size={16} /></div>
-                    <p style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569', margin: 0 }}>No se encontraron ventas</p>
+                    <p style={{ fontSize: '0.95rem', fontWeight: 600, color: '#52525B', margin: 0 }}>No se encontraron ventas</p>
                     <p style={{ fontSize: '0.8rem', margin: '4px 0 0' }}>{enBusquedaComprobante ? 'Ningún comprobante coincide con ese número.' : 'Prueba con otro rango o ajusta los filtros.'}</p>
                   </td></tr>
                 ) : (() => {
@@ -1404,22 +1404,22 @@ export default function AdminVentas() {
                     }
                     rows.push(
                       <tr key={v.id_venta} style={{ opacity: anulada ? 0.5 : 1 }}>
-                        <td style={{color:'#94a3b8',fontWeight:600}}>{(enBusquedaComprobante ? 0 : indexOfFirst)+index+1}</td>
+                        <td style={{color:'var(--lf-text-muted)',fontWeight:600}}>{(enBusquedaComprobante ? 0 : indexOfFirst)+index+1}</td>
                         <td>
                           <strong style={{ textDecoration: anulada ? 'line-through' : 'none' }}>{etiquetaComprobanteVisible(v)}</strong>
-                          <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '2px 0 0' }}>{v.tipo_comprobante}</p>
+                          <p style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', margin: '2px 0 0' }}>{v.tipo_comprobante}</p>
                         </td>
-                        <td style={{color:'#64748b'}}>{v.sucursal}</td>
-                        <td style={{color:'#64748b'}}>{v.cajero}</td>
+                        <td style={{color:'var(--lf-text-muted)'}}>{v.sucursal}</td>
+                        <td style={{color:'var(--lf-text-muted)'}}>{v.cajero}</td>
                         <td>
                           {v.id_turno != null
                             ? <span className="av-turno-chip" title="Turno de caja en el que se registró esta venta">#{String(v.id_turno).padStart(4, '0')}</span>
-                            : <span style={{ color: '#cbd5e1', fontSize: '0.78rem' }}>—</span>}
+                            : <span style={{ color: '#E4E4E7', fontSize: '0.78rem' }}>—</span>}
                         </td>
-                        <td style={{color:'#64748b'}}>{new Date(v.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</td>
+                        <td style={{color:'var(--lf-text-muted)'}}>{new Date(v.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</td>
                         <td><span className={`av-pill av-pill-${badgeMetodo(v.metodoStr)}`}>{v.metodoStr}</span></td>
                         <td><strong>S/ {Number(v.total).toFixed(2)}</strong></td>
-                        {mostrarGanancia && <td style={{color: anulada ? '#94a3b8' : '#16a34a', fontWeight:600}}>S/ {v.ganancia.toFixed(2)}</td>}
+                        {mostrarGanancia && <td style={{color: anulada ? 'var(--lf-text-muted)' : '#16a34a', fontWeight:600}}>S/ {v.ganancia.toFixed(2)}</td>}
                         <td><span className="av-pill" style={{ background: sc.bg, color: sc.c }}>{anulada ? 'ANULADA' : (v.estado_sunat || 'PENDIENTE')}</span></td>
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
@@ -1447,9 +1447,9 @@ export default function AdminVentas() {
 
           {!enBusquedaComprobante && (
             <>
-              <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                  Mostrando <strong style={{ color: '#0f172a' }}>{ventasFiltradas.length===0?0:indexOfFirst+1} – {Math.min(indexOfLast,ventasFiltradas.length)}</strong> de <strong style={{ color: '#0f172a' }}>{ventasFiltradas.length}</strong>
+              <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--lf-info-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ fontSize: '0.82rem', color: 'var(--lf-text-muted)' }}>
+                  Mostrando <strong style={{ color: 'var(--lf-text)' }}>{ventasFiltradas.length===0?0:indexOfFirst+1} – {Math.min(indexOfLast,ventasFiltradas.length)}</strong> de <strong style={{ color: 'var(--lf-text)' }}>{ventasFiltradas.length}</strong>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <select value={filasPorPagina} onChange={e => { setFilasPorPagina(Number(e.target.value)); setPaginaActual(1); }} className="av-input-apple" style={{ padding: '6px 10px', fontSize: '0.8rem' }}>
@@ -1458,18 +1458,18 @@ export default function AdminVentas() {
                     <option value={50}>50 / página</option>
                   </select>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    <button disabled={paginaActual===1} onClick={() => setPaginaActual(p=>p-1)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: paginaActual===1 ? 'not-allowed' : 'pointer', color: '#475569', opacity: paginaActual===1 ? 0.4 : 1 }}>‹</button>
-                    <div style={{ minWidth: 32, height: 32, borderRadius: 8, background: '#0f172a', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '0.82rem', padding: '0 10px' }}>{paginaActual}</div>
-                    <button disabled={paginaActual===totalPaginas||totalPaginas===0} onClick={() => setPaginaActual(p=>p+1)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: (paginaActual===totalPaginas||totalPaginas===0) ? 'not-allowed' : 'pointer', color: '#475569', opacity: (paginaActual===totalPaginas||totalPaginas===0) ? 0.4 : 1 }}>›</button>
+                    <button disabled={paginaActual===1} onClick={() => setPaginaActual(p=>p-1)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--lf-border)', background: 'white', cursor: paginaActual===1 ? 'not-allowed' : 'pointer', color: '#52525B', opacity: paginaActual===1 ? 0.4 : 1 }}>‹</button>
+                    <div style={{ minWidth: 32, height: 32, borderRadius: 8, background: 'var(--lf-primary-dark)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '0.82rem', padding: '0 10px' }}>{paginaActual}</div>
+                    <button disabled={paginaActual===totalPaginas||totalPaginas===0} onClick={() => setPaginaActual(p=>p+1)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--lf-border)', background: 'white', cursor: (paginaActual===totalPaginas||totalPaginas===0) ? 'not-allowed' : 'pointer', color: '#52525B', opacity: (paginaActual===totalPaginas||totalPaginas===0) ? 0.4 : 1 }}>›</button>
                   </div>
                 </div>
               </div>
 
-              <div style={{ padding: '1rem 1.5rem', background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', margin: 0 }}>
+              <div style={{ padding: '1rem 1.5rem', background: 'linear-gradient(135deg, var(--lf-bg), var(--lf-info-bg))', borderTop: '1px solid var(--lf-info-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', margin: 0 }}>
                   Total del período {(filtroVendedor !== 'todos' || filtroSucursal !== 'todas') ? '(filtrado)' : ''}
                 </p>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--lf-text)' }}>
                   S/ {kpisFiltrados.total.toLocaleString('en-US',{minimumFractionDigits:2})}
                 </div>
               </div>
@@ -1481,12 +1481,12 @@ export default function AdminVentas() {
 
       {/* MODAL ANULAR */}
       {ventaAAnular && (
-        <div role="dialog" aria-modal="true" data-keyboard-trap style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100032, padding: '1rem' }} onClick={() => !anulando && setVentaAAnular(null)}>
+        <div role="dialog" aria-modal="true" data-keyboard-trap style={{ position: 'fixed', inset: 0, background: 'rgba(31, 26, 27, 0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100032, padding: '1rem' }} onClick={() => !anulando && setVentaAAnular(null)}>
           <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 440, padding: '2rem', boxShadow: '0 25px 80px rgba(0,0,0,0.25)', animation: 'appleSlideUp 0.3s ease' }} onClick={e => e.stopPropagation()}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><UiIcon name="AlertTriangle" size={16} /></div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>Anular comprobante</h3>
-              <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--lf-text)', margin: '0 0 4px' }}>Anular comprobante</h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--lf-text-muted)', margin: 0 }}>
                 {etiquetaComprobanteVisible(ventaAAnular)} · S/ {Number(ventaAAnular.total).toFixed(2)}
               </p>
             </div>
@@ -1496,13 +1496,13 @@ export default function AdminVentas() {
               </p>
             </div>
             <div style={{ marginBottom: '1.2rem' }}>
-              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '0.4rem' }}>Motivo de anulación</label>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '0.4rem' }}>Motivo de anulación</label>
               <select value={motivoAnulacion} onChange={e => setMotivoAnulacion(e.target.value)} disabled={anulando} className="av-input-apple" style={{ width: '100%' }}>
                 {motivosAnulacion.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             {cargandoAviso && (
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', textAlign: 'center', marginBottom: '1rem' }}>Verificando datos de la venta...</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--lf-text-muted)', textAlign: 'center', marginBottom: '1rem' }}>Verificando datos de la venta...</p>
             )}
             {avisoAnulacion?.requiereAviso && (
               <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px', marginBottom: '1.2rem' }}>
@@ -1521,7 +1521,7 @@ export default function AdminVentas() {
               </div>
             )}
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => { setVentaAAnular(null); setMsgAnulacion(null); setMotivoAnulacion('Error en la emisión'); }} disabled={anulando} data-enter-skip="true" tabIndex={-1} style={{ flex: 1, padding: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 12, fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer', color: '#475569' }}>
+              <button onClick={() => { setVentaAAnular(null); setMsgAnulacion(null); setMotivoAnulacion('Error en la emisión'); }} disabled={anulando} data-enter-skip="true" tabIndex={-1} style={{ flex: 1, padding: '0.85rem', background: 'var(--lf-info-bg)', border: 'none', borderRadius: 12, fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer', color: '#52525B' }}>
                 Cancelar
               </button>
               <button data-enter-primary="true" onClick={handleAnularVenta} disabled={anulando || cargandoAviso || (avisoAnulacion?.requiereAviso && !avisoLeido)} style={{ flex: 1, padding: '0.85rem', background: anulando ? '#fecaca' : '#dc2626', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: '0.92rem', cursor: (anulando || cargandoAviso || (avisoAnulacion?.requiereAviso && !avisoLeido)) ? 'not-allowed' : 'pointer', color: 'white' }}>
@@ -1541,12 +1541,12 @@ export default function AdminVentas() {
 
       {/* MODAL DETALLE */}
       {ventaSeleccionada && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100031, padding: '1rem' }} onClick={() => setVentaSeleccionada(null)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(31, 26, 27, 0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100031, padding: '1rem' }} onClick={() => setVentaSeleccionada(null)}>
           <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520, maxHeight: '90vh', overflow: 'hidden', boxShadow: '0 25px 80px rgba(0,0,0,0.25)', animation: 'appleSlideUp 0.3s ease', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: '1.5rem 1.75rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '1.5rem 1.75rem', borderBottom: '1px solid var(--lf-info-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Comprobante</p>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: '2px 0 0' }}>{etiquetaComprobanteVisible(ventaSeleccionada)}</h3>
+                <p style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Comprobante</p>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--lf-text)', margin: '2px 0 0' }}>{etiquetaComprobanteVisible(ventaSeleccionada)}</h3>
               </div>
               <button onClick={() => setVentaSeleccionada(null)} className="av-btn-icon-apple">✕</button>
             </div>
@@ -1560,29 +1560,29 @@ export default function AdminVentas() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
                 <div>
-                  <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Cajero</p>
-                  <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{ventaSeleccionada.cajero}</p>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Cajero</p>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{ventaSeleccionada.cajero}</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Sucursal</p>
-                  <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{ventaSeleccionada.sucursal}</p>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Sucursal</p>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{ventaSeleccionada.sucursal}</p>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Cliente</p>
-                  <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{ventaSeleccionada.cliente || 'Consumidor final'}</p>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Cliente</p>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{ventaSeleccionada.cliente || 'Consumidor final'}</p>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Fecha y hora</p>
-                  <p style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>{new Date(ventaSeleccionada.created_at).toLocaleString('es-PE')}</p>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--lf-text-muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', margin: 0 }}>Fecha y hora</p>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--lf-text)', fontWeight: 600, margin: '2px 0 0' }}>{new Date(ventaSeleccionada.created_at).toLocaleString('es-PE')}</p>
                 </div>
               </div>
 
-              <div style={{ background: '#f8fafc', borderRadius: 12, overflow: 'hidden', marginBottom: '1rem' }}>
+              <div style={{ background: 'var(--lf-bg)', borderRadius: 12, overflow: 'hidden', marginBottom: '1rem' }}>
                 <table className="av-table-apple">
                   <thead><tr><th>Cant.</th><th>Producto</th><th style={{textAlign:'right'}}>Subtotal</th></tr></thead>
                   <tbody>
                     {cargandoDetalle
-                      ? <tr><td colSpan="3" style={{textAlign:'center',color:'#94a3b8'}}>Cargando...</td></tr>
+                      ? <tr><td colSpan="3" style={{textAlign:'center',color:'var(--lf-text-muted)'}}>Cargando...</td></tr>
                       : detallesVenta.map((d,i) => (
                         <tr key={i}>
                           <td><strong>{d.cantidad}</strong></td>
@@ -1595,23 +1595,23 @@ export default function AdminVentas() {
               </div>
 
               {pagosVenta.length > 0 && (
-                <div style={{ padding: '1rem 1.2rem', background: '#f8fafc', borderRadius: 12, marginBottom: '1rem' }}>
-                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', margin: '0 0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}><UiIcon name="CreditCard" size={15} /> Forma de pago</p>
+                <div style={{ padding: '1rem 1.2rem', background: 'var(--lf-bg)', borderRadius: 12, marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#52525B', margin: '0 0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}><UiIcon name="CreditCard" size={15} /> Forma de pago</p>
 
                   {pagosVenta.length === 1 ? (
                     <>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
-                        <span style={{ color: '#64748b' }}>Método</span>
+                        <span style={{ color: 'var(--lf-text-muted)' }}>Método</span>
                         <strong>{pagosVenta[0].metodo}</strong>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
-                        <span style={{ color: '#64748b' }}>Monto pagado</span>
+                        <span style={{ color: 'var(--lf-text-muted)' }}>Monto pagado</span>
                         <strong>S/ {Number(pagosVenta[0].monto).toFixed(2)}</strong>
                       </div>
                       {pagosVenta[0].metodo === 'EFECTIVO' && ventaSeleccionada.vuelto > 0 && (
                         <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
-                            <span style={{ color: '#64748b' }}>Recibido del cliente</span>
+                            <span style={{ color: 'var(--lf-text-muted)' }}>Recibido del cliente</span>
                             <strong>S/ {(Number(ventaSeleccionada.total) + Number(ventaSeleccionada.vuelto)).toFixed(2)}</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: '#16a34a' }}>
@@ -1623,10 +1623,10 @@ export default function AdminVentas() {
                     </>
                   ) : (
                     <div>
-                      <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>PAGO MIXTO:</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>PAGO MIXTO:</p>
                       {pagosVenta.map((p, i) => (
                         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
-                          <span style={{ color: '#64748b' }}>{p.metodo}</span>
+                          <span style={{ color: 'var(--lf-text-muted)' }}>{p.metodo}</span>
                           <strong>S/ {Number(p.monto).toFixed(2)}</strong>
                         </div>
                       ))}
@@ -1634,7 +1634,7 @@ export default function AdminVentas() {
                   )}
 
                   {ventaSeleccionada.descuento > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginTop: 10, paddingTop: 10, borderTop: '1px dashed #cbd5e1', color: '#dc2626' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginTop: 10, paddingTop: 10, borderTop: '1px dashed #E4E4E7', color: '#dc2626' }}>
                       <span style={{ fontWeight: 600 }}>Descuento aplicado</span>
                       <strong>- S/ {Number(ventaSeleccionada.descuento).toFixed(2)}</strong>
                     </div>
@@ -1643,7 +1643,7 @@ export default function AdminVentas() {
               )}
             </div>
 
-            <div style={{ padding: '1.25rem 1.75rem', background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '1.25rem 1.75rem', background: 'linear-gradient(135deg, var(--lf-text), var(--lf-text))', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <p style={{ fontSize: '0.78rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', margin: 0, opacity: 0.8 }}>Total</p>
               <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' }}>S/ {Number(ventaSeleccionada.total).toFixed(2)}</h2>
             </div>

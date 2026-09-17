@@ -1,12 +1,12 @@
 /**
  * Adaptador offline unificado.
  * - Electron → SQLite (main process vía IPC)
- * - Web/PWA → IndexedDB (misma DB saludfutura_offline)
+ * - Web/PWA → IndexedDB (misma DB luxfarma_offline)
  */
 
 import { isElectronApp } from './electronBridge'
 
-const DB_NAME = 'saludfutura_offline'
+const DB_NAME = 'luxfarma_offline'
 /** v5: stores de formas/unidades en web (create-if-missing en upgrade). */
 const DB_VERSION = 5
 const STORE_VENTAS = 'ventas_pendientes'

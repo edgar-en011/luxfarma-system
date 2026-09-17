@@ -59,8 +59,8 @@ export default function ReautenticacionModal({ visible, mensaje, onConfirmar, on
   return (
     <div className="modal-overlay-strict" style={{ zIndex: 100060 }} role="dialog" aria-modal="true" data-keyboard-trap>
       <div style={{ background: 'white', borderRadius: 16, padding: '2rem', width: '100%', maxWidth: 380, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)' }}>
-        <h3 style={{ margin: '0 0 0.5rem', color: '#0f172a', fontSize: '1.15rem' }}><UiIcon name="Lock" size={15} /> Confirma tu contraseña</h3>
-        <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.2rem' }}>
+        <h3 style={{ margin: '0 0 0.5rem', color: 'var(--lf-text)', fontSize: '1.15rem' }}><UiIcon name="Lock" size={15} /> Confirma tu contraseña</h3>
+        <p style={{ fontSize: '0.85rem', color: 'var(--lf-text-muted)', marginBottom: '1.2rem' }}>
           {mensaje || 'Esta acción requiere confirmar tu contraseña de administrador.'}
         </p>
         <form onSubmit={handleConfirmar}>
@@ -70,15 +70,15 @@ export default function ReautenticacionModal({ visible, mensaje, onConfirmar, on
             value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder="Tu contraseña"
-            style={{ width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.95rem', marginBottom: error ? '0.4rem' : '1rem', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '0.7rem', border: '1px solid #E4E4E7', borderRadius: 8, fontSize: '0.95rem', marginBottom: error ? '0.4rem' : '1rem', boxSizing: 'border-box' }}
             required
           />
           {error && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: '0 0 1rem', fontWeight: 600 }}>{error}</p>}
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button type="button" data-enter-skip="true" tabIndex={-1} onClick={cerrar} style={{ flex: 1, padding: '0.7rem', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', color: '#475569' }}>
+            <button type="button" data-enter-skip="true" tabIndex={-1} onClick={cerrar} style={{ flex: 1, padding: '0.7rem', background: 'var(--lf-info-bg)', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', color: '#52525B' }}>
               Cancelar
             </button>
-            <button type="submit" disabled={verificando} style={{ flex: 1, padding: '0.7rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
+            <button type="submit" disabled={verificando} style={{ flex: 1, padding: '0.7rem', background: 'var(--lf-primary-dark)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
               {verificando ? 'Verificando...' : 'Confirmar'}
             </button>
           </div>

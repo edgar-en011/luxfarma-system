@@ -7,7 +7,7 @@ import ProductoFormModal from '../../components/ProductoFormModal';
 import SearchableSelect from '../../components/SearchableSelect';
 import SmartDateInput from '../../components/SmartDateInput';
 import UiIcon from '../../components/UiIcon';
-import icono from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
 import { filaProductoPrecios } from '../../utils/productoPrecios';
 import { formatSolesUnitario } from '../../utils/precioExacto';
 import { formatearPorcentajeGanancia } from '../../utils/porcentajeGanancia';
@@ -28,12 +28,14 @@ import { fetchAllRows } from '../../utils/supabasePage';
 // Similares/Complementarios del producto seleccionado — tabla productos_relacionados).
 // Duplicar/Proveedor/Reporte (Fase 3) siguen pendientes.
 
-// Indicador de carga reutilizado en la tabla y en Inversión Global — mismo logo del
-// sidebar (src/assets/icono.png) con un pulso suave, en vez de un spinner genérico.
+// Indicador de carga reutilizado en la tabla y en Inversión Global — mismo logo
+// de marca con un pulso suave, en vez de un spinner genérico.
 function LogoCargando({ texto }) {
   return (
     <div className="prod-loading-logo">
-      <img src={icono} alt="Cargando" className="prod-loading-logo-img" />
+      <span className="prod-loading-logo-img">
+        <LogoLuxFarma variant="icon" size={42} color="red" />
+      </span>
       {texto && <span>{texto}</span>}
     </div>
   );
@@ -899,7 +901,7 @@ export default function AdminProductos() {
         return `"${p.codigo_barras || ''}","${p.descripcion}","${famObj?.nombre || ''}","${labObj?.nombre || ''}",${stock},${p.stock_minimo || 0},${activoTxt}`;
       }).join("\n");
       const blob = new Blob(["﻿" + encabezados + filas], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Productos_SaludFutura.csv`; link.click();
+      const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Productos_LuxFarma.csv`; link.click();
       setAlertaSistema(null);
     } catch (err) { mostrarAlerta('Error al exportar: ' + err.message, 'error'); }
   };
@@ -1139,7 +1141,7 @@ export default function AdminProductos() {
               </div>
             </div>
             <div className="prod-kpi-card border-blue">
-              <div className="prod-kpi-icon bg-blue-soft"><UiIcon name="Tags" size={16} /></div>
+              <div className="prod-kpi-icon bg-brand-soft"><UiIcon name="Tags" size={16} /></div>
               <div className="prod-kpi-info">
                 <span className="prod-kpi-label">P. Venta Aprox</span>
                 <strong className="prod-kpi-valor">S/ {inversionGlobal.venta.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>

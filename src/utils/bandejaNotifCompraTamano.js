@@ -1,6 +1,6 @@
 /** Tamaño de la bandeja de Compras. Por máquina (localStorage). */
 
-export const BANDEJA_TAMANO_KEY = 'saludFutura_bandejaCompraTamano';
+export const BANDEJA_TAMANO_KEY = 'luxfarma_bandejaCompraTamano';
 export const BANDEJA_TAMANOS = ['sm', 'md', 'lg'];
 export const BANDEJA_TAMANO_DEFAULT = 'md';
 

@@ -57,7 +57,7 @@ export default function PanelDiaVentas({
           <p className="av-panel-seccion-titulo">Ventas por hora</p>
           <div className="av-panel-chart-wrap">
             {cargando ? (
-              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>Cargando gráfico…</p>
+              <p style={{ textAlign: 'center', color: 'var(--lf-text-muted)', padding: '2rem' }}>Cargando gráfico…</p>
             ) : (
               <VentasStackedBarChart data={chartData} vendedores={vendedoresChart} />
             )}

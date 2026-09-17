@@ -143,9 +143,9 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
   };
 
   return (
-    <div className="formas-venta-section" style={{ marginTop: '1.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.2rem' }}>
+    <div className="formas-venta-section" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--lf-border)', paddingTop: '1.2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
-        <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', margin: 0 }}><UiIcon name="Wallet" size={15} /> Formas de Venta y Precios
+        <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--lf-text)', margin: 0 }}><UiIcon name="Wallet" size={15} /> Formas de Venta y Precios
         </h4>
         <button
           type="button"
@@ -153,7 +153,7 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
           disabled={!idProducto}
           data-enter-skip="true"
           tabIndex={-1}
-          style={{ padding: '0.5rem 0.9rem', background: idProducto ? 'linear-gradient(135deg,#012B63,#0a3d7a)' : '#cbd5e1', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.82rem', cursor: idProducto ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap' }}
+          style={{ padding: '0.5rem 0.9rem', background: idProducto ? 'linear-gradient(135deg,var(--lf-primary-darker),var(--lf-primary-dark))' : '#E4E4E7', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.82rem', cursor: idProducto ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap' }}
         >
           + Nueva forma de venta
         </button>
@@ -162,7 +162,7 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
       {/* Tabla de formas de venta configuradas */}
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
         <thead>
-          <tr style={{ background: '#0f172a', color: 'white' }}>
+          <tr style={{ background: 'var(--lf-primary-dark)', color: 'white' }}>
             <th style={{ padding: '0.6rem', textAlign: 'left' }}>U. MEDIDA</th>
             <th style={{ padding: '0.6rem', textAlign: 'center' }}>FACTOR</th>
             <th style={{ padding: '0.6rem', textAlign: 'right' }}>P. COMPRA</th>
@@ -174,7 +174,7 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
         </thead>
         <tbody>
           {formasVenta.length === 0 ? (
-            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '1rem', color: '#94a3b8' }}>{mensajeVacio || 'No hay formas de venta configuradas aún.'}</td></tr>
+            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '1rem', color: 'var(--lf-text-muted)' }}>{mensajeVacio || 'No hay formas de venta configuradas aún.'}</td></tr>
           ) : (
             formasVenta.map((fv, i) => {
               const ganancia = Number(fv.precio_venta) - Number(fv.p_compra || 0);
@@ -183,13 +183,13 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
               const costoGuardado = Number(fv.p_compra) || 0;
               const debeResaltar = costoNuevo > 0 && costoNuevo > costoGuardado;
               return (
-                <tr key={fv.id_forma} style={{ borderBottom: '1px solid #f1f5f9', background: debeResaltar ? '#fef9c3' : (i % 2 === 1 ? '#fafbfc' : 'white') }}>
+                <tr key={fv.id_forma} style={{ borderBottom: '1px solid var(--lf-info-bg)', background: debeResaltar ? '#fef9c3' : (i % 2 === 1 ? '#fafbfc' : 'white') }}>
                   <td style={{ padding: '0.6rem', fontWeight: 700 }}>{fv.unidades_medida?.nombre}</td>
                   <td style={{ padding: '0.6rem', textAlign: 'center' }}>{Number(fv.factor).toFixed(2)}</td>
                   <td style={{ padding: '0.6rem', textAlign: 'right' }}>{formatSolesUnitario(fv.p_compra || 0)}</td>
                   <td style={{ padding: '0.6rem', textAlign: 'right', fontWeight: 700 }}>{formatSolesUnitario(fv.precio_venta)}</td>
                   <td style={{ padding: '0.6rem', textAlign: 'right', color: ganancia >= 0 ? '#16a34a' : '#dc2626' }}>{ganancia.toFixed(2)}</td>
-                  <td style={{ padding: '0.6rem', textAlign: 'center', color: '#0369a1' }}>{pctTxt}</td>
+                  <td style={{ padding: '0.6rem', textAlign: 'center', color: 'var(--lf-primary)' }}>{pctTxt}</td>
                   <td style={{ padding: '0.6rem', textAlign: 'center' }}>
                     <button type="button" onClick={() => abrirModalEditar(fv)} data-enter-skip="true" tabIndex={-1} title="Editar forma de venta" style={{ marginRight: 6, background: 'none', border: 'none', cursor: 'pointer' }}><UiIcon name="Pencil" size={16} /></button>
                     <button type="button" onClick={() => quitarFormaVenta(fv.id_forma)} data-enter-skip="true" tabIndex={-1} title="Quitar forma de venta" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><UiIcon name="Trash2" size={16} /></button>
@@ -210,17 +210,17 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100001 }}
         >
           <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', width: '380px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#1e293b' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--lf-text)' }}>
               {formaEnEdicion ? <><UiIcon name="Pencil" size={15} /> Editar forma de venta</> : '+ Nueva forma de venta'}
             </h3>
 
             <div style={{ marginBottom: '0.8rem' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>UNIDAD DE MEDIDA</label>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--lf-text-muted)' }}>UNIDAD DE MEDIDA</label>
               <select
                 ref={unidadFormaRef}
                 value={nuevaForma.id_medida}
                 onChange={e => setNuevaForma(prev => ({ ...prev, id_medida: e.target.value }))}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', marginTop: 4 }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)', marginTop: 4 }}
               >
                 <option value="">-- Selecciona --</option>
                 {catalogoUnidades.map(u => (<option key={u.id_medida} value={u.id_medida}>{u.nombre}</option>))}
@@ -228,39 +228,39 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
             </div>
 
             <div style={{ marginBottom: '0.8rem' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>FACTOR</label>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--lf-text-muted)' }}>FACTOR</label>
               <input
                 type="number" min="1" step="0.01"
                 value={nuevaForma.factor}
                 onChange={e => setNuevaForma(prev => ({ ...prev, factor: e.target.value }))}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', marginTop: 4 }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)', marginTop: 4 }}
               />
             </div>
 
             <div style={{ marginBottom: '0.8rem' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>P. COMPRA</label>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--lf-text-muted)' }}>P. COMPRA</label>
               <input
                 type="number" min="0" step="any"
                 value={nuevaForma.p_compra}
                 onChange={e => setNuevaForma(prev => ({ ...prev, p_compra: e.target.value }))}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', marginTop: 4 }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)', marginTop: 4 }}
               />
             </div>
 
             <div style={{ marginBottom: '0.8rem' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>PRECIO VENTA</label>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--lf-text-muted)' }}>PRECIO VENTA</label>
               <input
                 ref={precioVentaFormaRef}
                 type="number" min="0" step="any"
                 value={nuevaForma.precio_venta}
                 onChange={e => setNuevaForma(prev => ({ ...prev, precio_venta: e.target.value }))}
                 onKeyDown={handleEnterUltimoCampoForma}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', marginTop: 4 }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)', marginTop: 4 }}
               />
             </div>
 
             <div style={{ textAlign: 'center', margin: '1rem 0', padding: '0.8rem', background: '#fef2f2', borderRadius: '10px' }}>
-              <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Utilidad</p>
+              <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 700, color: 'var(--lf-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Utilidad</p>
               <h2 style={{ margin: '4px 0 0', fontSize: '1.6rem', fontWeight: 800, color: '#dc2626' }}>S/ {utilidadModal.toFixed(2)}</h2>
             </div>
 
@@ -269,7 +269,7 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
                 type="button"
                 data-enter-primary="true"
                 onClick={guardarFormaVenta}
-                style={{ flex: 1, padding: '0.7rem', background: 'linear-gradient(135deg,#012B63,#0a3d7a)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '0.7rem', background: 'linear-gradient(135deg,var(--lf-primary-darker),var(--lf-primary-dark))', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
               >
                 {formaEnEdicion ? <><UiIcon name="Save" size={15} /> Modificar</> : '+ Crear'}
               </button>
@@ -278,7 +278,7 @@ export default function TablaFormasVenta({ idProducto, mostrarAlerta, costoActua
                 onClick={() => setShowModalForma(false)}
                 data-enter-skip="true"
                 tabIndex={-1}
-                style={{ flex: 1, padding: '0.7rem', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '0.7rem', background: 'var(--lf-info-bg)', color: 'var(--lf-text-muted)', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
               ><UiIcon name="X" size={15} /> Cancelar
               </button>
             </div>

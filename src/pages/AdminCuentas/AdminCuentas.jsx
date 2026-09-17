@@ -234,7 +234,7 @@ export default function AdminCuentas() {
     }
   };
 
-  if (cargando) return <div style={{padding:'3rem',textAlign:'center',color:'#64748b'}}>Cargando estado de cuenta...</div>;
+  if (cargando) return <div style={{padding:'3rem',textAlign:'center',color:'var(--lf-text-muted)'}}>Cargando estado de cuenta...</div>;
 
   return (
     <div className="cxp-container">
@@ -290,7 +290,7 @@ export default function AdminCuentas() {
               {/* Método de pago */}
               <div className="cxp-input-group">
                 <label>Método de pago *</label>
-                <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)} style={{width:'100%',padding:'0.55rem 0.7rem',border:'1.5px solid #e2e8f0',borderRadius:'8px',fontSize:'0.9rem'}}>
+                <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)} style={{width:'100%',padding:'0.55rem 0.7rem',border:'1.5px solid var(--lf-border)',borderRadius:'8px',fontSize:'0.9rem'}}>
                   <option value="Efectivo">Efectivo</option>
                   <option value="Transferencia">Transferencia bancaria</option>
                   <option value="Yape">Yape / Plin</option>
@@ -301,7 +301,7 @@ export default function AdminCuentas() {
 
               {/* Referencia */}
               <div className="cxp-input-group">
-                <label>N° de operación / referencia <span style={{color:'#94a3b8',fontWeight:400}}>(opcional)</span></label>
+                <label>N° de operación / referencia <span style={{color:'var(--lf-text-muted)',fontWeight:400}}>(opcional)</span></label>
                 <input
                   type="text" placeholder="Ej: 0012345678 o cheque #001"
                   value={referenciaPago} onChange={e => setReferenciaPago(e.target.value)}
@@ -310,7 +310,7 @@ export default function AdminCuentas() {
 
               {/* Observación */}
               <div className="cxp-input-group">
-                <label>Observación <span style={{color:'#94a3b8',fontWeight:400}}>(opcional)</span></label>
+                <label>Observación <span style={{color:'var(--lf-text-muted)',fontWeight:400}}>(opcional)</span></label>
                 <input
                   type="text" placeholder="Ej: Pago parcial acordado con el proveedor"
                   value={observacionPago} onChange={e => setObservacionPago(e.target.value)}
@@ -332,11 +332,11 @@ export default function AdminCuentas() {
       {showModalDetalle && compraDetalle && (
         <div className="modal-overlay-strict" style={{zIndex:100031}}>
           <div className="cxp-modal-card" style={{maxWidth:'780px',width:'100%'}}>
-            <div className="cxp-modal-header" style={{background:'linear-gradient(135deg,#0f172a,#1e293b)',color:'white'}}>
+            <div className="cxp-modal-header" style={{background:'linear-gradient(135deg,var(--lf-text),var(--lf-text))',color:'white'}}>
               <div>
                 <h3 style={{color:'white'}}><UiIcon name="ClipboardList" size={15} /> Detalle de Compra</h3>
-                <p className="cxp-modal-subtitle" style={{color:'#94a3b8'}}>
-                  Factura: <strong style={{color:'#60a5fa'}}>{compraDetalle.nro_documento}</strong> — {compraDetalle.proveedores?.razon_social}
+                <p className="cxp-modal-subtitle" style={{color:'var(--lf-text-muted)'}}>
+                  Factura: <strong style={{color:'var(--lf-primary-soft)'}}>{compraDetalle.nro_documento}</strong> — {compraDetalle.proveedores?.razon_social}
                 </p>
               </div>
               <button className="cxp-modal-close" style={{color:'white',background:'rgba(255,255,255,0.1)'}} onClick={() => setShowModalDetalle(false)}><UiIcon name="X" size={16} /></button>
@@ -350,7 +350,7 @@ export default function AdminCuentas() {
                 </div>
                 <div className="cxp-info-box">
                   <label>Total Factura</label>
-                  <span style={{color:'#0f172a',fontWeight:800}}>S/ {Number(compraDetalle.total_compra).toFixed(2)}</span>
+                  <span style={{color:'var(--lf-text)',fontWeight:800}}>S/ {Number(compraDetalle.total_compra).toFixed(2)}</span>
                 </div>
                 <div className="cxp-info-box">
                   <label>Pagado</label>
@@ -365,42 +365,42 @@ export default function AdminCuentas() {
               </div>
 
               {/* Tabla de productos */}
-              <p style={{fontSize:'0.72rem',fontWeight:700,color:'#94a3b8',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'0.5rem'}}>PRODUCTOS DE ESTA FACTURA</p>
-              <div style={{overflowX:'auto',border:'1px solid #e2e8f0',borderRadius:'10px'}}>
+              <p style={{fontSize:'0.72rem',fontWeight:700,color:'var(--lf-text-muted)',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'0.5rem'}}>PRODUCTOS DE ESTA FACTURA</p>
+              <div style={{overflowX:'auto',border:'1px solid var(--lf-border)',borderRadius:'10px'}}>
                 <table style={{width:'100%',borderCollapse:'collapse',fontSize:'0.85rem'}}>
                   <thead>
-                    <tr style={{background:'#f8fafc'}}>
-                      <th style={{padding:'0.6rem 0.8rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>PRODUCTO</th>
-                      <th style={{padding:'0.6rem 0.8rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>LOTE</th>
-                      <th style={{padding:'0.6rem 0.8rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>VENCE</th>
-                      <th style={{padding:'0.6rem 0.8rem',textAlign:'right',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>CANT.</th>
-                      <th style={{padding:'0.6rem 0.8rem',textAlign:'right',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>P. COSTO</th>
-                      <th style={{padding:'0.6rem 0.8rem',textAlign:'right',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>SUBTOTAL</th>
+                    <tr style={{background:'var(--lf-bg)'}}>
+                      <th style={{padding:'0.6rem 0.8rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>PRODUCTO</th>
+                      <th style={{padding:'0.6rem 0.8rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>LOTE</th>
+                      <th style={{padding:'0.6rem 0.8rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>VENCE</th>
+                      <th style={{padding:'0.6rem 0.8rem',textAlign:'right',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>CANT.</th>
+                      <th style={{padding:'0.6rem 0.8rem',textAlign:'right',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>P. COSTO</th>
+                      <th style={{padding:'0.6rem 0.8rem',textAlign:'right',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>SUBTOTAL</th>
                     </tr>
                   </thead>
                   <tbody>
                     {cargandoDetalle ? (
-                      <tr><td colSpan="6" style={{textAlign:'center',padding:'2rem',color:'#94a3b8'}}>Cargando productos...</td></tr>
+                      <tr><td colSpan="6" style={{textAlign:'center',padding:'2rem',color:'var(--lf-text-muted)'}}>Cargando productos...</td></tr>
                     ) : itemsDetalle.length === 0 ? (
-                      <tr><td colSpan="6" style={{textAlign:'center',padding:'2rem',color:'#94a3b8',fontStyle:'italic'}}>No hay detalle registrado.</td></tr>
+                      <tr><td colSpan="6" style={{textAlign:'center',padding:'2rem',color:'var(--lf-text-muted)',fontStyle:'italic'}}>No hay detalle registrado.</td></tr>
                     ) : (
                       itemsDetalle.map((item, i) => (
-                        <tr key={i} style={{borderBottom:'1px solid #f1f5f9'}}>
-                          <td style={{padding:'0.6rem 0.8rem',fontWeight:600,color:'#0f172a'}}>{item.productos?.descripcion || '—'}</td>
-                          <td style={{padding:'0.6rem 0.8rem',color:'#64748b',fontSize:'0.8rem'}}>{item.nro_lote || '—'}</td>
-                          <td style={{padding:'0.6rem 0.8rem',color:'#64748b',fontSize:'0.8rem'}}>{item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleDateString('es-PE') : '—'}</td>
+                        <tr key={i} style={{borderBottom:'1px solid var(--lf-info-bg)'}}>
+                          <td style={{padding:'0.6rem 0.8rem',fontWeight:600,color:'var(--lf-text)'}}>{item.productos?.descripcion || '—'}</td>
+                          <td style={{padding:'0.6rem 0.8rem',color:'var(--lf-text-muted)',fontSize:'0.8rem'}}>{item.nro_lote || '—'}</td>
+                          <td style={{padding:'0.6rem 0.8rem',color:'var(--lf-text-muted)',fontSize:'0.8rem'}}>{item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleDateString('es-PE') : '—'}</td>
                           <td style={{padding:'0.6rem 0.8rem',textAlign:'right'}}>{item.cantidad} und</td>
-                          <td style={{padding:'0.6rem 0.8rem',textAlign:'right',color:'#475569'}}>S/ {Number(item.costo_unitario).toFixed(4)}</td>
-                          <td style={{padding:'0.6rem 0.8rem',textAlign:'right',fontWeight:700,color:'#0f172a'}}>S/ {Number(item.subtotal).toFixed(2)}</td>
+                          <td style={{padding:'0.6rem 0.8rem',textAlign:'right',color:'#52525B'}}>S/ {Number(item.costo_unitario).toFixed(4)}</td>
+                          <td style={{padding:'0.6rem 0.8rem',textAlign:'right',fontWeight:700,color:'var(--lf-text)'}}>S/ {Number(item.subtotal).toFixed(2)}</td>
                         </tr>
                       ))
                     )}
                   </tbody>
                   {itemsDetalle.length > 0 && (
                     <tfoot>
-                      <tr style={{borderTop:'2px solid #0f172a'}}>
+                      <tr style={{borderTop:'2px solid var(--lf-text)'}}>
                         <td colSpan="5" style={{padding:'0.6rem 0.8rem',textAlign:'right',fontWeight:700,fontSize:'0.9rem'}}>TOTAL FACTURA:</td>
-                        <td style={{padding:'0.6rem 0.8rem',textAlign:'right',fontWeight:800,fontSize:'1rem',color:'#0f172a'}}>S/ {Number(compraDetalle.total_compra).toFixed(2)}</td>
+                        <td style={{padding:'0.6rem 0.8rem',textAlign:'right',fontWeight:800,fontSize:'1rem',color:'var(--lf-text)'}}>S/ {Number(compraDetalle.total_compra).toFixed(2)}</td>
                       </tr>
                     </tfoot>
                   )}
@@ -409,44 +409,44 @@ export default function AdminCuentas() {
 
               {/* ── HISTORIAL DE PAGOS ── */}
               <div style={{marginTop:'1.2rem'}}>
-                <p style={{fontSize:'0.72rem',fontWeight:700,color:'#94a3b8',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'0.6rem'}}>
+                <p style={{fontSize:'0.72rem',fontWeight:700,color:'var(--lf-text-muted)',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'0.6rem'}}>
                   <UiIcon name="ClipboardList" size={15} /> HISTORIAL DE ABONOS ({historialPagos.length})
                 </p>
                 {historialPagos.length === 0 ? (
-                  <div style={{padding:'1rem',background:'#f8fafc',borderRadius:'8px',textAlign:'center',color:'#94a3b8',fontSize:'0.85rem',fontStyle:'italic'}}>
+                  <div style={{padding:'1rem',background:'var(--lf-bg)',borderRadius:'8px',textAlign:'center',color:'var(--lf-text-muted)',fontSize:'0.85rem',fontStyle:'italic'}}>
                     {cargandoDetalle ? 'Cargando historial...' : 'No hay pagos registrados aún para esta factura.'}
                   </div>
                 ) : (
-                  <div style={{border:'1px solid #e2e8f0',borderRadius:'10px',overflow:'hidden'}}>
+                  <div style={{border:'1px solid var(--lf-border)',borderRadius:'10px',overflow:'hidden'}}>
                     <table style={{width:'100%',borderCollapse:'collapse',fontSize:'0.83rem'}}>
                       <thead>
-                        <tr style={{background:'#f8fafc'}}>
+                        <tr style={{background:'var(--lf-bg)'}}>
                           {['#','Fecha','Monto','Método','Referencia','Observación'].map(h => (
-                            <th key={h} style={{padding:'0.5rem 0.7rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',textTransform:'uppercase',borderBottom:'1px solid #e2e8f0'}}>{h}</th>
+                            <th key={h} style={{padding:'0.5rem 0.7rem',textAlign:'left',fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',textTransform:'uppercase',borderBottom:'1px solid var(--lf-border)'}}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {historialPagos.map((pago, idx) => (
-                          <tr key={pago.id_pago} style={{borderBottom:'1px solid #f1f5f9',background: idx%2===0?'#fff':'#f8fafc'}}>
-                            <td style={{padding:'0.5rem 0.7rem',color:'#94a3b8',fontWeight:600}}>{idx+1}</td>
-                            <td style={{padding:'0.5rem 0.7rem',fontWeight:600,color:'#0f172a'}}>
+                          <tr key={pago.id_pago} style={{borderBottom:'1px solid var(--lf-info-bg)',background: idx%2===0?'#fff':'var(--lf-bg)'}}>
+                            <td style={{padding:'0.5rem 0.7rem',color:'var(--lf-text-muted)',fontWeight:600}}>{idx+1}</td>
+                            <td style={{padding:'0.5rem 0.7rem',fontWeight:600,color:'var(--lf-text)'}}>
                               {new Date(pago.fecha_pago + 'T12:00:00').toLocaleDateString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric'})}
                             </td>
                             <td style={{padding:'0.5rem 0.7rem',fontWeight:800,color:'#16a34a'}}>S/ {Number(pago.monto).toFixed(2)}</td>
                             <td style={{padding:'0.5rem 0.7rem'}}>
-                              <span style={{background: pago.metodo_pago==='Efectivo'?'#dcfce7':pago.metodo_pago==='Yape'?'#ede9fe':pago.metodo_pago==='Transferencia'?'#dbeafe':'#f1f5f9',color: pago.metodo_pago==='Efectivo'?'#16a34a':pago.metodo_pago==='Yape'?'#7c3aed':pago.metodo_pago==='Transferencia'?'#1d4ed8':'#475569',padding:'2px 8px',borderRadius:20,fontSize:'0.72rem',fontWeight:700}}>
+                              <span style={{background: pago.metodo_pago==='Efectivo'?'#dcfce7':pago.metodo_pago==='Yape'?'var(--lf-warning-bg)':pago.metodo_pago==='Transferencia'?'var(--lf-primary-soft)':'var(--lf-info-bg)',color: pago.metodo_pago==='Efectivo'?'#16a34a':pago.metodo_pago==='Yape'?'var(--lf-accent)':pago.metodo_pago==='Transferencia'?'var(--lf-primary-dark)':'#52525B',padding:'2px 8px',borderRadius:20,fontSize:'0.72rem',fontWeight:700}}>
                                 {pago.metodo_pago}
                               </span>
                             </td>
-                            <td style={{padding:'0.5rem 0.7rem',color:'#64748b',fontSize:'0.8rem'}}>{pago.referencia || '—'}</td>
-                            <td style={{padding:'0.5rem 0.7rem',color:'#64748b',fontSize:'0.8rem'}}>{pago.observacion || '—'}</td>
+                            <td style={{padding:'0.5rem 0.7rem',color:'var(--lf-text-muted)',fontSize:'0.8rem'}}>{pago.referencia || '—'}</td>
+                            <td style={{padding:'0.5rem 0.7rem',color:'var(--lf-text-muted)',fontSize:'0.8rem'}}>{pago.observacion || '—'}</td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr style={{borderTop:'2px solid #0f172a',background:'#f8fafc'}}>
-                          <td colSpan="2" style={{padding:'0.5rem 0.7rem',fontWeight:700,fontSize:'0.85rem',color:'#0f172a'}}>TOTAL ABONADO</td>
+                        <tr style={{borderTop:'2px solid var(--lf-text)',background:'var(--lf-bg)'}}>
+                          <td colSpan="2" style={{padding:'0.5rem 0.7rem',fontWeight:700,fontSize:'0.85rem',color:'var(--lf-text)'}}>TOTAL ABONADO</td>
                           <td style={{padding:'0.5rem 0.7rem',fontWeight:800,color:'#16a34a',fontSize:'0.95rem'}}>
                             S/ {historialPagos.reduce((s,p)=>s+Number(p.monto),0).toFixed(2)}
                           </td>
@@ -612,7 +612,7 @@ export default function AdminCuentas() {
                       <div className="cxp-actions-wrap">
                         <button
                           className="btn-cxp-action"
-                          style={{background:'#1e293b'}}
+                          style={{background:'var(--lf-text)'}}
                           onClick={() => abrirDetalle(c)}
                           title="Ver productos de esta factura"
                         ><UiIcon name="ClipboardList" size={14} /> Detalle</button>
@@ -623,7 +623,7 @@ export default function AdminCuentas() {
                           <span className="cxp-label-pagado"><UiIcon name="Check" size={15} /> Pagado</span>
                         )}
                         {c.esAnulada && (
-                          <span className="cxp-label-pagado" style={{background:'#f1f5f9',color:'#64748b'}}><UiIcon name="Ban" size={15} /> Anulada</span>
+                          <span className="cxp-label-pagado" style={{background:'var(--lf-info-bg)',color:'var(--lf-text-muted)'}}><UiIcon name="Ban" size={15} /> Anulada</span>
                         )}
                       </div>
                     </td>

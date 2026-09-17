@@ -1,0 +1,110 @@
+/* Paleta LUXFARMA — única fuente de color de la interfaz. */
+
+@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@700&display=swap');
+
+:root {
+  --lf-primary: #E11D2E;
+  --lf-primary-hover: #C8102E;
+  --lf-primary-dark: #A50F22;
+  --lf-primary-light: #FFE8EA;
+  --lf-primary-soft: #FFC9CF;
+  --lf-gradient-brand: linear-gradient(135deg, #F0313F 0%, #E11D2E 50%, #C8102E 100%);
+  --lf-bg: #FAFAFB;
+  --lf-surface: #FFFFFF;
+  --lf-border: #EEEEF1;
+  --lf-text: #18181B;
+  --lf-text-muted: #71717A;
+  --lf-accent: #FFB020;
+
+  --lf-sky-top: #FFF8EF;
+  --lf-sky-mid: #FDE8DA;
+  --lf-sky-bottom: #FAD4D6;
+  --lf-day-top: var(--lf-sky-top);
+  --lf-day-mid: var(--lf-sky-mid);
+  --lf-day-bottom: var(--lf-sky-bottom);
+
+  --lf-success: #16A34A;
+  --lf-success-bg: #DCFCE7;
+  --lf-warning: #D97706;
+  --lf-warning-bg: #FEF3C7;
+  --lf-error: #B91C1C;
+  --lf-error-bg: #FEE2E2;
+  --lf-info: #52525B;
+  --lf-info-bg: #F4F4F5;
+
+  --lf-font-brand: 'Zilla Slab', Georgia, 'Times New Roman', serif;
+  --lf-radius-sm: 8px;
+  --lf-radius-md: 12px;
+  --lf-radius-lg: 16px;
+  --lf-radius: var(--lf-radius-sm);
+  --lf-shadow-sm: 0 1px 2px rgb(24 24 27 / 0.05);
+  --lf-shadow-md: 0 6px 18px rgb(24 24 27 / 0.08);
+  --lf-shadow-lg: 0 18px 40px rgb(24 24 27 / 0.12);
+
+  /* Compatibilidad con CSS legado (vino → vivo) */
+  --lf-primary-darker: var(--lf-primary-hover);
+
+  --color-primary: var(--lf-primary);
+  --color-primary-hover: var(--lf-primary-hover);
+  --color-marca: var(--lf-primary);
+  --color-accent: var(--lf-error);
+  --color-accent-hover: var(--lf-primary-hover);
+  --color-background: var(--lf-bg);
+  --color-surface: var(--lf-surface);
+  --color-text-main: var(--lf-text);
+  --color-text-muted: var(--lf-text-muted);
+  --color-border: var(--lf-border);
+  --shadow-sm: var(--lf-shadow-sm);
+  --shadow-md: var(--lf-shadow-md);
+  --radius-md: var(--lf-radius-md);
+
+  --sf-navy: var(--lf-primary-hover);
+  --sf-blue: var(--lf-primary);
+  --sf-brand-lt: var(--lf-primary-light);
+  --sf-accent: var(--lf-accent);
+  --sf-green: var(--lf-success);
+  --sf-green-lt: var(--lf-success-bg);
+  --sf-red: var(--lf-error);
+  --sf-red-lt: var(--lf-error-bg);
+  --sf-amber: var(--lf-warning);
+  --sf-amber-lt: var(--lf-warning-bg);
+  --sf-purple: var(--lf-accent);
+  --sf-accent-lt: var(--lf-warning-bg);
+  --sf-gray-50: var(--lf-bg);
+  --sf-gray-100: #F4F4F5;
+  --sf-gray-200: var(--lf-border);
+  --sf-gray-300: #E4E4E7;
+  --sf-gray-400: #A1A1AA;
+  --sf-gray-500: var(--lf-text-muted);
+  --sf-gray-600: #52525B;
+  --sf-gray-700: #3F3F46;
+  --sf-gray-900: var(--lf-text);
+  --sf-white: var(--lf-surface);
+  --sf-shadow-sm: var(--lf-shadow-sm);
+  --sf-shadow-md: var(--lf-shadow-md);
+  --sf-shadow-lg: var(--lf-shadow-lg);
+  --sf-radius-sm: var(--lf-radius-sm);
+  --sf-radius-md: var(--lf-radius-md);
+  --sf-radius-lg: var(--lf-radius-lg);
+  --sf-radius-xl: 20px;
+}
+
+.lf-brand-font {
+  font-family: var(--lf-font-brand);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-sun-rays,
+  .login-sun-core,
+  .login-cloud,
+  .login-cloud-svg,
+  .login-spark,
+  .login-cross-particle,
+  .loading-cloud,
+  .loading-spark,
+  .worker-bubble-btn,
+  .dash-loading .lf-logo {
+    animation: none !important;
+  }
+}

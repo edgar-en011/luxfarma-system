@@ -1,17 +1,15 @@
 /**
- * Datos fijos del emisor para ticket térmico / recibo en pantalla.
- * Confirmados por Brayan (sede Julcán). Dirección es placeholder temporal.
+ * Datos del emisor y helpers de ticket térmico / recibo en pantalla.
  */
-export const TICKET_EMISOR = {
-  /** Línea centrada inmediata debajo de la cruz (antes de la marca grande). */
-  rubro: 'BOTICAS',
-  /** Marca grande bajo el logo (ESC/POS setTextQuadArea). */
-  nombreComercial: 'SALUD FUTURA',
-  razonSocial: 'GRUPO SALUD FUTURA S.A.C.',
-  ruc: '20611770708',
-  correo: 'gruposaludfutura@hotmail.com',
-  direccion: 'Sede Julcán',
-}
+export {
+  TICKET_EMISOR,
+  EMPRESA,
+  facturacionElectronica,
+  datosEmpresa,
+  emisorParaTicket,
+  lineasContactoEmisor,
+  LEYENDA_DOCUMENTO_INTERNO,
+} from '../config/empresa.js'
 
 /** Etiqueta de tipo de comprobante para el ticket. */
 export function etiquetaComprobante(tipo) {
@@ -28,7 +26,7 @@ export function etiquetaComprobante(tipo) {
  */
 export function primerNombreTicket(valor) {
   if (valor == null) return ''
-  const partes = String(valor).trim().split(/[\s\-]+/).filter(Boolean)
+  const partes = String(valor).trim().split(/[\s-]+/).filter(Boolean)
   return partes[0] || ''
 }
 

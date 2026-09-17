@@ -3,7 +3,7 @@ import {
   Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 import { supabase } from '../../supabaseClient';
-import icono from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
 import SmartDateInput from '../../components/SmartDateInput';
 import UiIcon from '../../components/UiIcon';
 import { formatearPorcentajeGanancia } from '../../utils/porcentajeGanancia';
@@ -103,7 +103,7 @@ export default function AdminGanancias() {
     <div className="gan-container">
       <div className="gan-top">
         <div className="gan-brand">
-          <img src={icono} alt="Salud Futura" className="gan-logo" />
+          <LogoLuxFarma variant="icon" size={44} color="red" className="gan-logo" />
           <div>
             <p className="gan-eyebrow">Ventas</p>
             <h2 className="gan-title">Ganancias</h2>
@@ -143,7 +143,7 @@ export default function AdminGanancias() {
 
       {cargando ? (
         <div className="gan-loading">
-          <img src={icono} alt="" />
+          <LogoLuxFarma variant="icon" size={42} color="red" />
           <span>Calculando ganancias…</span>
         </div>
       ) : error ? (
@@ -183,18 +183,18 @@ export default function AdminGanancias() {
                 <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="ganArea" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0d9488" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#0d9488" stopOpacity={0.02} />
+                      <stop offset="0%" stopColor="var(--lf-success)" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="var(--lf-success)" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--lf-border)" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--lf-text-muted)' }} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--lf-text-muted)' }} />
                   <Tooltip
                     formatter={(v) => [`S/ ${soles(v)}`, 'Ganancia']}
                     labelStyle={{ fontWeight: 700 }}
                   />
-                  <Area type="monotone" dataKey="ganancia" stroke="#0d9488" fill="url(#ganArea)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="ganancia" stroke="var(--lf-success)" fill="url(#ganArea)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             )}

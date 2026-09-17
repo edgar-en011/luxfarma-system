@@ -366,7 +366,7 @@ export default function Soporte() {
               {loading ? (
                 <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>Cargando tus reportes...</td></tr>
               ) : reportes.length === 0 ? (
-                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8', fontStyle: 'italic' }}>No tienes reportes enviados aún.</td></tr>
+                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--lf-text-muted)', fontStyle: 'italic' }}>No tienes reportes enviados aún.</td></tr>
               ) : (
                 reportes.map(ticket => {
                   const { label, cls } = getEstadoStyle(ticket.estado);
@@ -384,13 +384,13 @@ export default function Soporte() {
                         ].filter(Boolean).join(' ') || undefined}
                       >
                         <td>
-                          <strong style={{ color: '#0f172a', display: 'block' }}>{ticket.asunto}</strong>
-                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>#{String(ticket.id_ticket).padStart(4, '0')} · {ticket.tipo}</span>
+                          <strong style={{ color: 'var(--lf-text)', display: 'block' }}>{ticket.asunto}</strong>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)' }}>#{String(ticket.id_ticket).padStart(4, '0')} · {ticket.tipo}</span>
                         </td>
                         <td>
                           <span className={`sop-badge-tipo prio-${(ticket.prioridad || 'media').toLowerCase()}`}>{ticket.prioridad || 'Media'}</span>
                         </td>
-                        <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                        <td style={{ color: 'var(--lf-text-muted)', fontSize: '0.85rem' }}>
                           {new Date(ticket.created_at).toLocaleDateString('es-PE')}<br />
                           <small>{new Date(ticket.created_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</small>
                         </td>
@@ -407,7 +407,7 @@ export default function Soporte() {
                               {expandido ? <><UiIcon name="ChevronUp" size={14} /> Ocultar</> : <><UiIcon name="MessageSquare" size={14} /> Ver respuesta</>}
                             </button>
                           ) : (
-                            <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}><UiIcon name="Loader" size={15} /> Esperando al admin...</span>
+                            <span style={{ color: 'var(--lf-text-muted)', fontSize: '0.82rem' }}><UiIcon name="Loader" size={15} /> Esperando al admin...</span>
                           )}
                         </td>
                       </tr>
@@ -436,7 +436,7 @@ export default function Soporte() {
         </div>
 
         <div className="sop-footer-note">
-          <span style={{ color: '#94a3b8' }}>Las respuestas aparecen aquí automáticamente.</span>
+          <span style={{ color: 'var(--lf-text-muted)' }}>Las respuestas aparecen aquí automáticamente.</span>
           <strong> Sin necesidad de recargar.</strong>
         </div>
       </div>

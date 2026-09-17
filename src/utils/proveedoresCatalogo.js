@@ -1,6 +1,6 @@
 import { supabase } from '../supabaseClient';
 
-const EVENTO_PROV = 'saludfutura:proveedores-changed';
+const EVENTO_PROV = 'luxfarma:proveedores-changed';
 
 export function esProveedorActivo(p) {
   if (p == null || p.activo == null) return true;

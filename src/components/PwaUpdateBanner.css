@@ -11,10 +11,10 @@
   gap: 10px 14px;
   max-width: min(560px, calc(100vw - 24px));
   padding: 10px 14px;
-  background: #0f172a;
-  color: #f8fafc;
+  background: var(--lf-primary-dark);
+  color: var(--lf-bg);
   border-radius: 12px;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.35);
+  box-shadow: 0 10px 28px rgba(31, 26, 27, 0.35);
   font-size: 0.85rem;
   line-height: 1.35;
 }
@@ -51,13 +51,13 @@
 
 .pwa-update-btn-later {
   background: transparent;
-  color: #cbd5e1;
-  border: 1px solid #334155;
+  color: #E4E4E7;
+  border: 1px solid #3F3F46;
 }
 
 .pwa-update-btn-later:hover {
-  background: #1e293b;
-  color: #f8fafc;
+  background: var(--lf-text);
+  color: var(--lf-bg);
 }
 
 @media (max-width: 480px) {

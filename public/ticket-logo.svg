@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#FFFFFF"/>
+  <path fill="#000000" fill-rule="evenodd" d="M26.5 7c0-2.5 2-4.5 4.5-4.5h2c2.5 0 4.5 2 4.5 4.5v14.5H52c2.5 0 4.5 2 4.5 4.5v2c0 2.5-2 4.5-4.5 4.5H37.5V57c0 2.5-2 4.5-4.5 4.5h-2c-2.5 0-4.5-2-4.5-4.5V37.5H12c-2.5 0-4.5-2-4.5-4.5v-2c0-2.5 2-4.5 4.5-4.5h14.5V7zm5 6.5h1v16h16v1h-16v16h-1v-16h-16v-1h16v-16z"/>
+</svg>

@@ -28,13 +28,14 @@ import { verificarEstadosSunatPosteriores } from '../services/comprobantesSunat'
 import { clasificarBoletasPendientesSunat, listarSeriesCortas } from '../utils/estadoSunat';
 import { DIAS_PLAZO_LEGAL_RESUMEN, INTERVALO_VERIFICACION_SUNAT_MS } from '../utils/plazosSunatBoleta';
 import { hashPassword, verificarYMigrarSiPlano } from '../utils/passwordHash';
-import icono from '../assets/icono.png';
+import LogoLuxFarma from '../components/LogoLuxFarma';
 import './MainLayout.css';
 import UiIcon from '../components/UiIcon';
 import { esAdmin, esRolCaja, labelRol } from '../utils/roles';
 import { playNotifSound } from '../utils/notifSound';
 import { scheduleWelcomeVoice } from '../utils/welcomeVoice';
 import { partesMensajeNotif } from '../utils/notifDisplay';
+import { facturacionElectronica } from '../config/empresa';
 import { APP_VERSION } from '../appVersion';
 
 const TIPO_ICON = { warn: 'AlertTriangle', err: 'AlertCircle', ok: 'CheckCircle2', purp: 'Bell', info: 'Info' };
@@ -276,6 +277,7 @@ export default function MainLayout() {
           });
         }
 
+        if (facturacionElectronica) {
         const { data: boletasSunat } = await supabase
           .from('comprobantes_sunat')
           .select('id, serie, numero, estado_envio, aceptada_por_sunat, fecha_envio, tipo_comprobante, ventas(created_at)')
@@ -329,6 +331,7 @@ export default function MainLayout() {
             claveDedup: `sunat:plazovencido:${hoyStr}`,
             descartesMap,
           });
+        }
         }
 
         for (const c of resCompras.data || []) {
@@ -918,9 +921,9 @@ export default function MainLayout() {
     setConfigSistema(null);
     try {
       const { data } = await supabase.from('configuracion').select('*').eq('id', 1).maybeSingle();
-      setConfigSistema(data || { nombre_farmacia: 'Salud Futura', ruc: '', direccion: '', modo_mantenimiento: false, ventas_sin_stock: false });
+      setConfigSistema(data || { nombre_farmacia: 'LuxFarma', ruc: '', direccion: '', modo_mantenimiento: false, ventas_sin_stock: false });
     } catch {
-      setConfigSistema({ nombre_farmacia: 'Salud Futura', ruc: '', direccion: '', modo_mantenimiento: false, ventas_sin_stock: false });
+      setConfigSistema({ nombre_farmacia: 'LuxFarma', ruc: '', direccion: '', modo_mantenimiento: false, ventas_sin_stock: false });
     }
   };
 
@@ -1107,8 +1110,7 @@ export default function MainLayout() {
       {/* ── SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <img src={icono} alt="Logo" className="sidebar-logo" />
-          <span className="sidebar-brand">SALUD FUTURA</span>
+          <LogoLuxFarma variant="full" size={40} color="red" showSubtitle className="sidebar-brand-logo" />
         </div>
         <nav className="sidebar-nav">
 
@@ -1196,6 +1198,7 @@ export default function MainLayout() {
               Ganancias
             </button>
             </div>
+            {facturacionElectronica && (
             <div className="nav-group">
               <div className="nav-group-label">Facturación</div>
             <button className={`nav-item ${location.pathname === '/admin-sunat' ? 'active' : ''}`} onClick={() => navigate('/admin-sunat')}>
@@ -1207,6 +1210,7 @@ export default function MainLayout() {
               Series SUNAT
             </button>
             </div>
+            )}
             <div className="nav-group">
               <div className="nav-group-label">Compras</div>
             <button className={`nav-item ${location.pathname === '/admin-codigos-proveedor' ? 'active' : ''}`} onClick={() => navigate('/admin-codigos-proveedor')}>
@@ -1615,13 +1619,13 @@ export default function MainLayout() {
                 />
 
                 <label className="sf-label">
-                  RUC <span style={{ color: '#94a3b8', fontWeight: 400, textTransform: 'none', fontSize: '0.68rem' }}>(solo lectura)</span>
+                  RUC <span style={{ color: 'var(--lf-text-muted)', fontWeight: 400, textTransform: 'none', fontSize: '0.68rem' }}>(solo lectura)</span>
                 </label>
                 <input
                   className="sf-input"
                   value={configSistema.ruc || ''}
                   readOnly
-                  style={{ background: '#f8fafc', color: '#94a3b8', cursor: 'not-allowed' }}
+                  style={{ background: 'var(--lf-bg)', color: 'var(--lf-text-muted)', cursor: 'not-allowed' }}
                 />
 
                 <label className="sf-label">Dirección</label>
@@ -1661,26 +1665,26 @@ export default function MainLayout() {
                 <button className="pcm-btn" onClick={guardarConfigSistema} disabled={savingConfig}>
                   {savingConfig ? 'Guardando...' : 'Guardar cambios'}
                 </button>
+                {facturacionElectronica && (
                 <button
                   type="button"
                   className="pcm-btn-ghost"
-                  style={{ marginTop: 10, width: '100%', padding: '0.7rem', borderRadius: 10, border: '1px solid #e2e8f0', background: '#f8fafc', fontWeight: 700, cursor: 'pointer', color: '#334155' }}
+                  style={{ marginTop: 10, width: '100%', padding: '0.7rem', borderRadius: 10, border: '1px solid var(--lf-border)', background: 'var(--lf-bg)', fontWeight: 700, cursor: 'pointer', color: '#3F3F46' }}
                   onClick={() => { setShowSistema(false); setMsgConfig(null); navigate('/admin-series-sunat'); }}
                 >
                   Series SUNAT por sucursal
                 </button>
+                )}
                 <button
                   type="button"
                   className="pcm-btn-ghost"
-                  style={{ marginTop: 8, width: '100%', padding: '0.7rem', borderRadius: 10, border: '1px solid #e2e8f0', background: '#f8fafc', fontWeight: 700, cursor: 'pointer', color: '#334155' }}
+                  style={{ marginTop: 8, width: '100%', padding: '0.7rem', borderRadius: 10, border: '1px solid var(--lf-border)', background: 'var(--lf-bg)', fontWeight: 700, cursor: 'pointer', color: '#3F3F46' }}
                   onClick={() => { setShowSistema(false); setMsgConfig(null); navigate('/admin-codigos-proveedor'); }}
                 >
                   Códigos de producto por proveedor
                 </button>
                 <p className="sistema-about">
-                  Salud Futura v{APP_VERSION}
-                  <br />
-                  Hecho por Brayan Siccha (M1000) · 2026
+                  LuxFarma v{APP_VERSION}
                 </p>
               </div>
             )}
@@ -1725,7 +1729,7 @@ export default function MainLayout() {
                     {usuariosGestion.map(u => (
                       <tr key={u.id_usuario} className={u.id_usuario === user.id_usuario ? 'gestion-row-self' : ''}>
                         <td className="gestion-nombre">{u.nombres} {u.apellidos}</td>
-                        <td style={{ fontSize: '0.8rem', color: '#64748b' }}>{u.dni}</td>
+                        <td style={{ fontSize: '0.8rem', color: 'var(--lf-text-muted)' }}>{u.dni}</td>
                         <td>
                           <span className={`gestion-rol ${esAdmin(u.id_rol) ? 'gr-admin' : 'gr-vendedor'}`}>
                             {rolLabel(u.id_rol)}
@@ -1736,7 +1740,7 @@ export default function MainLayout() {
                             {esActivo(u) ? 'Activo' : 'Inactivo'}
                           </span>
                         </td>
-                        <td style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)' }}>
                           {u.updated_at ? tiempoRelativo(u.updated_at) : '—'}
                         </td>
                         <td>

@@ -18,7 +18,7 @@ import {
   guardarBandejaTamano,
   leerBandejaTamano,
 } from '../utils/bandejaNotifCompraTamano';
-import icono from '../assets/icono.png';
+import LogoLuxFarma from './LogoLuxFarma';
 
 const CONF_ITEM_INICIAL = {
   idMedidaSeleccionada: '', factor: 1, cantidad: '',
@@ -573,7 +573,9 @@ export default function ModalAgregarProductoCompra({
         <div className="popup-producto-card popup-producto-card-ancho popup-agregar-completo">
           <div className="popup-header">
             <div className="popup-title-group popup-title-con-logo">
-              <img src={icono} alt="" className="popup-agregar-logo" />
+              <span className="popup-agregar-logo">
+                <LogoLuxFarma variant="icon" size={32} color="red" />
+              </span>
               <div>
                 <h3>Agregar producto a la compra</h3>
                 <p>Busca por nombre, código de barras o laboratorio</p>
@@ -787,7 +789,7 @@ export default function ModalAgregarProductoCompra({
                     </div>
 
                     <div className="conf-item">
-                      <label>IGV Nº <span style={{ fontWeight: 400, color: '#94a3b8' }}>(18, 19...)</span></label>
+                      <label>IGV Nº <span style={{ fontWeight: 400, color: 'var(--lf-text-muted)' }}>(18, 19...)</span></label>
                       <input
                         type="number" min="0" step="0.01"
                         disabled={!productoSeleccionado}
@@ -831,7 +833,7 @@ export default function ModalAgregarProductoCompra({
                     </div>
 
                     <div className="conf-item conf-checkbox-item">
-                      <label style={{ textTransform: 'none', fontSize: '0.8rem', color: '#334155', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <label style={{ textTransform: 'none', fontSize: '0.8rem', color: '#3F3F46', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <input type="checkbox" data-enter-skip="true" tabIndex={-1} disabled={!productoSeleccionado} checked={confItem.bonificacion} onChange={(e) => setConfItem((prev) => ({ ...prev, bonificacion: e.target.checked }))} />
                         Bonificación (costo S/0.00)
                       </label>
@@ -864,13 +866,13 @@ export default function ModalAgregarProductoCompra({
       {showModalEdicionRapida && (
         <div role="dialog" aria-modal="true" data-keyboard-trap style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100000 }}>
           <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', width: '360px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#1e293b' }}><UiIcon name="Pencil" size={15} /> Editar precio rápido</h3>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--lf-text)' }}><UiIcon name="Pencil" size={15} /> Editar precio rápido</h3>
             <div style={{ marginBottom: '0.8rem' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>FACTOR</label>
-              <input type="number" min="1" step="0.01" value={edicionRapida.factor} onChange={(e) => setEdicionRapida((prev) => ({ ...prev, factor: e.target.value }))} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', marginTop: 4 }} />
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--lf-text-muted)' }}>FACTOR</label>
+              <input type="number" min="1" step="0.01" value={edicionRapida.factor} onChange={(e) => setEdicionRapida((prev) => ({ ...prev, factor: e.target.value }))} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)', marginTop: 4 }} />
             </div>
             <div style={{ marginBottom: '1.2rem' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>PRECIO VENTA</label>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--lf-text-muted)' }}>PRECIO VENTA</label>
               <input
                 type="number" min="0" step="any"
                 value={edicionRapida.precio_venta}
@@ -881,12 +883,12 @@ export default function ModalAgregarProductoCompra({
                   e.stopPropagation();
                   guardarEdicionRapida();
                 }}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', marginTop: 4 }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1.5px solid var(--lf-border)', marginTop: 4 }}
               />
             </div>
             <div style={{ display: 'flex', gap: '0.6rem' }}>
-              <button type="button" data-enter-primary="true" onClick={guardarEdicionRapida} style={{ flex: 1, padding: '0.6rem', background: '#012B63', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><UiIcon name="Save" size={15} /> Guardar</button>
-              <button onClick={() => setShowModalEdicionRapida(false)} data-enter-skip="true" tabIndex={-1} style={{ flex: 1, padding: '0.6rem', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
+              <button type="button" data-enter-primary="true" onClick={guardarEdicionRapida} style={{ flex: 1, padding: '0.6rem', background: 'var(--lf-primary-darker)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><UiIcon name="Save" size={15} /> Guardar</button>
+              <button onClick={() => setShowModalEdicionRapida(false)} data-enter-skip="true" tabIndex={-1} style={{ flex: 1, padding: '0.6rem', background: 'var(--lf-info-bg)', color: 'var(--lf-text-muted)', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
             </div>
           </div>
         </div>

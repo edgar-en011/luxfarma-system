@@ -48,7 +48,7 @@ app.whenReady().then(async () => {
       yapeReal: 42.5,
       difTotal: -5,
       observacion: 'Prueba de impresion directa a la termica al cerrar turno de caja.',
-      user: { nombres: 'EDGAR', apellidos: 'SICCHA PRUEBA', sucursales: { nombre_comercial: 'Sede Julcan' } },
+      user: { nombres: 'EDGAR', apellidos: 'SICCHA PRUEBA', sucursales: { nombre_comercial: 'La Esperanza' } },
     });
 
     console.log('\n=== Payload que viaja por IPC ===');

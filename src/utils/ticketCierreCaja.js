@@ -8,7 +8,7 @@
  */
 
 import { printTicket, isElectronApp } from './electronBridge.js'
-import { TICKET_EMISOR } from './ticketFarmacia.js'
+import { TICKET_EMISOR, lineasContactoEmisor, EMPRESA } from './ticketFarmacia.js'
 import { buildCierreCajaPayload, lineasCierreCaja, PIE_CIERRE_CAJA } from './cierreCajaTicket.js'
 
 const LOG = '[ticketCierreCaja]'
@@ -57,16 +57,14 @@ pre{font-family:inherit;font-size:11px;line-height:1.35;white-space:pre-wrap;wor
 .brand{font-size:18px;font-weight:900;letter-spacing:1px;margin:2px 0 4px}
 .cruz{width:22mm;height:auto;display:block;margin:0 auto 3px}
 .boticas{font-size:13px;font-weight:800;letter-spacing:2px;margin:2px 0 6px}
-@media print{.btn{display:none!important}}
-.btn{background:#1e40af;color:#fff;border:none;border-radius:8px;padding:9px 0;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:10px}
+.btn{background:#E11D2E;color:#fff;border:none;border-radius:8px;padding:9px 0;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:10px}
+@media print{.btn{display:none!important;background:#000}}
 </style></head><body>
 <div class="center">
-  <img class="cruz" src="/icono.png" alt="" />
+  <img class="cruz" src="${escapeHtml(EMPRESA.logo)}" alt="" />
   <div class="boticas">${escapeHtml(TICKET_EMISOR.rubro)}</div>
   <div class="brand">${escapeHtml(TICKET_EMISOR.nombreComercial)}</div>
-  <div>${escapeHtml(TICKET_EMISOR.razonSocial)}</div>
-  <div>RUC: ${escapeHtml(TICKET_EMISOR.ruc)}</div>
-  <div>${escapeHtml(TICKET_EMISOR.direccion)}</div>
+  ${lineasContactoEmisor(TICKET_EMISOR).map((l) => `<div>${escapeHtml(l)}</div>`).join('\n  ')}
 </div>
 <div class="line"></div>
 ${cuerpo}

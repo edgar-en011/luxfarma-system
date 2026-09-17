@@ -3,21 +3,21 @@
 
 .asu-content { animation: asuFadeIn 0.4s ease-out; }
 
-.asu-card { background: white; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(15,23,42,0.04); }
+.asu-card { background: white; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(31, 26, 27, 0.04); }
 
-.asu-input { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 14px; font-size: 0.88rem; color: #0f172a; outline: none; transition: all 0.2s ease; font-family: inherit; }
-.asu-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.asu-input { background: white; border: 1px solid var(--lf-border); border-radius: 10px; padding: 9px 14px; font-size: 0.88rem; color: var(--lf-text); outline: none; transition: all 0.2s ease; font-family: inherit; }
+.asu-input:focus { border-color: var(--lf-primary); box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.1); }
 
-.asu-chip { padding: 8px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: white; color: #64748b; transition: all 0.2s ease; }
-.asu-chip:hover { background: #f8fafc; border-color: #cbd5e1; }
-.asu-chip.active { background: #0f172a; color: white; border-color: #0f172a; }
+.asu-chip { padding: 8px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid var(--lf-border); background: white; color: var(--lf-text-muted); transition: all 0.2s ease; }
+.asu-chip:hover { background: var(--lf-bg); border-color: #E4E4E7; }
+.asu-chip.active { background: var(--lf-primary-dark); color: white; border-color: var(--lf-primary-dark); }
 .asu-chip.active.asu-chip-vencidos { background: #dc2626; border-color: #dc2626; }
 
 .asu-table { width: 100%; border-collapse: collapse; }
-.asu-table thead th { background: transparent; color: #94a3b8; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+.asu-table thead th { background: transparent; color: var(--lf-text-muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid var(--lf-info-bg); white-space: nowrap; }
 .asu-table tbody tr { transition: background 0.15s ease; }
-.asu-table tbody tr:hover { background: #f8fafc; }
-.asu-table tbody td { padding: 0.9rem 1.25rem; font-size: 0.85rem; color: #0f172a; border-bottom: 1px solid #f1f5f9; }
+.asu-table tbody tr:hover { background: var(--lf-bg); }
+.asu-table tbody td { padding: 0.9rem 1.25rem; font-size: 0.85rem; color: var(--lf-text); border-bottom: 1px solid var(--lf-info-bg); }
 
 .asu-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; }
 .asu-badge-verde { background: #dcfce7; color: #166534; }
@@ -30,20 +30,20 @@
 .asu-dias-urgente { color: #c2410c; font-weight: 700; }
 .asu-dias-vencido { color: #b91c1c; font-weight: 700; }
 
-.asu-btn-enviar { padding: 6px 14px; border-radius: 100px; background: #0f172a; color: white; border: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-.asu-btn-enviar:hover:not(:disabled) { background: #1e293b; transform: scale(1.03); }
-.asu-btn-enviar:disabled { background: #cbd5e1; cursor: not-allowed; }
+.asu-btn-enviar { padding: 6px 14px; border-radius: 100px; background: var(--lf-primary-dark); color: white; border: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.asu-btn-enviar:hover:not(:disabled) { background: var(--lf-text); transform: scale(1.03); }
+.asu-btn-enviar:disabled { background: #E4E4E7; cursor: not-allowed; }
 
 .asu-banner-token { background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; padding: 14px 18px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: #92400e; font-weight: 600; }
 
-.asu-empty { padding: 3rem; text-align: center; color: #94a3b8; font-size: 0.9rem; }
+.asu-empty { padding: 3rem; text-align: center; color: var(--lf-text-muted); font-size: 0.9rem; }
 
 .row-action-spinner {
   display: inline-block;
   width: 10px;
   height: 10px;
-  border: 2px solid rgba(37,99,235,0.25);
-  border-top-color: #2563eb;
+  border: 2px solid rgba(225, 29, 46, 0.25);
+  border-top-color: var(--lf-primary);
   border-radius: 50%;
   animation: rowActionSpin 0.7s linear infinite;
 }

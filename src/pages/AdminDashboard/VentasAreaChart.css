@@ -13,24 +13,24 @@
 }
 
 .vac-grid-line {
-  stroke: #eef2f7;
+  stroke: var(--lf-border);
   stroke-width: 1;
 }
 
 .vac-axis-label {
-  fill: #94a3b8;
+  fill: var(--lf-text-muted);
   font-size: 10px;
   font-weight: 600;
   font-family: Inter, system-ui, -apple-system, sans-serif;
 }
 
 .vac-x-label.is-active {
-  fill: #012B63;
+  fill: var(--lf-primary-darker);
   font-weight: 800;
 }
 
 .vac-line {
-  stroke: #012B63;
+  stroke: var(--lf-primary-darker);
   stroke-width: 2.25;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -38,40 +38,40 @@
 
 .vac-dot {
   fill: #fff;
-  stroke: #012B63;
+  stroke: var(--lf-primary-darker);
   stroke-width: 2;
   transition: r 0.12s ease;
   cursor: pointer;
 }
 
 .vac-dot.is-active {
-  fill: #012B63;
+  fill: var(--lf-primary-darker);
   stroke: #fff;
   stroke-width: 2.5;
-  filter: drop-shadow(0 1px 3px rgba(1, 43, 99, 0.45));
+  filter: drop-shadow(0 1px 3px rgba(225, 29, 46, 0.45));
 }
 
 .vac-hover-line {
-  stroke: #94a3b8;
+  stroke: var(--lf-text-muted);
   stroke-width: 1;
   stroke-dasharray: 3 3;
   opacity: 0.7;
 }
 
 .vac-tooltip-bg {
-  fill: #0f172a;
-  filter: drop-shadow(0 6px 16px rgba(15, 23, 42, 0.28));
+  fill: var(--lf-primary-dark);
+  filter: drop-shadow(0 6px 16px rgba(31, 26, 27, 0.28));
 }
 
 .vac-tooltip-label {
-  fill: #94a3b8;
+  fill: var(--lf-text-muted);
   font-size: 10px;
   font-weight: 700;
   font-family: Inter, system-ui, -apple-system, sans-serif;
 }
 
 .vac-tooltip-value {
-  fill: #f8fafc;
+  fill: var(--lf-bg);
   font-size: 12px;
   font-weight: 800;
   font-family: Inter, system-ui, -apple-system, sans-serif;
@@ -87,8 +87,8 @@
   justify-content: center;
   gap: 0.4rem;
   padding: 1.6rem 1rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  border: 1px dashed #d7e0ea;
+  background: linear-gradient(180deg, var(--lf-bg) 0%, #ffffff 100%);
+  border: 1px dashed var(--lf-border);
   border-radius: 14px;
   text-align: center;
 }
@@ -103,14 +103,14 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #475569;
+  color: #52525B;
   font-family: Inter, system-ui, -apple-system, sans-serif;
 }
 
 .vac-empty-sub {
   margin: 0;
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--lf-text-muted);
   max-width: 320px;
   line-height: 1.4;
   font-family: Inter, system-ui, -apple-system, sans-serif;

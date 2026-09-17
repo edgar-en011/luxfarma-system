@@ -4,7 +4,7 @@
 
 .cxp-container {
   display: flex; flex-direction: column;
-  gap: 1.25rem; color: #0f172a;
+  gap: 1.25rem; color: var(--lf-text);
   padding-bottom: 90px;
 }
 
@@ -17,7 +17,7 @@
   border-radius: 14px;
   display: flex; justify-content: space-between; align-items: flex-start;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--lf-info-bg);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .cxp-kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
@@ -28,13 +28,13 @@
 
 .kpi-cxp-content p {
   margin: 0; font-size: 0.68rem; font-weight: 800;
-  color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lf-text-muted); letter-spacing: 0.08em; text-transform: uppercase;
 }
 .kpi-cxp-content h2 {
   margin: 0.45rem 0 0.2rem; font-size: 1.65rem;
-  font-weight: 800; color: #0f172a; line-height: 1;
+  font-weight: 800; color: var(--lf-text); line-height: 1;
 }
-.kpi-cxp-content span { font-size: 0.72rem; color: #94a3b8; }
+.kpi-cxp-content span { font-size: 0.72rem; color: var(--lf-text-muted); }
 
 .cxp-icon {
   width: 38px; height: 38px; border-radius: 10px;
@@ -45,69 +45,69 @@
 .bg-yellow { background: #fffbeb; }
 .bg-orange { background: #fff7ed; }
 .bg-green  { background: #f0fdf4; }
-.bg-gray   { background: #f1f5f9; }
+.bg-gray   { background: var(--lf-info-bg); }
 
 .text-red    { color: #ef4444; }
 .text-yellow { color: #f59e0b; }
 .text-orange { color: #f97316; }
 .text-green  { color: #16a34a; }
-.text-gray   { color: #94a3b8; }
-.text-dark   { color: #0f172a; }
-.text-muted  { color: #64748b; }
+.text-gray   { color: var(--lf-text-muted); }
+.text-dark   { color: var(--lf-text); }
+.text-muted  { color: var(--lf-text-muted); }
 .font-bold   { font-weight: 700; }
 
 /* ─── FILTROS ─── */
 .cxp-filters-bar {
   display: flex; gap: 1rem; align-items: center;
   background: white; padding: 0.9rem 1.25rem;
-  border-radius: 14px; border: 1px solid #f1f5f9;
+  border-radius: 14px; border: 1px solid var(--lf-info-bg);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   flex-wrap: wrap;
 }
 .cxp-search-box {
   display: flex; align-items: center;
-  background: #f8fafc; padding: 0.55rem 0.9rem;
+  background: var(--lf-bg); padding: 0.55rem 0.9rem;
   border-radius: 10px; width: 280px;
-  border: 1.5px solid #e2e8f0; transition: border-color 0.2s;
+  border: 1.5px solid var(--lf-border); transition: border-color 0.2s;
 }
-.cxp-search-box:focus-within { border-color: #3b82f6; }
-.cxp-search-box .icon { font-size: 0.9rem; margin-right: 0.5rem; color: #94a3b8; }
+.cxp-search-box:focus-within { border-color: var(--lf-primary); }
+.cxp-search-box .icon { font-size: 0.9rem; margin-right: 0.5rem; color: var(--lf-text-muted); }
 .cxp-search-box input {
   border: none; background: transparent;
-  outline: none; width: 100%; font-size: 0.88rem; color: #0f172a;
+  outline: none; width: 100%; font-size: 0.88rem; color: var(--lf-text);
 }
 
 /* Pills filtro */
 .cxp-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .cxp-pill {
-  background: white; border: 1.5px solid #e2e8f0;
+  background: white; border: 1.5px solid var(--lf-border);
   padding: 0.45rem 1rem; border-radius: 20px;
-  font-size: 0.8rem; font-weight: 600; color: #475569;
+  font-size: 0.8rem; font-weight: 600; color: #52525B;
   cursor: pointer; display: flex; align-items: center; gap: 0.35rem;
   transition: all 0.2s; white-space: nowrap;
 }
-.cxp-pill:hover { background: #f8fafc; border-color: #cbd5e1; }
+.cxp-pill:hover { background: var(--lf-bg); border-color: #E4E4E7; }
 .cxp-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
 
-.cxp-pill.active-dark   { background: #0f172a; color: white; border-color: #0f172a; }
+.cxp-pill.active-dark   { background: var(--lf-primary-dark); color: white; border-color: var(--lf-primary-dark); }
 .cxp-pill.active-red    { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
 .cxp-pill.active-yellow { border-color: #f59e0b; color: #b45309; background: #fffbeb; }
 .cxp-pill.active-green  { border-color: #22c55e; color: #166534; background: #f0fdf4; }
 
 .cxp-refresh-btn {
-  background: none; border: 1.5px solid #e2e8f0;
+  background: none; border: 1.5px solid var(--lf-border);
   border-radius: 10px; padding: 0.5rem 0.8rem;
-  cursor: pointer; font-size: 1rem; color: #64748b;
+  cursor: pointer; font-size: 1rem; color: var(--lf-text-muted);
   transition: all 0.2s; margin-left: auto;
 }
-.cxp-refresh-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.cxp-refresh-btn:hover { background: var(--lf-info-bg); border-color: #E4E4E7; }
 
 /* Filtro de fecha (Desde/Hasta) y proveedor — historial de Cuentas por pagar */
 .cxp-date-filter {
   display: flex; align-items: center; gap: 0.5rem;
 }
 .cxp-date-filter label {
-  font-size: 0.75rem; font-weight: 700; color: #64748b; white-space: nowrap;
+  font-size: 0.75rem; font-weight: 700; color: var(--lf-text-muted); white-space: nowrap;
 }
 .cxp-filters-bar .ss-root.cxp-proveedor-select {
   max-width: 280px;
@@ -117,7 +117,7 @@
 /* ─── TABLA ─── */
 .cxp-table-container {
   background: white; border-radius: 14px;
-  border: 1px solid #f1f5f9; overflow-x: auto;
+  border: 1px solid var(--lf-info-bg); overflow-x: auto;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 .cxp-table { width: 100%; border-collapse: collapse; min-width: 900px; }
@@ -126,24 +126,24 @@
 .cxp-table th {
   padding: 0.85rem 0.75rem;
   font-size: 0.65rem; font-weight: 800;
-  color: #94a3b8; border-bottom: 2px solid #f1f5f9;
+  color: var(--lf-text-muted); border-bottom: 2px solid var(--lf-info-bg);
   text-transform: uppercase; letter-spacing: 0.07em;
   white-space: nowrap;
 }
 .cxp-table td {
-  padding: 0.9rem 0.75rem; border-bottom: 1px solid #f8fafc;
+  padding: 0.9rem 0.75rem; border-bottom: 1px solid var(--lf-bg);
   font-size: 0.84rem; vertical-align: middle;
 }
 .cxp-table tbody tr { transition: background 0.12s; }
 .cxp-table tbody tr:hover td { background: #fafbff; }
 .cxp-table tr.row-pagado td { opacity: 0.55; }
-.cxp-table tr.row-anulada td { opacity: 0.5; background: #f8fafc; text-decoration: line-through; text-decoration-color: #cbd5e1; }
+.cxp-table tr.row-anulada td { opacity: 0.5; background: var(--lf-bg); text-decoration: line-through; text-decoration-color: #E4E4E7; }
 .cxp-table tr.row-anulada .cxp-dias-badge,
 .cxp-table tr.row-anulada .cxp-actions-wrap,
 .cxp-table tr.row-anulada .cxp-status-cell { text-decoration: none; }
 
 .text-center { text-align: center; } .text-right { text-align: right; }
-.cxp-empty { text-align: center; padding: 3.5rem !important; color: #94a3b8; font-style: italic; font-size: 0.9rem; }
+.cxp-empty { text-align: center; padding: 3.5rem !important; color: var(--lf-text-muted); font-style: italic; font-size: 0.9rem; }
 
 /* Badges días restantes */
 .cxp-dias-badge {
@@ -154,7 +154,7 @@
 .badge-green   { background: #dcfce7; color: #166534; }
 .badge-yellow  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .badge-red-text { color: #ef4444; font-weight: 800; }
-.badge-gray-text { color: #94a3b8; font-weight: 600; }
+.badge-gray-text { color: var(--lf-text-muted); font-weight: 600; }
 .badge-urgente {
   background: #fef2f2; color: #b91c1c;
   border: 1px solid #fca5a5; font-weight: 800;
@@ -171,7 +171,7 @@
 /* ─── BOTONES DE ACCIÓN (todos igual tamaño) ─── */
 .btn-cxp-action {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #0f172a; color: white; border: none;
+  background: var(--lf-primary-dark); color: white; border: none;
   padding: 0; /* el tamaño lo da width/height */
   width: 80px; height: 32px;
   border-radius: 8px; font-weight: 700;
@@ -179,7 +179,7 @@
   transition: background 0.2s; white-space: nowrap;
   gap: 0.3rem;
 }
-.btn-cxp-action:hover { background: #1e293b; }
+.btn-cxp-action:hover { background: var(--lf-text); }
 
 .btn-cxp-urgente { background: #ef4444 !important; }
 .btn-cxp-urgente:hover { background: #b91c1c !important; }
@@ -222,7 +222,7 @@
 .cxp-alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 .cxp-alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .cxp-alert-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
-.cxp-alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.cxp-alert-info    { background: var(--lf-primary-light); color: var(--lf-primary-dark); border: 1px solid var(--lf-primary-soft); }
 
 /* ─── PILLS CON BADGE ─── */
 .cxp-pill-badge {
@@ -236,37 +236,37 @@
   border-radius: 16px; width: 100%; max-width: 460px;
   box-shadow: 0 20px 50px rgba(0,0,0,0.2);
 }
-.cxp-modal-card h3 { margin: 0 0 0.3rem 0; color: #0f172a; font-size: 1.1rem; }
-.cxp-modal-subtitle { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.83rem; }
+.cxp-modal-card h3 { margin: 0 0 0.3rem 0; color: var(--lf-text); font-size: 1.1rem; }
+.cxp-modal-subtitle { margin: 0 0 1.2rem 0; color: var(--lf-text-muted); font-size: 0.83rem; }
 
 .cxp-modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-.cxp-modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #94a3b8; line-height: 1; padding: 2px; }
-.cxp-modal-close:hover { color: #334155; }
+.cxp-modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--lf-text-muted); line-height: 1; padding: 2px; }
+.cxp-modal-close:hover { color: #3F3F46; }
 
 .cxp-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.25rem; }
 .cxp-info-box {
-  background: #f8fafc; padding: 0.85rem 1rem;
-  border-radius: 10px; border: 1px solid #e2e8f0;
+  background: var(--lf-bg); padding: 0.85rem 1rem;
+  border-radius: 10px; border: 1px solid var(--lf-border);
 }
 .cxp-info-box.warning { background: #fef2f2; border-color: #fca5a5; }
-.cxp-info-box label { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.cxp-info-box span { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+.cxp-info-box label { display: block; font-size: 0.65rem; font-weight: 800; color: var(--lf-text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.cxp-info-box span { font-size: 1.1rem; font-weight: 800; color: var(--lf-text); }
 
 .cxp-modal-body { max-height: 70vh; overflow-y: auto; padding: 0.25rem 0; }
 
 .cxp-input-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
-.cxp-input-group label { font-size: 0.78rem; font-weight: 700; color: #475569; }
+.cxp-input-group label { font-size: 0.78rem; font-weight: 700; color: #52525B; }
 .cxp-input-group input {
-  padding: 0.7rem 0.9rem; border: 1.5px solid #e2e8f0;
+  padding: 0.7rem 0.9rem; border: 1.5px solid var(--lf-border);
   border-radius: 10px; font-size: 0.92rem; font-weight: 600;
   outline: none; transition: border-color 0.2s;
 }
-.cxp-input-group input:focus { border-color: #3b82f6; }
-.cxp-input-group small { color: #94a3b8; font-size: 0.68rem; }
+.cxp-input-group input:focus { border-color: var(--lf-primary); }
+.cxp-input-group small { color: var(--lf-text-muted); font-size: 0.68rem; }
 
 .cxp-modal-footer {
   display: flex; justify-content: flex-end; gap: 0.75rem;
-  padding-top: 1rem; border-top: 1px solid #f1f5f9; margin-top: 0.5rem;
+  padding-top: 1rem; border-top: 1px solid var(--lf-info-bg); margin-top: 0.5rem;
 }
 
 /* Botones del modal — mismo tamaño */
@@ -280,27 +280,27 @@
   transition: all 0.2s; border: none; white-space: nowrap;
 }
 .btn-cxp-cancel {
-  background: #f1f5f9; color: #475569;
-  border: 1.5px solid #e2e8f0;
+  background: var(--lf-info-bg); color: #52525B;
+  border: 1.5px solid var(--lf-border);
 }
-.btn-cxp-cancel:hover { background: #e2e8f0; }
+.btn-cxp-cancel:hover { background: var(--lf-border); }
 .btn-cxp-pay {
-  background: #0f172a; color: white;
+  background: var(--lf-primary-dark); color: white;
 }
-.btn-cxp-pay:hover { background: #1e293b; }
+.btn-cxp-pay:hover { background: var(--lf-text); }
 
 /* ─── BOTTOM STICKY BAR ─── */
 .cxp-bottom-sticky {
   position: fixed; bottom: 0; left: 250px; right: 0;
-  background: #0f172a; color: white; padding: 0.9rem 3rem;
+  background: var(--lf-primary-dark); color: white; padding: 0.9rem 3rem;
   display: flex; justify-content: space-between; align-items: center;
   z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 }
-.sticky-left p  { margin: 0 0 0.15rem 0; font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.sticky-left p  { margin: 0 0 0.15rem 0; font-size: 0.68rem; color: var(--lf-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
 .sticky-left h2 { margin: 0; font-size: 1.65rem; font-weight: 800; }
 .sticky-right   { text-align: right; }
-.sticky-right p { margin: 0; font-size: 0.82rem; color: #cbd5e1; }
-.sticky-right h4 { margin: 0.15rem 0 0; font-size: 0.9rem; font-weight: 700; color: #94a3b8; }
+.sticky-right p { margin: 0; font-size: 0.82rem; color: #E4E4E7; }
+.sticky-right h4 { margin: 0.15rem 0 0; font-size: 0.9rem; font-weight: 700; color: var(--lf-text-muted); }
 .text-yellow-bright { color: #fde047 !important; }
 
 .sticky-center { flex: 1; display: flex; justify-content: center; }

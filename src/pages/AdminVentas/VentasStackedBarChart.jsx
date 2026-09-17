@@ -9,10 +9,10 @@ function formatSoles(n) {
 }
 
 function hexToRgb(hex) {
-  const raw = String(hex || '#012B63').replace('#', '');
+  const raw = String(hex || 'var(--lf-primary-darker)').replace('#', '');
   const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
   const n = Number.parseInt(full, 16);
-  if (Number.isNaN(n)) return { r: 1, g: 43, b: 99 };
+  if (Number.isNaN(n)) return { r: 198, g: 46, b: 58 };
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
@@ -38,7 +38,7 @@ function TooltipHora({ active, payload, label, vendedores }) {
     .map((p) => {
       const id = Number(String(p.dataKey).replace(/^v_/, ''));
       const vend = vendedores.find((v) => v.id === id);
-      return { nombre: vend?.nombre || `Vendedor #${id}`, valor: Number(p.value), color: vend?.color || '#012B63' };
+      return { nombre: vend?.nombre || `Vendedor #${id}`, valor: Number(p.value), color: vend?.color || 'var(--lf-primary-darker)' };
     });
   const total = filas.reduce((s, f) => s + f.valor, 0);
 
@@ -104,27 +104,27 @@ export default function VentasStackedBarChart({ data = [], vendedores = [] }) {
               );
             })}
             <filter id="avBarHoverShadow" x="-20%" y="-20%" width="140%" height="160%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#012B63" floodOpacity="0.28" />
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="var(--lf-primary-darker)" floodOpacity="0.28" />
             </filter>
           </defs>
           <CartesianGrid
             strokeDasharray="0"
-            stroke="#e8eef5"
+            stroke="var(--lf-border)"
             vertical={false}
             strokeOpacity={0.55}
           />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
+            tick={{ fontSize: 11, fill: 'var(--lf-text-muted)', fontWeight: 600 }}
             interval={2}
             tickFormatter={(v, i) => (i % 3 === 0 ? v : '')}
-            axisLine={{ stroke: '#e2e8f0' }}
+            axisLine={{ stroke: 'var(--lf-border)' }}
             tickLine={false}
             tickMargin={10}
             height={36}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+            tick={{ fontSize: 11, fill: 'var(--lf-text-muted)', fontWeight: 600 }}
             tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v))}
             axisLine={false}
             tickLine={false}
@@ -133,7 +133,7 @@ export default function VentasStackedBarChart({ data = [], vendedores = [] }) {
           />
           <Tooltip
             content={<TooltipHora vendedores={vendedores} />}
-            cursor={{ fill: 'rgba(1, 43, 99, 0.045)', radius: 6 }}
+            cursor={{ fill: 'rgba(225, 29, 46, 0.045)', radius: 6 }}
             wrapperStyle={{ outline: 'none' }}
           />
           {vendedores.map((v, idx) => {

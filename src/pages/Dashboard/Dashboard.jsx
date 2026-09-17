@@ -84,7 +84,7 @@ export default function Dashboard() {
   const verificarTurno = async () => {
     // Si está offline, intentar recuperar turno del localStorage
     if (!navigator.onLine) {
-      const turnoGuardado = localStorage.getItem('saludFutura_turnoActivo');
+      const turnoGuardado = localStorage.getItem('luxfarma_turnoActivo');
       if (turnoGuardado) {
         const turno = JSON.parse(turnoGuardado);
         setTurnoActivo(turno);
@@ -102,10 +102,10 @@ export default function Dashboard() {
       if (data) {
         setTurnoActivo(data);
         // Guardar turno en localStorage para uso offline
-        localStorage.setItem('saludFutura_turnoActivo', JSON.stringify(data));
+        localStorage.setItem('luxfarma_turnoActivo', JSON.stringify(data));
         cargarVentasDelTurno(data.id_turno);
       } else {
-        localStorage.removeItem('saludFutura_turnoActivo');
+        localStorage.removeItem('luxfarma_turnoActivo');
         const { data: maxData } = await supabase
           .from('caja_turnos')
           .select('id_turno')
@@ -117,7 +117,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error verificando turno:", error);
       // Si falla, intentar recuperar del localStorage
-      const turnoGuardado = localStorage.getItem('saludFutura_turnoActivo');
+      const turnoGuardado = localStorage.getItem('luxfarma_turnoActivo');
       if (turnoGuardado) {
         setTurnoActivo(JSON.parse(turnoGuardado));
       }
@@ -218,11 +218,11 @@ export default function Dashboard() {
 
       if (esRolCaja(user.id_rol)) {
         mostrarAlerta("Turno cerrado exitosamente. El sistema cerrará tu sesión." + avisoImpresion, tipoAviso, () => {
-          localStorage.removeItem('saludFutura_turnoActivo');
+          localStorage.removeItem('luxfarma_turnoActivo');
           logout(); navigate('/login');
         });
       } else {
-        localStorage.removeItem('saludFutura_turnoActivo');
+        localStorage.removeItem('luxfarma_turnoActivo');
         mostrarAlerta("Turno cerrado exitosamente." + avisoImpresion, tipoAviso, () => {
           dispararHintLogout();
           navigate('/admin-dashboard');
@@ -272,39 +272,39 @@ export default function Dashboard() {
         <div className="modal-overlay-strict" role="dialog" aria-modal="true" data-keyboard-trap>
           <div className="apertura-modal-modern">
             <button type="button" className="btn-close-abs" data-enter-skip="true" tabIndex={-1} onClick={() => setShowCierreModal(false)}><UiIcon name="X" size={16} /></button>
-            <div className="apertura-header-modern" style={{backgroundColor: '#022b5e', padding: '2rem 2.5rem'}}>
+            <div className="apertura-header-modern" style={{backgroundColor: 'var(--lf-primary-darker)', padding: '2rem 2.5rem'}}>
               <div className="circle-decoration circle-1"></div><div className="circle-decoration circle-2"></div>
-              <p className="header-label" style={{color: '#bfdbfe'}}>CIERRE DE TURNO (CIEGO)</p>
+              <p className="header-label" style={{color: 'var(--lf-primary-soft)'}}>CIERRE DE TURNO (CIEGO)</p>
               <h2 className="header-monto" style={{fontSize: '1.8rem', marginTop: '10px'}}>Declaración de Saldos</h2>
-              <p className="header-subtitle" style={{color: '#bfdbfe', marginTop: '10px'}}>{user?.sucursales?.nombre_comercial} · {horaFormateada}</p>
+              <p className="header-subtitle" style={{color: 'var(--lf-primary-soft)', marginTop: '10px'}}>{user?.sucursales?.nombre_comercial} · {horaFormateada}</p>
             </div>
             <form className="apertura-body-modern" onSubmit={procesarCierreCaja}>
               <div className="badge-ready" style={{backgroundColor: '#fef2f2', color: '#b91c1c'}}><span style={{fontWeight: 'bold', marginRight: '5px'}}><UiIcon name="AlertTriangle" size={16} /></span> Conteo de fin de turno</div>
 
               {/* Resumen del sistema para referencia */}
-              <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:'10px',padding:'0.8rem 1rem',marginBottom:'1rem'}}>
-                <p style={{fontSize:'0.65rem',fontWeight:700,color:'#94a3b8',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'0.5rem'}}>VENTAS DEL TURNO (SISTEMA)</p>
+              <div style={{background:'var(--lf-bg)',border:'1px solid var(--lf-border)',borderRadius:'10px',padding:'0.8rem 1rem',marginBottom:'1rem'}}>
+                <p style={{fontSize:'0.65rem',fontWeight:700,color:'var(--lf-text-muted)',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'0.5rem'}}>VENTAS DEL TURNO (SISTEMA)</p>
                 <div style={{display:'flex',gap:'1rem',flexWrap:'wrap'}}>
                   <div style={{flex:1,minWidth:'80px'}}>
-                    <p style={{fontSize:'0.65rem',color:'#64748b',margin:0}}>Apertura</p>
-                    <p style={{fontWeight:700,color:'#0f172a',margin:0}}>S/ {Number(turnoActivo?.monto_apertura||0).toFixed(2)}</p>
+                    <p style={{fontSize:'0.65rem',color:'var(--lf-text-muted)',margin:0}}>Apertura</p>
+                    <p style={{fontWeight:700,color:'var(--lf-text)',margin:0}}>S/ {Number(turnoActivo?.monto_apertura||0).toFixed(2)}</p>
                   </div>
                   <div style={{flex:1,minWidth:'80px'}}>
-                    <p style={{fontSize:'0.65rem',color:'#64748b',margin:0}}>Efectivo ventas</p>
+                    <p style={{fontSize:'0.65rem',color:'var(--lf-text-muted)',margin:0}}>Efectivo ventas</p>
                     <p style={{fontWeight:700,color:'#16a34a',margin:0}}>S/ {totalesPagos.efectivo.toFixed(2)}</p>
                   </div>
                   <div style={{flex:1,minWidth:'80px'}}>
-                    <p style={{fontSize:'0.65rem',color:'#64748b',margin:0}}>Efectivo esperado</p>
+                    <p style={{fontSize:'0.65rem',color:'var(--lf-text-muted)',margin:0}}>Efectivo esperado</p>
                     <p style={{fontWeight:800,color:'#b91c1c',margin:0}}>S/ {(Number(turnoActivo?.monto_apertura||0) + totalesPagos.efectivo).toFixed(2)}</p>
                   </div>
                   <div style={{flex:1,minWidth:'80px'}}>
-                    <p style={{fontSize:'0.65rem',color:'#64748b',margin:0}}>Yape esperado</p>
-                    <p style={{fontWeight:800,color:'#7c3aed',margin:0}}>S/ {totalesPagos.yape.toFixed(2)}</p>
+                    <p style={{fontSize:'0.65rem',color:'var(--lf-text-muted)',margin:0}}>Yape esperado</p>
+                    <p style={{fontWeight:800,color:'var(--lf-accent)',margin:0}}>S/ {totalesPagos.yape.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
 
-              <p style={{fontSize: '0.85rem', color: '#475569', marginBottom: '1rem', lineHeight: '1.4'}}>Cuenta el dinero de la gaveta y verifica el total de Yape en el celular. <strong>Ingresa los montos exactos.</strong></p>
+              <p style={{fontSize: '0.85rem', color: '#52525B', marginBottom: '1rem', lineHeight: '1.4'}}>Cuenta el dinero de la gaveta y verifica el total de Yape en el celular. <strong>Ingresa los montos exactos.</strong></p>
               <div className="input-section-modern" style={{marginBottom: '1rem'}}>
                 <label>EFECTIVO TOTAL EN CAJA (Billetes y monedas)</label>
                 <div className="input-row-modern" style={{borderBottomColor: '#b91c1c'}}><span className="currency-modern" style={{color: '#b91c1c'}}>S/</span><input type="number" step="0.10" placeholder="0.00" value={efectivoFisico} onChange={(e) => setEfectivoFisico(e.target.value)} required autoFocus style={{color: '#b91c1c'}} /></div>
@@ -317,7 +317,7 @@ export default function Dashboard() {
               </div>
               <div className="input-section-modern">
                 <label>MONTO TOTAL VERIFICADO EN YAPE</label>
-                <div className="input-row-modern" style={{borderBottomColor: '#8b5cf6'}}><span className="currency-modern" style={{color: '#8b5cf6', fontWeight: 'bold'}}>Y</span><input type="number" step="0.10" placeholder="0.00" value={yapeVerificado} onChange={(e) => setYapeVerificado(e.target.value)} required style={{color: '#8b5cf6'}} /></div>
+                <div className="input-row-modern" style={{borderBottomColor: 'var(--lf-accent)'}}><span className="currency-modern" style={{color: 'var(--lf-accent)', fontWeight: 'bold'}}>Y</span><input type="number" step="0.10" placeholder="0.00" value={yapeVerificado} onChange={(e) => setYapeVerificado(e.target.value)} required style={{color: 'var(--lf-accent)'}} /></div>
                 {yapeVerificado !== '' && (
                   <small style={{color: Math.abs(Number(yapeVerificado) - totalesPagos.yape) <= 0.01 ? '#16a34a' : '#b91c1c', fontWeight:600}}>
                     Esperado: S/ {totalesPagos.yape.toFixed(2)}
@@ -407,8 +407,8 @@ export default function Dashboard() {
               <div className="icon-box yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
             </div>
             <small className="trend neutral">Efectivo en caja (apertura + efectivo)</small>
-            <small className="trend neutral" style={{ display: 'block', marginTop: 4, color: '#64748b' }}>
-              Total cobrado (todos los métodos): <strong style={{ color: '#0f172a' }}>S/ {totalCobradoTodosMetodos.toFixed(2)}</strong>
+            <small className="trend neutral" style={{ display: 'block', marginTop: 4, color: 'var(--lf-text-muted)' }}>
+              Total cobrado (todos los métodos): <strong style={{ color: 'var(--lf-text)' }}>S/ {totalCobradoTodosMetodos.toFixed(2)}</strong>
             </small>
           </div>
           <div className="stat-card border-green"><div className="stat-card-content"><div><p>TICKETS EMITIDOS</p><h3>{ventasHoy.length}</h3></div><div className="icon-box green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div></div><small className="trend neutral">En este turno</small></div>

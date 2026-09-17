@@ -1,7 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { fetchAllRows } from './supabasePage';
 
-const EVENTO_LABS = 'saludfutura:laboratorios-changed';
+const EVENTO_LABS = 'luxfarma:laboratorios-changed';
 
 /** Comparación estable: sin mayúsculas y colapsando espacios extras. */
 export function normalizarNombreLab(nombre) {

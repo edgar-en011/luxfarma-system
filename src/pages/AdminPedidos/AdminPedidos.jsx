@@ -9,7 +9,7 @@ import { fetchLaboratorios, suscribirLaboratoriosChanged } from '../../utils/lab
 import { fetchProveedores, suscribirProveedoresChanged } from '../../utils/proveedoresCatalogo';
 import SearchableSelect from '../../components/SearchableSelect';
 import './AdminPedidos.css';
-import icono from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
 import UiIcon from '../../components/UiIcon';
 
 // Fase 1 de "Gestionar Pedido Proveedor": armar/listar pedidos futuros a un proveedor
@@ -22,7 +22,9 @@ const PEDIDOS_DRAFT_KEY = 'pedidos_nuevo_borrador';
 function LogoCargando({ texto }) {
   return (
     <div className="ped-loading-logo">
-      <img src={icono} alt="Cargando" className="ped-loading-logo-img" />
+      <span className="ped-loading-logo-img">
+        <LogoLuxFarma variant="icon" size={42} color="red" />
+      </span>
       {texto && <span>{texto}</span>}
     </div>
   );

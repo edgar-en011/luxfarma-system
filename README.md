@@ -1,16 +1,70 @@
-# React + Vite
+# LuxFarma — Sistema de Gestión de Farmacia
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación de escritorio (Electron) y web (Vite + React) para operar una botica: punto de venta, inventario, compras, turnos de caja y reportes.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + Vite
+- Supabase (PostgreSQL + Auth de datos)
+- SQLite local en Electron (modo offline)
+- Impresión térmica ESC/POS 80 mm
+- Electron Builder (instalador Windows)
 
-## React Compiler
+## Requisitos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 20 o superior
+- npm
 
-## Expanding the ESLint configuration
+## Instalación
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+Copia `.env.example` a `.env` y completa las variables públicas de Supabase.
+
+```bash
+cp .env.example .env
+```
+
+En Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+## Variables de entorno
+
+Ver `.env.example`. Las únicas requeridas para arrancar la UI son:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+`VITE_FACTURACION_ELECTRONICA` controla Boleta/Factura SUNAT. Por defecto `false`: el POS emite Nota de Venta y no aparecen las pantallas SUNAT.
+
+No pongas secretos (service role, tokens Nubefact) en el frontend.
+
+## Desarrollo
+
+```bash
+npm run dev
+```
+
+Escritorio con Electron:
+
+```bash
+npm run electron:dev
+```
+
+## Build
+
+```bash
+npm run build
+npm run electron:build
+```
+
+El instalador queda en `release/` como `LuxFarma-Setup-<versión>.exe`.
+
+## Identidad de la empresa
+
+Los datos de ticket (nombre, RUC, dirección) viven en `src/config/empresa.js` y se usan como respaldo si la sucursal en Supabase no trae esos campos.

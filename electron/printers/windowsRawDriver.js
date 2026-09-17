@@ -45,7 +45,7 @@ function escapePsSingleQuotes(value) {
 }
 
 function sendRawToPrinterSync(printerName, buffer) {
-  const tmpBin = path.join(os.tmpdir(), `salud-futura-ticket-${Date.now()}-${process.pid}.bin`)
+  const tmpBin = path.join(os.tmpdir(), `luxfarma-ticket-${Date.now()}-${process.pid}.bin`)
   fs.writeFileSync(tmpBin, buffer)
 
   const ps = `
@@ -55,7 +55,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-public class SaludFuturaRawPrinter {
+public class LuxFarmaRawPrinter {
   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
   public class DOCINFOA {
     [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
@@ -91,7 +91,7 @@ public class SaludFuturaRawPrinter {
     }
     try {
       DOCINFOA di = new DOCINFOA();
-      di.pDocName = "Salud Futura Ticket";
+      di.pDocName = "LuxFarma Ticket";
       di.pDataType = "RAW";
       if (!StartDocPrinter(hPrinter, 1, di)) {
         throw new Exception("StartDocPrinter failed (Win32=" + Marshal.GetLastWin32Error() + ")");
@@ -126,7 +126,7 @@ public class SaludFuturaRawPrinter {
 $printer = '${escapePsSingleQuotes(printerName)}'
 $path = '${escapePsSingleQuotes(tmpBin)}'
 $bytes = [System.IO.File]::ReadAllBytes($path)
-[SaludFuturaRawPrinter]::SendBytes($printer, $bytes)
+[LuxFarmaRawPrinter]::SendBytes($printer, $bytes)
 Write-Output 'OK'
 `
 

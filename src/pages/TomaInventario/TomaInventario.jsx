@@ -1003,7 +1003,7 @@ export default function TomaInventario() {
             <span className="ti-v-icon-big"><UiIcon name="Lock" size={16} /></span>
             <h2>Sin sesión activa</h2>
             <p>El administrador aún no ha abierto una sesión de inventario.<br />Consulta con {nombreAdmin || 'tu administrador'} para continuar.</p>
-            <button onClick={cargarSesion} style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}><UiIcon name="RefreshCw" size={15} /> Verificar nuevamente
+            <button onClick={cargarSesion} style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', background: 'var(--lf-primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}><UiIcon name="RefreshCw" size={15} /> Verificar nuevamente
             </button>
           </div>
         </div>

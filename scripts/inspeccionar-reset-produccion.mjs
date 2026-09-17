@@ -1,5 +1,5 @@
 /**
- * Solo lectura: inventario para el reset de producción Julcán.
+ * Solo lectura: inventario para el reset de producción.
  * No borra ni actualiza nada.
  */
 import { createClient } from '@supabase/supabase-js';

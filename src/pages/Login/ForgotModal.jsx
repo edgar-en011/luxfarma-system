@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import icono from '../../assets/icono.png';
+import LogoLuxFarma from '../../components/LogoLuxFarma';
 import { supabase } from '../../supabaseClient';
 import './ForgotModal.css';
 import UiIcon from '../../components/UiIcon';
@@ -85,8 +85,10 @@ export default function ForgotModal({ onClose }) {
 
           {/* LOGO IZQUIERDO */}
           <div className="modal-left">
-            <img src={icono} alt="Cruz Farmacia" className="modal-logo-huge" />
-            <div className="modal-left-label">Salud Futura</div>
+            <div className="modal-logo-huge">
+              <LogoLuxFarma variant="icon" size={64} color="white" />
+            </div>
+            <div className="modal-left-label">LuxFarma</div>
             <div className="modal-left-sublabel">Sistema de Farmacia</div>
           </div>
 
@@ -133,7 +135,7 @@ export default function ForgotModal({ onClose }) {
                     />
                   </div>
                   <div className="modal-hint">
-                    <span style={{ color: '#28c840', fontSize: '12px' }}><UiIcon name="Check" size={16} /></span>
+                    <UiIcon name="Shield" size={14} />
                     Tu información está protegida
                   </div>
                   {error && <p className="modal-error">{error}</p>}

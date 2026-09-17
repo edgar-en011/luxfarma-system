@@ -91,7 +91,7 @@ export default function AdminSeriesSunat() {
           <p className="ai-muted">
             Cada sucursal usa la serie que Nubefact asignó a su establecimiento SUNAT.
             El correlativo se incrementa solo al emitir. Deja la tabla vacía hasta tener
-            la serie real (Julcán u otra sede).
+            la serie real de cada sede.
           </p>
         </div>
       </header>
@@ -148,7 +148,7 @@ export default function AdminSeriesSunat() {
             />
           </div>
         </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: '0.88rem', fontWeight: 600, color: '#334155' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: '0.88rem', fontWeight: 600, color: '#3F3F46' }}>
           <input
             type="checkbox"
             checked={form.activo}
@@ -175,7 +175,7 @@ export default function AdminSeriesSunat() {
         {loading ? (
           <div className="asu-empty">Cargando series…</div>
         ) : filas.length === 0 ? (
-          <div className="asu-empty">No hay series cargadas. Agrega la de Julcán cuando Nubefact te la asigne.</div>
+          <div className="asu-empty">No hay series cargadas. Agrega la de tu sucursal cuando Nubefact te la asigne.</div>
         ) : (
           <table className="asu-table">
             <thead>

@@ -6,7 +6,7 @@
 .pfm-tabs {
   display: flex;
   gap: 0.4rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--lf-border);
   margin-bottom: 1rem;
 }
 
@@ -18,12 +18,12 @@
   margin-bottom: -1px;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--lf-text-muted);
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
-.pfm-tab-btn:hover { color: #475569; }
-.pfm-tab-btn.active { color: #1e40af; border-bottom-color: #1e40af; }
+.pfm-tab-btn:hover { color: #52525B; }
+.pfm-tab-btn.active { color: var(--lf-primary-dark); border-bottom-color: var(--lf-primary-dark); }
 
 /* Pestaña inactiva fuera del layout: no apilar formularios (el cursor de
    Electron/Chromium lo robaba la capa invisible aunque el clic pasara). */
@@ -38,8 +38,8 @@
 }
 
 .pfm-section {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--lf-bg);
+  border: 1px solid var(--lf-border);
   border-radius: 12px;
   padding: 0.85rem 1.25rem;
   margin-bottom: 0.75rem;
@@ -48,7 +48,7 @@
 .pfm-section-title {
   font-size: 0.8rem;
   font-weight: 800;
-  color: #1e40af;
+  color: var(--lf-primary-dark);
   margin-bottom: 0.6rem;
 }
 
@@ -73,21 +73,21 @@
 .pfm-costo-hint {
   margin: 0.35rem 0 0;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--lf-text-muted);
   line-height: 1.35;
 }
 
 .pfm-lotes-hint {
   margin: 0 0 0.75rem;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--lf-text-muted);
   line-height: 1.4;
 }
 
 .pfm-lotes-empty {
   margin: 0.5rem 0;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--lf-text-muted);
 }
 
 .pfm-lotes-table-wrap {
@@ -103,17 +103,17 @@
 .pfm-lotes-table th {
   text-align: left;
   padding: 0.45rem 0.5rem;
-  color: #64748b;
+  color: var(--lf-text-muted);
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--lf-border);
 }
 
 .pfm-lotes-table td {
   padding: 0.5rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #0f172a;
+  border-bottom: 1px solid var(--lf-info-bg);
+  color: var(--lf-text);
   vertical-align: middle;
 }
 
@@ -127,7 +127,7 @@
 
 .pfm-lote-estado.e-vigente { background: #dcfce7; color: #166534; }
 .pfm-lote-estado.e-vencido { background: #fee2e2; color: #991b1b; }
-.pfm-lote-estado.e-agotado { background: #f1f5f9; color: #64748b; }
+.pfm-lote-estado.e-agotado { background: var(--lf-info-bg); color: var(--lf-text-muted); }
 
 .pfm-lote-acciones {
   white-space: nowrap;
@@ -137,28 +137,28 @@
 .pfm-lote-btn-edit,
 .pfm-lote-btn-ok,
 .pfm-lote-btn-cancel {
-  border: 1px solid #cbd5e1;
+  border: 1px solid #E4E4E7;
   border-radius: 6px;
   padding: 0.3rem 0.55rem;
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   background: #fff;
-  color: #0f172a;
+  color: var(--lf-text);
   margin-left: 0.35rem;
 }
 
 .pfm-lote-btn-ok {
-  background: #0f172a;
+  background: var(--lf-primary-dark);
   color: #fff;
-  border-color: #0f172a;
+  border-color: var(--lf-primary-dark);
 }
 
 .pfm-lote-btn-cancel {
-  color: #64748b;
+  color: var(--lf-text-muted);
 }
 
-.pfm-lote-btn-edit:hover { background: #f8fafc; }
+.pfm-lote-btn-edit:hover { background: var(--lf-bg); }
 
 @media (max-width: 1024px) {
   .pfm-grid {

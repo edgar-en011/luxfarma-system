@@ -82,7 +82,7 @@ export default function ProcesandoVenta({ visible, pasos = [], onCompleto }) {
         .pv-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(15, 23, 42, 0.55);
+          background: rgba(31, 26, 27, 0.55);
           backdrop-filter: blur(14px) saturate(180%);
           -webkit-backdrop-filter: blur(14px) saturate(180%);
           display: flex;
@@ -117,9 +117,9 @@ export default function ProcesandoVenta({ visible, pasos = [], onCompleto }) {
           border-radius: 50%;
           background: conic-gradient(
             from 0deg,
-            #3b82f6 0%,
-            #60a5fa 40%,
-            #93c5fd 70%,
+            var(--lf-primary) 0%,
+            var(--lf-primary-soft) 40%,
+            var(--lf-primary-soft) 70%,
             transparent 100%
           );
           animation: pv-spinner-rotate 1.2s linear infinite;
@@ -166,7 +166,7 @@ export default function ProcesandoVenta({ visible, pasos = [], onCompleto }) {
           text-align: center;
           font-size: 1.05rem;
           font-weight: 700;
-          color: #0f172a;
+          color: var(--lf-text);
           margin: 0 0 0.4rem;
           letter-spacing: -0.01em;
         }
@@ -174,7 +174,7 @@ export default function ProcesandoVenta({ visible, pasos = [], onCompleto }) {
         .pv-subtitle {
           text-align: center;
           font-size: 0.82rem;
-          color: #64748b;
+          color: var(--lf-text-muted);
           margin: 0 0 1.5rem;
           min-height: 1em;
           transition: all 0.3s ease;
@@ -206,13 +206,13 @@ export default function ProcesandoVenta({ visible, pasos = [], onCompleto }) {
         }
 
         .pv-step-icon.pending {
-          background: #f1f5f9;
-          border: 1.5px solid #cbd5e1;
+          background: var(--lf-info-bg);
+          border: 1.5px solid #E4E4E7;
         }
 
         .pv-step-icon.active {
-          background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-          border: 1.5px solid #3b82f6;
+          background: linear-gradient(135deg, var(--lf-primary-soft), var(--lf-primary-soft));
+          border: 1.5px solid var(--lf-primary);
           animation: pv-spinner-pulse 1.2s ease-in-out infinite;
         }
 
@@ -243,24 +243,24 @@ export default function ProcesandoVenta({ visible, pasos = [], onCompleto }) {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: var(--lf-primary);
         }
 
         .pv-step-label {
           font-size: 0.88rem;
-          color: #475569;
+          color: #52525B;
           font-weight: 500;
           transition: all 0.3s ease;
           flex: 1;
         }
 
         .pv-step-label.done {
-          color: #0f172a;
+          color: var(--lf-text);
           font-weight: 600;
         }
 
         .pv-step-label.active {
-          color: #1e40af;
+          color: var(--lf-primary-dark);
           font-weight: 600;
         }
       `}</style>

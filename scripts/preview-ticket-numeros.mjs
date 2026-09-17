@@ -62,7 +62,7 @@ const payloadOnline = {
   sunatSerie: 'B003',
   sunatNumero: 8,
   sunatHash: 'abcHashPrueba',
-  sunatCadenaQr: '20611770708|03|B003|8|1.37|9.00|2026-09-02|1|40071015|abcHashPrueba',
+  sunatCadenaQr: `${TICKET_EMISOR.ruc}|03|B003|8|1.37|9.00|2026-09-02|1|40071015|abcHashPrueba`,
 };
 const sunatOnline = datosSunatTicket(payloadOnline);
 assert(sunatOnline?.cpe === 'B003-00000008', `CPE online: ${sunatOnline?.cpe}`);

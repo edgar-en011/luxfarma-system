@@ -332,8 +332,8 @@ export default function AdminUsuarios() {
                 <input type="text" value={formUsuario.apellidos} onChange={e => setFormUsuario({...formUsuario, apellidos: e.target.value})} placeholder="Ej: Pérez Gómez" />
               </div>
               <div className="usu-input-group">
-                <label>DNI * <small style={{color:'#64748b', fontWeight:400}}>(usado como usuario para login)</small></label>
-                <input type="text" required maxLength="8" value={formUsuario.dni} onChange={e => setFormUsuario({...formUsuario, dni: e.target.value.replace(/\D/g,'')})} placeholder="8 dígitos" style={{backgroundColor: '#f8fafc', fontWeight: 'bold'}} />
+                <label>DNI * <small style={{color:'var(--lf-text-muted)', fontWeight:400}}>(usado como usuario para login)</small></label>
+                <input type="text" required maxLength="8" value={formUsuario.dni} onChange={e => setFormUsuario({...formUsuario, dni: e.target.value.replace(/\D/g,'')})} placeholder="8 dígitos" style={{backgroundColor: 'var(--lf-bg)', fontWeight: 'bold'}} />
               </div>
               <div className="usu-input-group">
                 <label>Teléfono</label>
@@ -400,7 +400,7 @@ export default function AdminUsuarios() {
             <form className="usu-modal-body" onSubmit={handleGuardarSede} style={{gridTemplateColumns:'1fr'}}>
               <div className="usu-input-group">
                 <label>Nombre Comercial *</label>
-                <input type="text" required value={formSede.nombre_comercial} onChange={e => setFormSede({...formSede, nombre_comercial: e.target.value})} placeholder="Ej: SALUD FUTURA - SEDE NORTE" />
+                <input type="text" required value={formSede.nombre_comercial} onChange={e => setFormSede({...formSede, nombre_comercial: e.target.value})} placeholder="Ej: LuxFarma - SEDE NORTE" />
               </div>
               <div className="usu-input-group">
                 <label>Dirección</label>
@@ -441,18 +441,18 @@ export default function AdminUsuarios() {
         </div>
       </div>
 
-      <div style={{display:'flex', gap:'0', background:'#f4f6f9', borderRadius:'10px', padding:'4px', width:'fit-content', marginBottom:'1rem', border:'1px solid #e2e8f0'}}>
+      <div style={{display:'flex', gap:'0', background:'#f4f6f9', borderRadius:'10px', padding:'4px', width:'fit-content', marginBottom:'1rem', border:'1px solid var(--lf-border)'}}>
         <button
           onClick={() => setTabActiva('usuarios')}
           style={{padding:'0.5rem 1.5rem', borderRadius:'8px', border:'none', fontWeight:600, fontSize:'0.85rem', cursor:'pointer',
-            background: tabActiva === 'usuarios' ? '#172545' : 'transparent',
-            color: tabActiva === 'usuarios' ? 'white' : '#64748b', transition:'all 0.2s'}}
+            background: tabActiva === 'usuarios' ? 'var(--lf-primary-dark)' : 'transparent',
+            color: tabActiva === 'usuarios' ? 'white' : 'var(--lf-text-muted)', transition:'all 0.2s'}}
         ><UiIcon name="Users" size={15} /> Personal ({rawUsuarios.length})</button>
         <button
           onClick={() => setTabActiva('sedes')}
           style={{padding:'0.5rem 1.5rem', borderRadius:'8px', border:'none', fontWeight:600, fontSize:'0.85rem', cursor:'pointer',
-            background: tabActiva === 'sedes' ? '#172545' : 'transparent',
-            color: tabActiva === 'sedes' ? 'white' : '#64748b', transition:'all 0.2s'}}
+            background: tabActiva === 'sedes' ? 'var(--lf-primary-dark)' : 'transparent',
+            color: tabActiva === 'sedes' ? 'white' : 'var(--lf-text-muted)', transition:'all 0.2s'}}
         ><UiIcon name="Building2" size={15} /> Sedes ({sucursales.length})</button>
       </div>
 
@@ -461,7 +461,7 @@ export default function AdminUsuarios() {
       <div className="usu-kpis-grid">
         <div className="usu-kpi-card">
           <div className="kpi-info"><p>PERSONAL REGISTRADO</p><h2>{kpiTotal}</h2></div>
-          <div className="kpi-icon-usu bg-blue-soft"><UiIcon name="Users" size={16} /></div>
+          <div className="kpi-icon-usu bg-brand-soft"><UiIcon name="Users" size={16} /></div>
         </div>
         <div className="usu-kpi-card">
           <div className="kpi-info"><p>CUENTAS ACTIVAS</p><h2 className="text-green">{kpiActivos}</h2></div>
@@ -553,7 +553,7 @@ export default function AdminUsuarios() {
                       <td><span className="text-muted">{s.direccion || '—'}</span></td>
                       <td><span className="text-muted">{s.telefono || '—'}</span></td>
                       <td>
-                        <span style={{background:'#eff6ff',color:'#2563eb',padding:'2px 10px',borderRadius:'20px',fontWeight:700,fontSize:'0.78rem'}}>
+                        <span style={{background:'var(--lf-primary-light)',color:'var(--lf-primary)',padding:'2px 10px',borderRadius:'20px',fontWeight:700,fontSize:'0.78rem'}}>
                           {usuariosDeSede} usuario{usuariosDeSede !== 1 ? 's' : ''}
                         </span>
                       </td>

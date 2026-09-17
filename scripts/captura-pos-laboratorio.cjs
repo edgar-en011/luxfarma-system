@@ -94,7 +94,7 @@ app.whenReady().then(async () => {
 
     await cargar(win, `${URL_BASE}/login`);
     await win.webContents.executeJavaScript(
-      `localStorage.setItem('saludFuturaUser', ${JSON.stringify(JSON.stringify(admin))}); true`,
+      `localStorage.setItem('luxfarmaUser', ${JSON.stringify(JSON.stringify(admin))}); true`,
     );
 
     await cargar(win, `${URL_BASE}/admin-pos`);

@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1.5px solid #e2e8f0 !important;
+  border: 1.5px solid var(--lf-border) !important;
   border-radius: 10px !important;
   padding: 0.6rem 0.85rem !important;
   background: #fff !important;
@@ -11,8 +11,8 @@
   box-sizing: border-box;
 }
 .smart-date-input:focus-within {
-  border-color: #012B63 !important;
-  box-shadow: 0 0 0 3px rgba(1,43,99,0.08);
+  border-color: var(--lf-primary-darker) !important;
+  box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.08);
 }
 .smart-date-input input {
   border: none !important;
@@ -20,7 +20,7 @@
   font-family: 'Inter', sans-serif !important;
   font-size: 1rem !important;
   font-weight: 600 !important;
-  color: #1e293b !important;
+  color: var(--lf-text) !important;
   background: transparent !important;
   text-align: center;
   padding: 0 !important;
@@ -30,7 +30,7 @@
   min-width: 0;
 }
 .smart-date-input input::placeholder {
-  color: #cbd5e1 !important;
+  color: #E4E4E7 !important;
   font-weight: 400 !important;
   opacity: 1 !important;
 }
@@ -42,7 +42,7 @@
   width: 52px !important;
 }
 .sdi-sep {
-  color: #cbd5e1 !important;
+  color: #E4E4E7 !important;
   font-weight: 600;
   font-size: 1rem;
 }
