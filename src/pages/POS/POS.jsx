@@ -32,6 +32,7 @@ import {
 import { filaProductoPrecios } from "../../utils/productoPrecios";
 import { costoCatalogoUnidadBase, estamparCostoSnapshotCarrito } from "../../utils/costoVentaSnapshot";
 import { redondear2 } from "../../utils/dinero";
+import { bindMontoInput } from "../../utils/montoInput";
 import { formatPrecioUnitario, formatSolesUnitario } from "../../utils/precioExacto";
 import { buildPrintPayloadFromRecibo, printTicketVenta } from "../../utils/ticketPrint";
 import { cargarVentasDelTurno } from "../../utils/ventasDelTurno";
@@ -2120,12 +2121,11 @@ export default function POS() {
               </div>
               <input
                 ref={mixtoMonto1Ref}
-                type="number"
-                min="0"
-                step="0.01"
-                value={mixtoData.monto1}
-                onChange={(e) => setMixtoData({ ...mixtoData, monto1: e.target.value })}
                 placeholder="Monto 1"
+                {...bindMontoInput({
+                  value: mixtoData.monto1,
+                  onChange: (v) => setMixtoData({ ...mixtoData, monto1: v }),
+                })}
               />
             </div>
             <div className="mixto-block">
@@ -2142,7 +2142,13 @@ export default function POS() {
                   >{m}</button>
                 ))}
               </div>
-              <input type="number" min="0" step="0.01" value={mixtoData.monto2} onChange={(e) => setMixtoData({ ...mixtoData, monto2: e.target.value })} placeholder="Monto 2" />
+              <input
+                placeholder="Monto 2"
+                {...bindMontoInput({
+                  value: mixtoData.monto2,
+                  onChange: (v) => setMixtoData({ ...mixtoData, monto2: v }),
+                })}
+              />
             </div>
             <div
               className={`mixto-balance ${
@@ -3002,10 +3008,11 @@ export default function POS() {
                       <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>S/</span>
                       <input
                         ref={montoRecibidoRef}
-                        type="number"
                         placeholder="0.00"
-                        value={montoRecibido === '' || montoRecibido === null || montoRecibido === undefined ? '' : montoRecibido}
-                        onChange={(e) => setMontoRecibido(e.target.value === '' ? '' : Number(e.target.value))}
+                        {...bindMontoInput({
+                          value: montoRecibido === null || montoRecibido === undefined ? '' : montoRecibido,
+                          onChange: setMontoRecibido,
+                        })}
                         style={{ width: 130, padding: '6px 8px', borderRadius: 8, border: '2px solid rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 800, fontSize: '1.4rem', textAlign: 'center', outline: 'none' }}
                       />
                     </div>

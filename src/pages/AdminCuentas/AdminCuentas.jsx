@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import SmartDateInput from '../../components/SmartDateInput';
 import SearchableSelect from '../../components/SearchableSelect';
 import { hoyLocal } from '../../utils/fechas';
+import { bindMontoInput } from '../../utils/montoInput';
 import { assertEscritura } from '../../utils/supaWrite';
 import { fetchProveedores, suscribirProveedoresChanged } from '../../utils/proveedoresCatalogo';
 import './AdminCuentas.css';
@@ -281,8 +282,10 @@ export default function AdminCuentas() {
               <div className="cxp-input-group">
                 <label>Monto a abonar (S/) *</label>
                 <input
-                  type="number" step="0.01" min="0.01" max={compraAPagar.saldo} required
-                  value={montoAbono} onChange={e => setMontoAbono(e.target.value)}
+                  placeholder="0.00"
+                  required
+                  max={compraAPagar.saldo}
+                  {...bindMontoInput({ value: montoAbono, onChange: setMontoAbono })}
                 />
                 <small>Máximo: S/ {compraAPagar.saldo.toFixed(2)}. Puedes hacer abonos parciales.</small>
               </div>
