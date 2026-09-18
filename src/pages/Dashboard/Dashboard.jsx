@@ -8,6 +8,7 @@ import { cargarAlertasMiCaja } from '../../utils/alertasMiCaja';
 import { esRolCaja, esAdmin } from '../../utils/roles';
 import { buildCierreCajaPayload, printTicketCierreCaja } from '../../utils/ticketCierreCaja';
 import { cargarVentasDelTurno as fetchVentasDelTurno } from '../../utils/ventasDelTurno';
+import { bindMontoInput, isMontoVacio } from '../../utils/montoInput';
 import './Dashboard.css';
 import UiIcon from '../../components/UiIcon';
 
@@ -136,7 +137,12 @@ export default function Dashboard() {
 
   const handleAbrirCaja = async (e) => {
     e.preventDefault();
-    if (!montoApertura || isNaN(montoApertura) || Number(montoApertura) < 0) return;
+    if (isMontoVacio(montoApertura)) {
+      return mostrarAlerta('Ingresa el monto de apertura.', 'error');
+    }
+    if (isNaN(Number(montoApertura)) || Number(montoApertura) < 0) {
+      return mostrarAlerta('El monto de apertura debe ser 0 o mayor.', 'error');
+    }
     setAbriendoCaja(true);
     try {
       const { data, error } = await supabase.from('caja_turnos').insert([{ id_sucursal: user.id_sucursal, id_usuario_vendedor: user.id_usuario, monto_apertura: Number(montoApertura), estado: 'ABIERTO' }]).select().single();
@@ -155,7 +161,9 @@ export default function Dashboard() {
   // el "código del día" (fricción cliente-side, sin validación real en Supabase).
   const procesarCierreCaja = async (e) => {
     e.preventDefault();
-    if (efectivoFisico === '' || yapeVerificado === '') return mostrarAlerta("Por favor, ingresa ambos montos.", 'error');
+    if (isMontoVacio(efectivoFisico) || isMontoVacio(yapeVerificado)) {
+      return mostrarAlerta('Por favor, ingresa ambos montos.', 'error');
+    }
 
     const cajaInicial = Number(turnoActivo.monto_apertura);
     const fisico = Number(efectivoFisico);
@@ -307,7 +315,7 @@ export default function Dashboard() {
               <p style={{fontSize: '0.85rem', color: '#52525B', marginBottom: '1rem', lineHeight: '1.4'}}>Cuenta el dinero de la gaveta y verifica el total de Yape en el celular. <strong>Ingresa los montos exactos.</strong></p>
               <div className="input-section-modern" style={{marginBottom: '1rem'}}>
                 <label>EFECTIVO TOTAL EN CAJA (Billetes y monedas)</label>
-                <div className="input-row-modern" style={{borderBottomColor: '#b91c1c'}}><span className="currency-modern" style={{color: '#b91c1c'}}>S/</span><input type="number" step="0.10" placeholder="0.00" value={efectivoFisico} onChange={(e) => setEfectivoFisico(e.target.value)} required autoFocus style={{color: '#b91c1c'}} /></div>
+                <div className="input-row-modern" style={{borderBottomColor: '#b91c1c'}}><span className="currency-modern" style={{color: '#b91c1c'}}>S/</span><input placeholder="0.00" {...bindMontoInput({ value: efectivoFisico, onChange: setEfectivoFisico })} required autoFocus style={{color: '#b91c1c'}} /></div>
                 {efectivoFisico !== '' && (
                   <small style={{color: Number(efectivoFisico) === (Number(turnoActivo?.monto_apertura||0) + totalesPagos.efectivo) ? '#16a34a' : '#b91c1c', fontWeight:600}}>
                     Esperado: S/ {(Number(turnoActivo?.monto_apertura||0) + totalesPagos.efectivo).toFixed(2)}
@@ -317,7 +325,7 @@ export default function Dashboard() {
               </div>
               <div className="input-section-modern">
                 <label>MONTO TOTAL VERIFICADO EN YAPE</label>
-                <div className="input-row-modern" style={{borderBottomColor: 'var(--lf-accent)'}}><span className="currency-modern" style={{color: 'var(--lf-accent)', fontWeight: 'bold'}}>Y</span><input type="number" step="0.10" placeholder="0.00" value={yapeVerificado} onChange={(e) => setYapeVerificado(e.target.value)} required style={{color: 'var(--lf-accent)'}} /></div>
+                <div className="input-row-modern" style={{borderBottomColor: 'var(--lf-accent)'}}><span className="currency-modern" style={{color: 'var(--lf-accent)', fontWeight: 'bold'}}>Y</span><input placeholder="0.00" {...bindMontoInput({ value: yapeVerificado, onChange: setYapeVerificado })} required style={{color: 'var(--lf-accent)'}} /></div>
                 {yapeVerificado !== '' && (
                   <small style={{color: Math.abs(Number(yapeVerificado) - totalesPagos.yape) <= 0.01 ? '#16a34a' : '#b91c1c', fontWeight:600}}>
                     Esperado: S/ {totalesPagos.yape.toFixed(2)}
@@ -364,7 +372,7 @@ export default function Dashboard() {
                 <label>MONTO DE APERTURA</label>
                 <div className="input-row-modern golden-bottom">
                   <span className="currency-modern">S/</span>
-                  <input type="number" step="0.10" placeholder="0" value={montoApertura} onChange={(e) => setMontoApertura(e.target.value)} required autoFocus/>
+                  <input placeholder="0" {...bindMontoInput({ value: montoApertura, onChange: setMontoApertura })} required autoFocus/>
                 </div>
               </div>
               

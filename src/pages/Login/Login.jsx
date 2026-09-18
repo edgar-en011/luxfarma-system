@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
@@ -10,7 +10,38 @@ import LogoLuxFarma from '../../components/LogoLuxFarma';
 import LoadingScreen from './LoadingScreen';
 import ForgotModal from './ForgotModal';
 import { APP_VERSION } from '../../appVersion';
+import { EMPRESA } from '../../config/empresa';
+import { esEscenaNoche } from '../../utils/loginEscena';
 import UiIcon from '../../components/UiIcon';
+
+/** Estrellas: densas arriba, casi ninguna cerca del horizonte. 3 tamaños. */
+const LOGIN_STARS = [
+  { t: '3%', l: '4%', s: 1 }, { t: '5%', l: '11%', s: 2 }, { t: '2%', l: '18%', s: 1 },
+  { t: '7%', l: '24%', s: 3 }, { t: '4%', l: '31%', s: 1 }, { t: '9%', l: '37%', s: 2 },
+  { t: '3%', l: '44%', s: 1 }, { t: '6%', l: '51%', s: 2 }, { t: '2%', l: '58%', s: 1 },
+  { t: '8%', l: '64%', s: 3 }, { t: '4%', l: '71%', s: 1 }, { t: '10%', l: '77%', s: 2 },
+  { t: '3%', l: '84%', s: 1 }, { t: '7%', l: '91%', s: 2 }, { t: '5%', l: '96%', s: 1 },
+  { t: '12%', l: '7%', s: 2 }, { t: '14%', l: '15%', s: 1 }, { t: '11%', l: '22%', s: 3 },
+  { t: '15%', l: '29%', s: 1 }, { t: '13%', l: '36%', s: 2 }, { t: '16%', l: '43%', s: 1 },
+  { t: '12%', l: '50%', s: 2 }, { t: '14%', l: '57%', s: 1 }, { t: '11%', l: '65%', s: 3 },
+  { t: '15%', l: '72%', s: 1 }, { t: '13%', l: '80%', s: 2 }, { t: '16%', l: '87%', s: 1 },
+  { t: '12%', l: '94%', s: 2 }, { t: '19%', l: '5%', s: 1 }, { t: '21%', l: '13%', s: 2 },
+  { t: '18%', l: '20%', s: 1 }, { t: '22%', l: '27%', s: 3 }, { t: '20%', l: '34%', s: 1 },
+  { t: '23%', l: '41%', s: 2 }, { t: '19%', l: '48%', s: 1 }, { t: '21%', l: '55%', s: 2 },
+  { t: '18%', l: '62%', s: 1 }, { t: '22%', l: '69%', s: 3 }, { t: '20%', l: '76%', s: 1 },
+  { t: '23%', l: '83%', s: 2 }, { t: '19%', l: '90%', s: 1 }, { t: '26%', l: '9%', s: 2 },
+  { t: '28%', l: '17%', s: 1 }, { t: '25%', l: '25%', s: 2 }, { t: '29%', l: '33%', s: 1 },
+  { t: '27%', l: '40%', s: 3 }, { t: '30%', l: '47%', s: 1 }, { t: '26%', l: '54%', s: 2 },
+  { t: '28%', l: '61%', s: 1 }, { t: '25%', l: '68%', s: 2 }, { t: '29%', l: '75%', s: 1 },
+  { t: '27%', l: '82%', s: 3 }, { t: '30%', l: '89%', s: 1 }, { t: '33%', l: '6%', s: 1 },
+  { t: '35%', l: '14%', s: 2 }, { t: '32%', l: '22%', s: 1 }, { t: '36%', l: '30%', s: 2 },
+  { t: '34%', l: '38%', s: 1 }, { t: '37%', l: '46%', s: 1 }, { t: '33%', l: '53%', s: 2 },
+  { t: '35%', l: '60%', s: 1 }, { t: '32%', l: '67%', s: 1 }, { t: '36%', l: '74%', s: 2 },
+  { t: '34%', l: '81%', s: 1 }, { t: '37%', l: '88%', s: 1 }, { t: '40%', l: '12%', s: 1 },
+  { t: '42%', l: '28%', s: 1 }, { t: '39%', l: '45%', s: 2 }, { t: '41%', l: '63%', s: 1 },
+  { t: '43%', l: '79%', s: 1 }, { t: '45%', l: '18%', s: 1 }, { t: '46%', l: '52%', s: 1 },
+  { t: '44%', l: '86%', s: 1 }, { t: '48%', l: '35%', s: 1 }, { t: '49%', l: '70%', s: 1 },
+];
 
 function SaludoIcon({ periodo }) {
   if (periodo === 'manana') {
@@ -58,6 +89,27 @@ function SvgCloud({ className }) {
       <ellipse cx="112" cy="42" rx="52" ry="30" fill="#FFFFFF" />
       <ellipse cx="78" cy="40" rx="34" ry="22" fill="#FFFFFF" />
       <ellipse cx="148" cy="44" rx="30" ry="20" fill="#FFFFFF" />
+    </svg>
+  );
+}
+
+/** Nubes nocturnas: silueta clara, casi transparentes, borde superior iluminado. */
+function SvgCloudNoche({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="110" cy="58" rx="78" ry="18" fill="rgb(20 8 12 / 0.2)" />
+      <ellipse cx="70" cy="48" rx="42" ry="24" fill="rgb(255 255 255 / 0.08)" />
+      <ellipse cx="150" cy="50" rx="34" ry="20" fill="rgb(255 255 255 / 0.09)" />
+      <ellipse cx="110" cy="40" rx="50" ry="28" fill="rgb(255 255 255 / 0.1)" />
+      <ellipse cx="78" cy="38" rx="32" ry="20" fill="rgb(255 255 255 / 0.11)" />
+      <ellipse cx="145" cy="42" rx="28" ry="18" fill="rgb(255 255 255 / 0.1)" />
+      <path
+        d="M48 36 C62 22, 88 18, 112 20 C138 22, 162 28, 172 40"
+        fill="none"
+        stroke="rgb(255 246 227 / 0.32)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -120,23 +172,23 @@ function LoginCityscape({ parallax }) {
             <path d="M810 150 V98 H870 V150 Z" />
             <path d="M810 98 L840 80 L870 98 Z" />
           </g>
-          <g fill="rgb(255 220 180 / 0.55)">
-            <rect x="52" y="108" width="10" height="12" rx="1" />
-            <rect x="70" y="108" width="10" height="12" rx="1" />
-            <rect x="52" y="126" width="10" height="12" rx="1" />
-            <rect x="70" y="126" width="10" height="12" rx="1" />
-            <rect x="118" y="100" width="11" height="13" rx="1" />
-            <rect x="138" y="100" width="11" height="13" rx="1" />
-            <rect x="118" y="120" width="11" height="13" rx="1" />
-            <rect x="138" y="120" width="11" height="13" rx="1" />
-            <rect x="190" y="112" width="12" height="14" rx="1" />
-            <rect x="210" y="112" width="12" height="14" rx="1" />
-            <rect x="675" y="108" width="11" height="12" rx="1" />
-            <rect x="693" y="108" width="11" height="12" rx="1" />
-            <rect x="748" y="100" width="12" height="14" rx="1" />
-            <rect x="768" y="100" width="12" height="14" rx="1" />
-            <rect x="828" y="112" width="11" height="12" rx="1" />
-            <rect x="846" y="112" width="11" height="12" rx="1" />
+          <g className="city-windows city-windows--warm" fill="rgb(255 220 180 / 0.55)">
+            <rect className="city-window--on" x="52" y="108" width="10" height="12" rx="1" />
+            <rect className="city-window--on city-window--blink" x="70" y="108" width="10" height="12" rx="1" />
+            <rect className="city-window--off" x="52" y="126" width="10" height="12" rx="1" />
+            <rect className="city-window--on" x="70" y="126" width="10" height="12" rx="1" />
+            <rect className="city-window--on" x="118" y="100" width="11" height="13" rx="1" />
+            <rect className="city-window--off" x="138" y="100" width="11" height="13" rx="1" />
+            <rect className="city-window--on city-window--blink-b" x="118" y="120" width="11" height="13" rx="1" />
+            <rect className="city-window--on" x="138" y="120" width="11" height="13" rx="1" />
+            <rect className="city-window--on" x="190" y="112" width="12" height="14" rx="1" />
+            <rect className="city-window--off" x="210" y="112" width="12" height="14" rx="1" />
+            <rect className="city-window--on" x="675" y="108" width="11" height="12" rx="1" />
+            <rect className="city-window--on" x="693" y="108" width="11" height="12" rx="1" />
+            <rect className="city-window--off" x="748" y="100" width="12" height="14" rx="1" />
+            <rect className="city-window--on city-window--blink" x="768" y="100" width="12" height="14" rx="1" />
+            <rect className="city-window--on" x="828" y="112" width="11" height="12" rx="1" />
+            <rect className="city-window--off" x="846" y="112" width="11" height="12" rx="1" />
           </g>
           <g fill="var(--lf-primary-dark)" opacity="0.55">
             <rect x="60" y="138" width="14" height="12" rx="1" />
@@ -166,26 +218,29 @@ function LoginCityscape({ parallax }) {
             <path d="M838 168 V128 H892 V168 Z" />
             <path d="M838 128 L865 112 L892 128 Z" />
           </g>
-          <g fill="rgb(255 176 32 / 0.45)">
-            <rect x="22" y="130" width="9" height="11" rx="1" />
-            <rect x="42" y="130" width="9" height="11" rx="1" />
-            <rect x="92" y="136" width="9" height="10" rx="1" />
-            <rect x="110" y="136" width="9" height="10" rx="1" />
-            <rect x="786" y="132" width="9" height="11" rx="1" />
-            <rect x="806" y="132" width="9" height="11" rx="1" />
-            <rect x="852" y="138" width="9" height="10" rx="1" />
-            <rect x="870" y="138" width="9" height="10" rx="1" />
+          <g className="city-windows city-windows--front" fill="rgb(255 176 32 / 0.45)">
+            <rect className="city-window--on" x="22" y="130" width="9" height="11" rx="1" />
+            <rect className="city-window--off" x="42" y="130" width="9" height="11" rx="1" />
+            <rect className="city-window--on city-window--blink-b" x="92" y="136" width="9" height="10" rx="1" />
+            <rect className="city-window--on" x="110" y="136" width="9" height="10" rx="1" />
+            <rect className="city-window--on" x="786" y="132" width="9" height="11" rx="1" />
+            <rect className="city-window--off" x="806" y="132" width="9" height="11" rx="1" />
+            <rect className="city-window--on" x="852" y="138" width="9" height="10" rx="1" />
+            <rect className="city-window--on" x="870" y="138" width="9" height="10" rx="1" />
           </g>
 
           <g className="city-pharmacy">
+            <ellipse className="city-night-only city-pharmacy-spill" cx="450" cy="178" rx="100" ry="16" fill="rgb(255 176 32 / 0.35)" />
             <rect x="340" y="78" width="220" height="90" fill="var(--lf-primary-dark)" />
-            <rect x="352" y="86" width="196" height="28" rx="3" fill="#FFFFFF" />
+            <rect className="city-pharmacy-sign" x="352" y="86" width="196" height="28" rx="3" fill="#FFFFFF" />
             <path
+              className="city-pharmacy-sign-mark"
               fill="var(--lf-primary)"
               fillRule="evenodd"
               d="M372 93h6v7h7v6h-7v7h-6v-7h-7v-6h7v-7zm2 2v5h-5v2h5v5h2v-5h5v-2h-5v-5h-2z"
             />
             <text
+              className="city-pharmacy-sign-text"
               x="392"
               y="106"
               fill="var(--lf-primary)"
@@ -206,16 +261,17 @@ function LoginCityscape({ parallax }) {
               <rect x="518" y="116" width="17" height="12" fill="var(--lf-primary)" />
               <path d="M348 128 L344 134 H556 L552 128 Z" fill="var(--lf-primary-hover)" opacity="0.85" />
             </g>
-            <rect x="360" y="136" width="36" height="28" rx="2" fill="rgb(255 176 32 / 0.6)" />
-            <rect x="504" y="136" width="36" height="28" rx="2" fill="rgb(255 176 32 / 0.6)" />
+            <rect className="city-window--on city-pharmacy-win" x="360" y="136" width="36" height="28" rx="2" fill="rgb(255 176 32 / 0.6)" />
+            <rect className="city-window--on city-pharmacy-win" x="504" y="136" width="36" height="28" rx="2" fill="rgb(255 176 32 / 0.6)" />
             <line x1="378" y1="136" x2="378" y2="164" stroke="var(--lf-primary-dark)" strokeWidth="1.5" opacity="0.35" />
             <line x1="360" y1="150" x2="396" y2="150" stroke="var(--lf-primary-dark)" strokeWidth="1.5" opacity="0.35" />
             <line x1="522" y1="136" x2="522" y2="164" stroke="var(--lf-primary-dark)" strokeWidth="1.5" opacity="0.35" />
             <line x1="504" y1="150" x2="540" y2="150" stroke="var(--lf-primary-dark)" strokeWidth="1.5" opacity="0.35" />
-            <rect x="416" y="134" width="68" height="34" rx="2" fill="rgb(255 255 255 / 0.22)" stroke="rgb(255 255 255 / 0.45)" strokeWidth="1.5" />
+            <rect className="city-pharmacy-door" x="416" y="134" width="68" height="34" rx="2" fill="rgb(255 255 255 / 0.22)" stroke="rgb(255 255 255 / 0.45)" strokeWidth="1.5" />
             <line x1="450" y1="134" x2="450" y2="168" stroke="rgb(255 255 255 / 0.4)" strokeWidth="1.5" />
             <path d="M422 138 L438 146" stroke="rgb(255 255 255 / 0.55)" strokeWidth="2" strokeLinecap="round" />
             <g className="city-glow-cross" transform="translate(548 72)">
+              <circle className="city-cross-halo" cx="14" cy="14" r="16" fill="rgb(255 176 32 / 0.2)" />
               <circle cx="14" cy="14" r="13" fill="rgb(255 176 32 / 0.25)" />
               <path fill="#FFFFFF" d="M11 4h6v7h7v6h-7v7h-6v-7H4v-6h7V4z" />
             </g>
@@ -232,10 +288,12 @@ function LoginCityscape({ parallax }) {
             <rect x="158" y="160" width="4" height="10" fill="#5C0E16" />
           </g>
 
-          <g>
+          <g className="city-lamp">
+            <path className="city-night-only city-lamp-cone" d="M244 122 L228 168 L260 168 Z" fill="rgb(255 220 150 / 0.18)" />
+            <ellipse className="city-night-only city-ground-glow" cx="244" cy="168" rx="28" ry="6" fill="rgb(255 176 32 / 0.22)" />
             <rect x="250" y="118" width="3" height="50" fill="#5C0E16" />
             <path d="M241 118 H262" stroke="#5C0E16" strokeWidth="2" />
-            <ellipse cx="244" cy="120" rx="5" ry="3" fill="rgb(255 176 32 / 0.55)" />
+            <ellipse className="city-lamp-glow" cx="244" cy="120" rx="5" ry="3" fill="rgb(255 176 32 / 0.55)" />
           </g>
 
           <g>
@@ -257,9 +315,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const [esNoche, setEsNoche] = useState(() => esEscenaNoche());
 
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    const tick = () => setEsNoche(esEscenaNoche());
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleBrandMove = (e) => {
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -339,23 +405,55 @@ export default function Login() {
       ? 'Buenas tardes'
       : 'Buenas noches';
 
+  const brandNocheClass = esNoche ? ' login-brand--noche' : '';
+
   return (
-    <div className="login-page">
+    <div className={`login-page${esNoche ? ' login-page--noche' : ''}`}>
       <aside
-        className="login-brand"
+        className={`login-brand${brandNocheClass}`}
         onMouseMove={handleBrandMove}
         onMouseLeave={handleBrandLeave}
       >
         <div className="login-brand-scene" aria-hidden="true">
-          <div className="login-sun login-sun--brand">
-            <div className="login-sun-halo" />
-            <div className="login-sun-rays" />
-            <div className="login-sun-core" />
+          <div className="login-stars">
+            {LOGIN_STARS.map((s, i) => (
+              <span
+                key={i}
+                className={`login-star login-star--${s.s}`}
+                style={{
+                  top: s.t,
+                  left: s.l,
+                  animationDelay: `${(i % 11) * 0.37}s`,
+                  animationDuration: `${2.8 + (i % 7) * 0.45}s`,
+                }}
+              />
+            ))}
+            <span className="login-shooting-star" />
           </div>
 
-          <SvgCloud className="login-cloud-svg login-cloud-svg-1" />
-          <SvgCloud className="login-cloud-svg login-cloud-svg-2" />
-          <SvgCloud className="login-cloud-svg login-cloud-svg-3" />
+          <div className={`login-sun login-sun--brand${esNoche ? ' login-sun--luna' : ''}`}>
+            <div className="login-sun-halo" />
+            <div className="login-sun-rays" />
+            <div className="login-sun-core">
+              <span className="login-moon-crater login-moon-crater--1" />
+              <span className="login-moon-crater login-moon-crater--2" />
+              <span className="login-moon-crater login-moon-crater--3" />
+            </div>
+          </div>
+
+          {!esNoche && (
+            <>
+              <SvgCloud className="login-cloud-svg login-cloud-svg-1" />
+              <SvgCloud className="login-cloud-svg login-cloud-svg-2" />
+              <SvgCloud className="login-cloud-svg login-cloud-svg-3" />
+            </>
+          )}
+          {esNoche && (
+            <>
+              <SvgCloudNoche className="login-cloud-svg login-cloud-svg-noche-1" />
+              <SvgCloudNoche className="login-cloud-svg login-cloud-svg-noche-2" />
+            </>
+          )}
 
           <LoginCityscape parallax={parallax} />
         </div>
@@ -388,38 +486,73 @@ export default function Login() {
       </aside>
 
       <main className="login-panel">
-        <div className="login-mobile-banner" aria-hidden="true">
-          <div className="login-sun login-sun--mobile">
+        <div className={`login-mobile-banner${brandNocheClass}`} aria-hidden="true">
+          <div className="login-stars login-stars--mobile">
+            {LOGIN_STARS.slice(0, 28).map((s, i) => (
+              <span
+                key={i}
+                className={`login-star login-star--${s.s}`}
+                style={{
+                  top: s.t,
+                  left: s.l,
+                  animationDelay: `${(i % 9) * 0.4}s`,
+                  animationDuration: `${3 + (i % 5) * 0.5}s`,
+                }}
+              />
+            ))}
+          </div>
+          <div className={`login-sun login-sun--mobile${esNoche ? ' login-sun--luna' : ''}`}>
             <div className="login-sun-halo" />
             <div className="login-sun-rays" />
-            <div className="login-sun-core" />
+            <div className="login-sun-core">
+              <span className="login-moon-crater login-moon-crater--1" />
+              <span className="login-moon-crater login-moon-crater--2" />
+            </div>
           </div>
-          <LogoLuxFarma variant="full" size={36} color="white" />
+          {!esNoche && (
+            <>
+              <SvgCloud className="login-cloud-svg login-cloud-svg-mobile-1" />
+              <SvgCloud className="login-cloud-svg login-cloud-svg-mobile-2" />
+            </>
+          )}
+          {esNoche && (
+            <SvgCloudNoche className="login-cloud-svg login-cloud-svg-mobile-1" />
+          )}
+          <div className="login-mobile-banner-logo">
+            <LogoLuxFarma variant="full" size={40} color="white" showSubtitle />
+          </div>
+          <div className="login-mobile-banner-wave" />
         </div>
 
         <div className="login-form-wrap">
+          <p className="login-panel-context">
+            LUXFARMA · {String(EMPRESA.sede || '').toUpperCase()}
+          </p>
+
           <div className="login-card">
-            <div className="login-mobile-logo">
-              <LogoLuxFarma variant="full" size={40} color="red" showSubtitle />
+            <div className="login-card-badge" aria-hidden="true">
+              <LogoLuxFarma variant="icon" size={48} color="white" />
             </div>
 
             <div className="login-greeting">
               <h2>
-                {saludo}
+                <span className="login-greeting-text">{saludo}</span>
                 <SaludoIcon periodo={periodo} />
               </h2>
               <p>Ingresa con tu DNI para continuar</p>
             </div>
 
-            <p className="login-info-line">
-              <UiIcon name="Info" size={14} />
-              El modo de acceso se define con tus credenciales
-            </p>
-
             <form onSubmit={handleLogin} className="login-form">
               <div className="input-group">
                 <label htmlFor="dni">DNI</label>
-                <div className="login-input-wrap">
+                <div
+                  className="login-input-wrap"
+                  onFocusCapture={(e) => {
+                    if (e.target?.tagName === 'INPUT') {
+                      try { e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch { /* ignore */ }
+                    }
+                  }}
+                >
                   <span className="login-field-icon" aria-hidden="true">
                     <UiIcon name="User" size={18} />
                   </span>
@@ -439,17 +572,15 @@ export default function Login() {
               </div>
 
               <div className="input-group">
-                <div className="label-row">
-                  <label htmlFor="password">Contraseña</label>
-                  <button
-                    type="button"
-                    className="forgot-link-btn"
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
-                <div className="login-input-wrap">
+                <label htmlFor="password">Contraseña</label>
+                <div
+                  className="login-input-wrap"
+                  onFocusCapture={(e) => {
+                    if (e.target?.tagName === 'INPUT') {
+                      try { e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch { /* ignore */ }
+                    }
+                  }}
+                >
                   <span className="login-field-icon" aria-hidden="true">
                     <UiIcon name="Lock" size={18} />
                   </span>
@@ -462,6 +593,13 @@ export default function Login() {
                     autoComplete="current-password"
                   />
                 </div>
+                <button
+                  type="button"
+                  className="forgot-link-btn"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
               </div>
 
               {error && (
@@ -477,10 +615,39 @@ export default function Login() {
             </form>
           </div>
 
-          <div className="login-footer">
-            <UiIcon name="Shield" size={13} />
-            Sesión única · Bloqueo tras 3 intentos fallidos
+          <div className="login-mobile-extras">
+            <p className="login-mobile-lema">Tu farmacia, siempre en orden.</p>
           </div>
+
+          <ul className="login-benefits-strip" aria-label="Beneficios">
+            <li>
+              <span className="login-benefits-strip-ico" aria-hidden="true">
+                <UiIcon name="Zap" size={16} />
+              </span>
+              <span className="login-benefits-strip-label">
+                <strong>Punto de venta</strong>
+                <span className="login-benefits-strip-short">POS</span>
+              </span>
+            </li>
+            <li>
+              <span className="login-benefits-strip-ico" aria-hidden="true">
+                <UiIcon name="Package" size={16} />
+              </span>
+              <span className="login-benefits-strip-label">
+                <strong>Inventario y vencimientos</strong>
+                <span className="login-benefits-strip-short">Inventario</span>
+              </span>
+            </li>
+            <li>
+              <span className="login-benefits-strip-ico" aria-hidden="true">
+                <UiIcon name="Upload" size={16} />
+              </span>
+              <span className="login-benefits-strip-label">
+                <strong>Respaldo en la nube</strong>
+                <span className="login-benefits-strip-short">Respaldo</span>
+              </span>
+            </li>
+          </ul>
 
           <p className="login-version">
             LuxFarma v{APP_VERSION}
