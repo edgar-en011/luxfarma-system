@@ -816,7 +816,7 @@ export default function AdminCompras() {
   };
 
   const toggleActivoProveedor = async (prov) => {
-    const nuevo = !esProveedorActivo(prov);
+    const nuevo = esProveedorActivo(prov) ? 0 : 1;
     setTogglingProvId(prov.id_proveedor);
     try {
       const { data, error } = await supabase
@@ -827,7 +827,7 @@ export default function AdminCompras() {
         .single();
       if (error) throw error;
       setDbProveedores((prev) => prev.map((p) => (p.id_proveedor === prov.id_proveedor ? { ...p, ...data, activo: nuevo } : p)));
-      if (!nuevo && Number(proveedorSeleccionadoId) === Number(prov.id_proveedor)) {
+      if (nuevo === 0 && Number(proveedorSeleccionadoId) === Number(prov.id_proveedor)) {
         setProveedorSeleccionadoId('');
       }
       notificarProveedoresChanged();
@@ -892,7 +892,7 @@ export default function AdminCompras() {
 
       const { data, error } = await supabase.from('proveedores').insert([{
         ...payload,
-        activo: true,
+        activo: 1,
       }]).select().single();
       if (error) throw error;
       setDbProveedores(prev => [...prev, data]);
