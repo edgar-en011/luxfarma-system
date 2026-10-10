@@ -25,6 +25,7 @@ import AdminUsuarios from './pages/AdminUsuarios/AdminUsuarios';
 import AdminAlertas from './pages/AdminAlertas/AdminAlertas';
 import AdminReportes from './pages/AdminReportes/AdminReportes';
 import AdminGanancias from './pages/AdminGanancias/AdminGanancias';
+import AdminAsistenteIA from './pages/AdminAsistenteIA/AdminAsistenteIA';
 import Kardex from './pages/Kardex/Kardex';
 import AdminTomaInventario from './pages/AdminTomaInventario/AdminTomaInventario';
 import TomaInventario from './pages/TomaInventario/TomaInventario';
@@ -133,6 +134,7 @@ function App() {
               <Route path="/admin-usuarios" element={<AdminUsuarios />} />
               <Route path="/admin-reportes" element={<AdminReportes />} />
               <Route path="/admin-ganancias" element={<AdminGanancias />} />
+              <Route path="/admin-asistente-ia" element={<AdminAsistenteIA />} />
               <Route path="/admin-alertas" element={<AdminAlertas />} />
               <Route path="/admin-kardex" element={<Kardex />} />
               <Route path="/admin-toma-inventario" element={<AdminTomaInventario />} />
