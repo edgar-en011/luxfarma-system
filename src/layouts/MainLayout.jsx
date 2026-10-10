@@ -1035,6 +1035,7 @@ export default function MainLayout() {
       '/admin-alertas': { main: 'Alertas', sub: 'Centro de control' },
       '/admin-reportes': { main: 'Reportes', sub: 'Dashboard Analítico' },
       '/admin-ganancias': { main: 'Ganancias', sub: 'Diario resumido' },
+      '/admin-asistente-ia': { main: 'Asistente IA', sub: 'Análisis para la gestión' },
       '/admin-kardex': { main: 'Inventario', sub: 'Kardex de movimientos' },
       '/admin-toma-inventario': { main: 'Inventario', sub: 'Toma de inventario' },
       '/notificaciones': { main: 'Notificaciones', sub: 'Historial completo' },
@@ -1165,6 +1166,10 @@ export default function MainLayout() {
             <button className={`nav-item ${location.pathname === '/admin-dashboard' ? 'active' : ''}`} onClick={() => navigate('/admin-dashboard')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></svg>
               Dashboard
+            </button>
+            <button className={`nav-item ${location.pathname === '/admin-asistente-ia' ? 'active' : ''}`} onClick={() => navigate('/admin-asistente-ia')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M8.5 14.5A7 7 0 1 1 15.5 14.5C14.5 15.2 14 16 14 17h-4c0-1-.5-1.8-1.5-2.5z" /><path d="M12 2v2" /></svg>
+              Asistente IA
             </button>
             <button className={`nav-item ${location.pathname === '/admin-productos' ? 'active' : ''}`} onClick={() => navigate('/admin-productos')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.5 7.27L12 12l-8.5-4.73M12 22V12" /><path d="M20.5 7.27L12 2 3.5 7.27l8.5 4.73 8.5-4.73z" /><path d="M3.5 7.27v9.46L12 22l8.5-5.27V7.27" /></svg>
