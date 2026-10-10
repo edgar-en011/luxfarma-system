@@ -13,6 +13,7 @@ import { marcarLotesVencidos } from '../../utils/lotesVencidos';
 import { calcularProductosStockBajo, cargarIdsProductosConMovimiento } from '../../utils/stockBajo';
 import { fetchLaboratorios, suscribirLaboratoriosChanged } from '../../utils/laboratoriosCatalogo';
 import { marcarCatalogoOfflineStale } from '../../utils/catalogoCache';
+import { formatearEquivalenciaStock } from '../../utils/equivalenciaStock';
 import UiIcon from '../../components/UiIcon';
 
 /** Trae todas las filas de una query Supabase paginando de a 1000. */
@@ -118,7 +119,7 @@ export default function AdminInventario() {
 
       let q = supabase
         .from('productos')
-        .select('*, producto_precios(costo, precio_venta), inventario_lotes(cantidad_actual, costo_unitario_lote, fecha_vencimiento, estado, id_sucursal)', { count: 'exact' })
+        .select('*, producto_precios(costo, precio_venta), producto_formas_venta(factor, activo, unidades_medida(nombre)), inventario_lotes(cantidad_actual, costo_unitario_lote, fecha_vencimiento, estado, id_sucursal)', { count: 'exact' })
         .eq('activo', 1);
 
       if (busqueda.trim()) {
@@ -171,6 +172,7 @@ export default function AdminInventario() {
         return {
           ...prod,
           stockTotal, valorTotalAlmacen: valorTotal,
+          equivalenciaStock: formatearEquivalenciaStock(stockTotal, prod.producto_formas_venta),
           fechaVencimiento: fechaProxima,
           estadoVencimiento: estadoVenc,
           costo, pVenta, margen, minStock: 20,
@@ -395,7 +397,11 @@ export default function AdminInventario() {
                   <tr key={p.id_producto}>
                     <td><strong className="text-dark">{p.descripcion}</strong><br /><small className="text-muted">{p.nombreLaboratorio} · Cód: {p.codigo_barras || '---'}</small></td>
                     <td><span className={`cat-pill ${getCategoriaColor(p.nombreFamilia)}`}><span className="dot"></span> {p.nombreFamilia || 'Sin categoría'}</span></td>
-                    <td className="text-center"><strong className={stockColor.replace('bg-', 'text-')}>{p.stockTotal}</strong><div className="inv-bar-bg"><div className={`inv-bar-fill ${stockColor}`} style={{ width: `${pctStock}%` }}></div></div></td>
+                    <td className="text-center inv-stock-cell">
+                      <strong className={stockColor.replace('bg-', 'text-')}>{p.stockTotal} unidades</strong>
+                      {p.equivalenciaStock && <small className="inv-stock-equivalence">Equivalencia: {p.equivalenciaStock}</small>}
+                      <div className="inv-bar-bg"><div className={`inv-bar-fill ${stockColor}`} style={{ width: `${pctStock}%` }}></div></div>
+                    </td>
                     <td className="text-center text-muted">{p.minStock}</td>
                     <td className="text-center text-muted">{formatSolesUnitario(p.costo)}</td>
                     <td className="text-center font-bold text-dark">{formatSolesUnitario(p.pVenta)}</td>
