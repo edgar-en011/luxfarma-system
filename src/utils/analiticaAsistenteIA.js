@@ -190,6 +190,43 @@ function recortar(lista) {
   return (lista || []).slice(0, LIMITE_ITEMS_IA);
 }
 
+function normalizarItemRpc(item = {}) {
+  const stockBase = Math.max(0, numero(item.stock_base));
+  return {
+    idProducto: idNumerico(item.id_producto),
+    nombre: item.descripcion || `Producto #${item.id_producto ?? '?'}`,
+    codigo: item.codigo_barras || null,
+    stockBase,
+    equivalencia: formatearEquivalenciaStock(stockBase, item.formas_venta || []),
+    idSucursal: idNumerico(item.id_sucursal),
+    sucursal: item.sucursal || null,
+    umbralBase: Math.max(0, numero(item.umbral_base)),
+    unidadesVendidas: numero(item.unidades_vendidas),
+    idLote: item.id_lote ?? null,
+    numeroLote: item.nro_lote || null,
+    fechaVencimiento: item.fecha_vencimiento || null,
+    fechaVencimientoTexto: item.fecha_vencimiento ? formatearFechaPE(item.fecha_vencimiento) : null,
+    diasParaVencer: numero(item.dias_para_vencer),
+    diasSinVentas: numero(item.dias_sin_ventas),
+    brechaMinimoBase: Math.max(0, numero(item.brecha_minimo_base)),
+    prioridad: item.prioridad || null,
+  };
+}
+
+/** Convierte el JSON agregado por PostgreSQL al contrato usado por la interfaz. */
+export function normalizarResumenAsistenteIARpc(data) {
+  if (!data || typeof data !== 'object') throw new Error('Resumen RPC inválido.');
+  return {
+    metadata: data.metadata || {},
+    totales: data.totales || {},
+    stockBajo: (data.stockBajo || []).map(normalizarItemRpc),
+    proximosVencer: (data.proximosVencer || []).map(normalizarItemRpc),
+    bajaRotacion: (data.bajaRotacion || []).map(normalizarItemRpc),
+    mayorMovimiento: (data.mayorMovimiento || []).map(normalizarItemRpc),
+    reposicion: (data.reposicion || []).map(normalizarItemRpc),
+  };
+}
+
 /** Snapshot acotado y sin datos personales para enviar a la Edge Function. */
 export function crearSnapshotAsistenteIA(resumen) {
   if (!resumen) return null;

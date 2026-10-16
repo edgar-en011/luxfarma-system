@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { construirResumenAsistenteIA, crearSnapshotAsistenteIA } from '../src/utils/analiticaAsistenteIA.js';
+import { construirResumenAsistenteIA, crearSnapshotAsistenteIA, normalizarResumenAsistenteIARpc } from '../src/utils/analiticaAsistenteIA.js';
 
 const productos = [
   {
@@ -73,5 +73,14 @@ assert.deepEqual(vacio.totales, {
   recomendacionesReposicion: 0,
 }, 'sin datos devuelve colecciones y contadores vacíos, no información inventada');
 assert.deepEqual(vacio.reposicion, []);
+
+const desdeRpc = normalizarResumenAsistenteIARpc({
+  metadata: { procesamiento: 'PostgreSQL/Supabase RPC' },
+  totales: { stockBajo: 1 },
+  stockBajo: [{ id_producto: 1, descripcion: 'Producto dinámico', stock_base: 17, umbral_base: 20, formas_venta: productos[0].producto_formas_venta }],
+  proximosVencer: [], bajaRotacion: [], mayorMovimiento: [], reposicion: [],
+});
+assert.equal(desdeRpc.stockBajo[0].equivalencia, '2 × Tira + 5 × Unidad');
+assert.equal(desdeRpc.metadata.procesamiento, 'PostgreSQL/Supabase RPC');
 
 console.log('OK: analítica del Asistente IA validada en unidades base.');
