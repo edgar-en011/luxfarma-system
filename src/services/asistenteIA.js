@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import { construirResumenAsistenteIA, crearSnapshotAsistenteIA, DIAS_VENTAS_ASISTENTE } from '../utils/analiticaAsistenteIA';
+import { construirResumenAsistenteIA, crearSnapshotAsistenteIA, DIAS_VENTAS_ASISTENTE, normalizarResumenAsistenteIARpc } from '../utils/analiticaAsistenteIA';
 import { fechaLocalStr, hoyLocal, boundsISOPeru } from '../utils/fechas';
 import { calcularProductosStockBajo, cargarIdsProductosConMovimiento } from '../utils/stockBajo';
 import { fetchAllRows } from '../utils/supabasePage';
@@ -50,6 +50,23 @@ async function cargarVentasYDetalles({ idSucursal, start, end }) {
 }
 
 export async function cargarDatosAsistenteIA({ idSucursal = 'TODAS' } = {}) {
+  const idSucursalRpc = esTodas(idSucursal) ? null : Number(idSucursal);
+  const { data: dataRpc, error: errorRpc } = await supabase.rpc('resumen_asistente_ia', {
+    p_id_sucursal: idSucursalRpc,
+    p_dias: DIAS_VENTAS_ASISTENTE,
+    p_limite: 10,
+  });
+  if (!errorRpc && dataRpc) {
+    const resumen = normalizarResumenAsistenteIARpc(dataRpc);
+    const { data: sucursales = [] } = await supabase
+      .from('sucursales')
+      .select('id_sucursal, nombre_comercial, activo')
+      .eq('activo', true)
+      .order('id_sucursal', { ascending: true });
+    return { resumen, snapshotIA: crearSnapshotAsistenteIA(resumen), sucursales };
+  }
+  console.warn('resumen_asistente_ia: se usa respaldo local:', errorRpc?.message);
+
   const periodoHasta = hoyLocal();
   const periodoDesde = inicioPeriodo(DIAS_VENTAS_ASISTENTE);
   const { start, end } = boundsISOPeru(periodoDesde, periodoHasta);

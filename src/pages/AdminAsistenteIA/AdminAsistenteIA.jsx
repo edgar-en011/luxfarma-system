@@ -27,6 +27,50 @@ function cantidad(valor) {
   return Number(valor || 0).toLocaleString('es-PE', { maximumFractionDigits: 2 });
 }
 
+function TextoConNegritas({ texto }) {
+  return String(texto || '').split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((parte, indice) => (
+    parte.startsWith('**') && parte.endsWith('**')
+      ? <strong key={`${parte}-${indice}`}>{parte.slice(2, -2)}</strong>
+      : <span key={`${parte}-${indice}`}>{parte}</span>
+  ));
+}
+
+function RespuestaIA({ texto }) {
+  const bloques = [];
+  let lista = [];
+  const cerrarLista = () => {
+    if (lista.length === 0) return;
+    bloques.push({ tipo: 'lista', lineas: lista });
+    lista = [];
+  };
+
+  for (const lineaOriginal of String(texto || '').split(/\r?\n/)) {
+    const linea = lineaOriginal.trim();
+    const item = linea.match(/^(?:[-*•]|\d+[.)])\s+(.+)$/);
+    if (item) {
+      lista.push(item[1]);
+    } else {
+      cerrarLista();
+      if (linea) bloques.push({ tipo: 'parrafo', texto: linea });
+    }
+  }
+  cerrarLista();
+
+  return (
+    <div className="aia-response">
+      {bloques.map((bloque, indice) => bloque.tipo === 'lista' ? (
+        <ul key={`lista-${indice}`}>
+          {bloque.lineas.map((linea, itemIndice) => (
+            <li key={`${linea}-${itemIndice}`}><TextoConNegritas texto={linea} /></li>
+          ))}
+        </ul>
+      ) : (
+        <p key={`parrafo-${indice}`}><TextoConNegritas texto={bloque.texto} /></p>
+      ))}
+    </div>
+  );
+}
+
 function ItemResumen({ item, tipo }) {
   let detalle = null;
   if (tipo === 'stockBajo') {
@@ -314,7 +358,9 @@ export default function AdminAsistenteIA() {
               {mensajes.map((mensaje) => (
                 <div key={mensaje.id} className={`aia-message aia-message--${mensaje.rol}`}>
                   <span>{mensaje.rol === 'assistant' ? <UiIcon name="Lightbulb" size={17} /> : <UiIcon name="User" size={17} />}</span>
-                  <p>{mensaje.texto}</p>
+                  {mensaje.rol === 'assistant'
+                    ? <RespuestaIA texto={mensaje.texto} />
+                    : <p>{mensaje.texto}</p>}
                 </div>
               ))}
               {consultando && <div className="aia-message aia-message--assistant"><span><UiIcon name="Loader" size={17} className="aia-spin" /></span><p>Analizando el resumen…</p></div>}

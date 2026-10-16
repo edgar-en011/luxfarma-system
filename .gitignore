@@ -25,6 +25,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+supabase/.temp/
 scripts/escpos-buffer.bin
 
 # Claude / agent worktrees (local only)
