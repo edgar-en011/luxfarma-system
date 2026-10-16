@@ -58,8 +58,6 @@ const OPCIONES_SEXO = [
 ];
 const METODOS_PAGO = ["Efectivo", "Yape", "Tarjeta", "Mixto"];
 const METODOS_MIXTO = ["Efectivo", "Yape", "Tarjeta"];
-/** Número Yape mostrado al cobrar (confirmación de pago). */
-const YAPE_NUMERO = "929 994 214";
 
 /** Solo dígitos, mínimo 6 — heurística de código de barras / escáner. */
 function esCodigoBarras(term) {
@@ -3000,7 +2998,6 @@ export default function POS() {
                   <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0 }}>LuxFarma</p>
                   <p style={{ fontSize: '0.75rem', opacity: 0.75, margin: 0 }}>{user?.sucursales?.nombre_comercial || 'Sede Principal'}</p>
                 </div>
-                {esYape && (<div style={{ textAlign: 'center', marginBottom: '0.5rem' }}><p style={{ fontSize: '1.9rem', fontWeight: 800, letterSpacing: '4px', margin: 0 }}>{YAPE_NUMERO}</p></div>)}
                 {esEfectivo && (
                   <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
                     <p style={{ fontSize: '0.75rem', opacity: 0.75, margin: '0 0 4px' }}>Monto recibido</p>
