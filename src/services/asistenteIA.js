@@ -140,10 +140,11 @@ export async function crearSesionAsistenteIA({ idUsuario, password }) {
   });
 }
 
-export async function consultarAsistenteIA({ token, pregunta, snapshot }) {
+export async function consultarAsistenteIA({ token, pregunta, snapshot, historial = [] }) {
   return invocarAsistente({
     accion: 'consultar',
     pregunta,
     resumen: snapshot,
+    historial,
   }, token);
 }

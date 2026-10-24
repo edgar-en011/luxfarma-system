@@ -25,6 +25,7 @@ assert.equal(esConsultaStockActual('¿Cuánto queda de ibuprofeno?'), true);
 assert.equal(esConsultaStockActual('¿Hay Paracetamol?'), true);
 assert.equal(esConsultaStockActual('¿Cuál es la cantidad disponible de Ibuprofeno?'), true);
 assert.equal(esConsultaStockActual('¿Qué productos tienen stock bajo?'), false);
+assert.equal(esConsultaStockActual('¿Cuáles tienen poco stock?'), false);
 
 const coincidenciaNombre = buscarProductosParaStock('stock actual de paracetamol 500 mg', productos);
 assert.equal(coincidenciaNombre[0].id_producto, 1);

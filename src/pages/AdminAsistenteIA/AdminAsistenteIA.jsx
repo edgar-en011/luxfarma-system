@@ -9,12 +9,12 @@ import {
   consultarStockActualAsistenteIA,
 } from '../../services/asistenteIA';
 import { leerSesionAsistenteIA, limpiarSesionAsistenteIA } from '../../utils/asistenteIASesion';
-import { responderResumenDeterministico } from '../../utils/respuestasAsistenteIA';
 import { esConsultaStockActual } from '../../utils/stockAsistenteIA';
 import { evaluarPreguntaAsistente } from '../../../supabase/functions/_shared/asistenteScope.js';
 import './AdminAsistenteIA.css';
 
 const CONSULTA_STOCK_PLANTILLA = '¿Cuál es el stock actual de ';
+const MEMORIA_INACTIVA_MS = 10 * 60 * 1000;
 const PREGUNTAS_SUGERIDAS = [
   CONSULTA_STOCK_PLANTILLA,
   '¿Qué productos debería reponer?',
@@ -138,6 +138,7 @@ export default function AdminAsistenteIA() {
   const cargaActual = useRef(0);
   const cajaPreguntaRef = useRef(null);
   const finMensajesRef = useRef(null);
+  const memoriaTimerRef = useRef(null);
   const [idSucursal, setIdSucursal] = useState('TODAS');
   const [datos, setDatos] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -202,6 +203,22 @@ export default function AdminAsistenteIA() {
     finMensajesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [mensajes, consultando]);
 
+  useEffect(() => () => {
+    if (memoriaTimerRef.current) window.clearTimeout(memoriaTimerRef.current);
+  }, []);
+
+  const reiniciarEsperaMemoria = useCallback(() => {
+    if (memoriaTimerRef.current) window.clearTimeout(memoriaTimerRef.current);
+    memoriaTimerRef.current = window.setTimeout(() => {
+      setMensajes([{
+        ...MENSAJE_INICIAL,
+        texto: 'La conversación anterior se cerró después de 10 minutos sin actividad. Puedes iniciar una nueva consulta; tu sesión de administrador continúa activa.',
+      }]);
+      setErrorChat('');
+      memoriaTimerRef.current = null;
+    }, MEMORIA_INACTIVA_MS);
+  }, []);
+
   const tarjetas = useMemo(() => {
     const resumen = datos?.resumen;
     if (!resumen) return [];
@@ -249,8 +266,14 @@ export default function AdminAsistenteIA() {
   const enviarPregunta = async (texto = pregunta) => {
     const limpia = String(texto || '').trim();
     if (!limpia || consultando || !sesionIA?.token || !datos?.snapshotIA) return;
+    if (limpia.toLocaleLowerCase('es') === CONSULTA_STOCK_PLANTILLA.trim().toLocaleLowerCase('es')) {
+      setErrorChat('Completa la consulta con el nombre o código del producto.');
+      cajaPreguntaRef.current?.focus();
+      return;
+    }
 
     const mensajeUsuario = { id: `u-${Date.now()}`, rol: 'user', texto: limpia };
+    reiniciarEsperaMemoria();
     setMensajes((actuales) => [...actuales, mensajeUsuario]);
     setPregunta('');
     setErrorChat('');
@@ -261,17 +284,6 @@ export default function AdminAsistenteIA() {
         id: `a-${Date.now()}`,
         rol: 'assistant',
         texto: alcance.mensaje,
-      }]);
-      return;
-    }
-    const respuestaVerificada = consultaStock
-      ? null
-      : responderResumenDeterministico(limpia, datos.resumen);
-    if (respuestaVerificada) {
-      setMensajes((actuales) => [...actuales, {
-        id: `a-${Date.now()}`,
-        rol: 'assistant',
-        texto: respuestaVerificada,
       }]);
       return;
     }
@@ -287,6 +299,10 @@ export default function AdminAsistenteIA() {
           token: sesionIA.token,
           pregunta: limpia,
           snapshot: datos.snapshotIA,
+          historial: mensajes.slice(-6).map((mensaje) => ({
+            rol: mensaje.rol,
+            texto: mensaje.texto,
+          })),
         });
       setMensajes((actuales) => [...actuales, {
         id: `a-${Date.now()}`,
@@ -389,6 +405,7 @@ export default function AdminAsistenteIA() {
           </div>
           <div className="aia-head-badges">
             <span className="aia-live"><UiIcon name="Database" size={14} /> Stock verificado</span>
+            <span className="aia-memory"><UiIcon name="Timer" size={14} /> Memoria 10 min</span>
             <span className="aia-readonly"><UiIcon name="Shield" size={14} /> Solo lectura</span>
           </div>
         </div>
