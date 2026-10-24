@@ -53,6 +53,8 @@ assert.equal(resumen.reposicion[0].brechaMinimoBase, 3);
 
 const snapshot = crearSnapshotAsistenteIA(resumen);
 assert.equal(snapshot.metadata.fuenteStock, 'inventario_lotes.cantidad_actual en unidades base');
+assert.equal(snapshot.metadata.listasCompletas, false);
+assert.equal(snapshot.metadata.definiciones.stockDisponible.includes('VIGENTE'), true);
 assert.equal(snapshot.stock_bajo[0].stockBase, 17);
 assert.equal(Object.hasOwn(snapshot, 'usuarios'), false, 'el snapshot no incorpora datos personales');
 

@@ -1,15 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LogoLuxFarma from '../../components/LogoLuxFarma';
 import UiIcon from '../../components/UiIcon';
 import { useAuth } from '../../context/AuthContext';
 import {
   cargarDatosAsistenteIA,
   consultarAsistenteIA,
-  crearSesionAsistenteIA,
+  consultarStockActualAsistenteIA,
 } from '../../services/asistenteIA';
+import { leerSesionAsistenteIA, limpiarSesionAsistenteIA } from '../../utils/asistenteIASesion';
+import { responderResumenDeterministico } from '../../utils/respuestasAsistenteIA';
+import { esConsultaStockActual } from '../../utils/stockAsistenteIA';
+import { evaluarPreguntaAsistente } from '../../../supabase/functions/_shared/asistenteScope.js';
 import './AdminAsistenteIA.css';
 
+const CONSULTA_STOCK_PLANTILLA = '¿Cuál es el stock actual de ';
 const PREGUNTAS_SUGERIDAS = [
+  CONSULTA_STOCK_PLANTILLA,
   '¿Qué productos debería reponer?',
   '¿Qué productos están próximos a vencer?',
   '¿Cuáles tienen poco stock?',
@@ -126,15 +133,16 @@ function TarjetaResumen({ icono, titulo, descripcion, total, items, tipo, vacio 
 }
 
 export default function AdminAsistenteIA() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const cargaActual = useRef(0);
+  const cajaPreguntaRef = useRef(null);
+  const finMensajesRef = useRef(null);
   const [idSucursal, setIdSucursal] = useState('TODAS');
   const [datos, setDatos] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [errorDatos, setErrorDatos] = useState('');
-  const [sesionIA, setSesionIA] = useState(null);
-  const [password, setPassword] = useState('');
-  const [autenticando, setAutenticando] = useState(false);
+  const [sesionIA, setSesionIA] = useState(() => leerSesionAsistenteIA(user?.id_usuario));
   const [errorSesion, setErrorSesion] = useState('');
   const [mensajes, setMensajes] = useState([MENSAJE_INICIAL]);
   const [pregunta, setPregunta] = useState('');
@@ -145,18 +153,29 @@ export default function AdminAsistenteIA() {
     const idCarga = ++cargaActual.current;
     setCargando(true);
     setErrorDatos('');
+    if (!sesionIA?.token) {
+      setDatos(null);
+      setErrorDatos('La sesión del asistente no está activa. Vuelve a iniciar sesión para habilitarla.');
+      setCargando(false);
+      return;
+    }
     try {
-      const resultado = await cargarDatosAsistenteIA({ idSucursal });
+      const resultado = await cargarDatosAsistenteIA({ idSucursal, token: sesionIA.token });
       if (idCarga === cargaActual.current) setDatos(resultado);
     } catch (error) {
       if (idCarga === cargaActual.current) {
         setDatos(null);
         setErrorDatos(error?.message || 'No se pudo cargar el análisis.');
+        if (['SESSION_EXPIRED', 'SESSION_INVALID', 'SESSION_LIMIT'].includes(error?.code)) {
+          limpiarSesionAsistenteIA();
+          setSesionIA(null);
+          setErrorSesion('La sesión segura venció. Vuelve a iniciar sesión para renovarla.');
+        }
       }
     } finally {
       if (idCarga === cargaActual.current) setCargando(false);
     }
-  }, [idSucursal]);
+  }, [idSucursal, sesionIA?.token]);
 
   useEffect(() => {
     cargar();
@@ -166,12 +185,22 @@ export default function AdminAsistenteIA() {
     if (!sesionIA?.expires_at) return undefined;
     const restante = Date.parse(sesionIA.expires_at) - Date.now();
     if (restante <= 0) {
+      limpiarSesionAsistenteIA();
       setSesionIA(null);
+      setErrorSesion('La sesión segura venció. Vuelve a iniciar sesión para renovarla.');
       return undefined;
     }
-    const timer = window.setTimeout(() => setSesionIA(null), restante);
+    const timer = window.setTimeout(() => {
+      limpiarSesionAsistenteIA();
+      setSesionIA(null);
+      setErrorSesion('La sesión segura venció. Vuelve a iniciar sesión para renovarla.');
+    }, restante);
     return () => window.clearTimeout(timer);
   }, [sesionIA]);
+
+  useEffect(() => {
+    finMensajesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [mensajes, consultando]);
 
   const tarjetas = useMemo(() => {
     const resumen = datos?.resumen;
@@ -207,24 +236,15 @@ export default function AdminAsistenteIA() {
     ];
   }, [datos]);
 
-  const autenticar = async (event) => {
-    event.preventDefault();
-    if (!password || autenticando) return;
-    setAutenticando(true);
-    setErrorSesion('');
-    try {
-      const sesion = await crearSesionAsistenteIA({
-        idUsuario: user?.id_usuario,
-        password,
-      });
-      setSesionIA(sesion);
-      setPassword('');
-    } catch (error) {
-      setErrorSesion(error?.message || 'No se pudo habilitar el asistente.');
-    } finally {
-      setAutenticando(false);
-    }
-  };
+  const sinDatosOperativos = useMemo(() => {
+    const totales = datos?.resumen?.totales;
+    if (!totales || Number(totales.productosAnalizados || 0) === 0) return false;
+    if (totales.productosConStock != null) return Number(totales.productosConStock || 0) === 0;
+    return Number(totales.stockBajo || 0) === 0
+      && Number(totales.lotesProximosVencer || 0) === 0
+      && Number(totales.bajaRotacion || 0) === 0
+      && Number(totales.conMovimiento || 0) === 0;
+  }, [datos]);
 
   const enviarPregunta = async (texto = pregunta) => {
     const limpia = String(texto || '').trim();
@@ -233,14 +253,41 @@ export default function AdminAsistenteIA() {
     const mensajeUsuario = { id: `u-${Date.now()}`, rol: 'user', texto: limpia };
     setMensajes((actuales) => [...actuales, mensajeUsuario]);
     setPregunta('');
-    setConsultando(true);
     setErrorChat('');
+    const consultaStock = esConsultaStockActual(limpia);
+    const alcance = consultaStock ? { permitida: true } : evaluarPreguntaAsistente(limpia, datos.snapshotIA);
+    if (!alcance.permitida) {
+      setMensajes((actuales) => [...actuales, {
+        id: `a-${Date.now()}`,
+        rol: 'assistant',
+        texto: alcance.mensaje,
+      }]);
+      return;
+    }
+    const respuestaVerificada = consultaStock
+      ? null
+      : responderResumenDeterministico(limpia, datos.resumen);
+    if (respuestaVerificada) {
+      setMensajes((actuales) => [...actuales, {
+        id: `a-${Date.now()}`,
+        rol: 'assistant',
+        texto: respuestaVerificada,
+      }]);
+      return;
+    }
+    setConsultando(true);
     try {
-      const resultado = await consultarAsistenteIA({
-        token: sesionIA.token,
-        pregunta: limpia,
-        snapshot: datos.snapshotIA,
-      });
+      const resultado = consultaStock
+        ? await consultarStockActualAsistenteIA({
+          pregunta: limpia,
+          idSucursal,
+          sucursales: datos.sucursales,
+        })
+        : await consultarAsistenteIA({
+          token: sesionIA.token,
+          pregunta: limpia,
+          snapshot: datos.snapshotIA,
+        });
       setMensajes((actuales) => [...actuales, {
         id: `a-${Date.now()}`,
         rol: 'assistant',
@@ -248,8 +295,9 @@ export default function AdminAsistenteIA() {
       }]);
     } catch (error) {
       if (['SESSION_EXPIRED', 'SESSION_INVALID', 'SESSION_LIMIT'].includes(error?.code)) {
+        limpiarSesionAsistenteIA();
         setSesionIA(null);
-        setErrorSesion('La sesión segura del asistente venció. Confirma tu contraseña nuevamente.');
+        setErrorSesion('La sesión segura venció. Vuelve a iniciar sesión para renovarla.');
       }
       setErrorChat(error?.message || 'La IA no pudo responder. El resumen sigue disponible.');
     } finally {
@@ -294,6 +342,17 @@ export default function AdminAsistenteIA() {
           )}
         </div>
 
+        {!cargando && datos?.resumen?.totales?.productosConStock != null && (
+          <div className="aia-coverage-grid" aria-label="Cobertura de datos del inventario">
+            <div><span>Catálogo analizado</span><strong>{cantidad(datos.resumen.totales.productosAnalizados)}</strong></div>
+            <div><span>Con stock disponible</span><strong>{cantidad(datos.resumen.totales.productosConStock)}</strong></div>
+            <div><span>Unidades disponibles</span><strong>{cantidad(datos.resumen.totales.unidadesEnStock)}</strong></div>
+            <div className={Number(datos.resumen.totales.productosSinStock || 0) > 0 ? 'is-warning' : ''}>
+              <span>Sin stock registrado</span><strong>{cantidad(datos.resumen.totales.productosSinStock)}</strong>
+            </div>
+          </div>
+        )}
+
         {cargando ? (
           <div className="aia-loading"><LogoLuxFarma variant="icon" size={40} color="red" /><span>Analizando datos reales…</span></div>
         ) : errorDatos ? (
@@ -303,9 +362,21 @@ export default function AdminAsistenteIA() {
             <button type="button" onClick={cargar}>Reintentar</button>
           </div>
         ) : (
-          <div className="aia-summary-grid">
-            {tarjetas.map((tarjeta) => <TarjetaResumen key={tarjeta.tipo} {...tarjeta} />)}
-          </div>
+          <>
+            {sinDatosOperativos && (
+              <div className="aia-data-warning">
+                <UiIcon name="AlertTriangle" size={19} />
+                <div>
+                  <strong>El catálogo existe, pero no hay inventario analizable.</strong>
+                  <span>Se detectaron {cantidad(datos.resumen.totales.productosAnalizados)} productos, pero ningún lote o movimiento útil en el alcance seleccionado. La IA no estimará stock faltante: registra o sincroniza los lotes primero.</span>
+                </div>
+                <button type="button" onClick={() => navigate('/admin-inventario')}>Revisar inventario</button>
+              </div>
+            )}
+            <div className="aia-summary-grid">
+              {tarjetas.map((tarjeta) => <TarjetaResumen key={tarjeta.tipo} {...tarjeta} />)}
+            </div>
+          </>
         )}
       </section>
 
@@ -316,42 +387,48 @@ export default function AdminAsistenteIA() {
             <h2 id="aia-chat-title">Asistente</h2>
             <p>Consulta el resumen en lenguaje natural. No ejecuta compras ni modifica inventario.</p>
           </div>
-          <span className="aia-readonly"><UiIcon name="Shield" size={14} /> Solo lectura</span>
+          <div className="aia-head-badges">
+            <span className="aia-live"><UiIcon name="Database" size={14} /> Stock verificado</span>
+            <span className="aia-readonly"><UiIcon name="Shield" size={14} /> Solo lectura</span>
+          </div>
         </div>
 
         {!sesionIA?.token ? (
-          <div className="aia-auth">
-            <div className="aia-auth-copy">
+          <div className="aia-session-warning">
+            <div className="aia-session-warning-copy">
               <span><UiIcon name="Lock" size={22} /></span>
               <div>
-                <h3>Confirma tu acceso de administrador</h3>
-                <p>La sesión de IA dura 15 minutos y se conserva solo en memoria.</p>
+                <h3>Inicia sesión nuevamente para habilitar el asistente</h3>
+                <p>{errorSesion || 'La autorización se crea automáticamente con el acceso de administrador, sin una segunda contraseña.'}</p>
               </div>
             </div>
-            <form onSubmit={autenticar}>
-              <label htmlFor="aia-password">Contraseña actual</label>
-              <div>
-                <input
-                  id="aia-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  maxLength={128}
-                  placeholder="Ingresa tu contraseña"
-                />
-                <button type="submit" disabled={!password || autenticando}>
-                  {autenticando ? 'Verificando…' : 'Habilitar asistente'}
-                </button>
-              </div>
-              {errorSesion && <p className="aia-inline-error">{errorSesion}</p>}
-            </form>
+            <button type="button" onClick={() => { logout(); navigate('/login'); }}>
+              Ir al inicio de sesión
+            </button>
           </div>
         ) : (
           <>
+            <div className="aia-stock-guide">
+              <UiIcon name="CheckCircle2" size={17} />
+              <p><strong>Consulta exacta de stock:</strong> escribe el nombre o código del producto. Se mostrará por separado lo disponible, lo vencido y el total físico registrado.</p>
+            </div>
             <div className="aia-suggestions">
               {PREGUNTAS_SUGERIDAS.map((texto) => (
-                <button key={texto} type="button" onClick={() => enviarPregunta(texto)} disabled={consultando || !datos?.snapshotIA}>{texto}</button>
+                <button
+                  key={texto}
+                  type="button"
+                  onClick={() => {
+                    if (texto === CONSULTA_STOCK_PLANTILLA) {
+                      setPregunta(texto);
+                      window.setTimeout(() => cajaPreguntaRef.current?.focus(), 0);
+                    } else {
+                      enviarPregunta(texto);
+                    }
+                  }}
+                  disabled={consultando || !datos?.snapshotIA}
+                >
+                  {texto === CONSULTA_STOCK_PLANTILLA ? 'Consultar stock exacto' : texto}
+                </button>
               ))}
             </div>
             <div className="aia-messages" aria-live="polite">
@@ -363,16 +440,18 @@ export default function AdminAsistenteIA() {
                     : <p>{mensaje.texto}</p>}
                 </div>
               ))}
-              {consultando && <div className="aia-message aia-message--assistant"><span><UiIcon name="Loader" size={17} className="aia-spin" /></span><p>Analizando el resumen…</p></div>}
+              {consultando && <div className="aia-message aia-message--assistant"><span><UiIcon name="Loader" size={17} className="aia-spin" /></span><p>Consultando datos verificados…</p></div>}
+              <div ref={finMensajesRef} />
             </div>
             {errorChat && <p className="aia-chat-error"><UiIcon name="AlertCircle" size={16} /> {errorChat}</p>}
             <form className="aia-composer" onSubmit={(event) => { event.preventDefault(); enviarPregunta(); }}>
               <textarea
+                ref={cajaPreguntaRef}
                 value={pregunta}
                 onChange={(event) => setPregunta(event.target.value)}
                 maxLength={500}
                 rows={2}
-                placeholder={datos?.snapshotIA ? 'Escribe una pregunta sobre el resumen…' : 'Carga el resumen para poder consultar…'}
+                placeholder={datos?.snapshotIA ? 'Ej.: ¿Cuál es el stock actual de Paracetamol 500 mg?' : 'Carga el resumen para poder consultar…'}
                 disabled={consultando || !datos?.snapshotIA}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !event.shiftKey) {

@@ -19,16 +19,8 @@ const { data, error } = await supabase.rpc('resumen_asistente_ia', {
   p_dias: 30,
   p_limite: 10,
 });
-if (error) throw error;
+if (!error || data) {
+  throw new Error('La anon key todavía puede ejecutar resumen_asistente_ia. Aplica la migración de seguridad.');
+}
 
-console.log(JSON.stringify({
-  procesamiento: data.metadata?.procesamiento,
-  totales: data.totales,
-  devueltos: {
-    stockBajo: data.stockBajo?.length,
-    proximosVencer: data.proximosVencer?.length,
-    bajaRotacion: data.bajaRotacion?.length,
-    mayorMovimiento: data.mayorMovimiento?.length,
-    reposicion: data.reposicion?.length,
-  },
-}, null, 2));
+console.log('OK: la anon key no puede leer directamente el resumen gerencial del Asistente IA.');
