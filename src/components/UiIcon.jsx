@@ -74,6 +74,7 @@ import {
   Tags,
   Target,
   Ticket,
+  X,
   Timer,
   Trash2,
   TrendingDown,
@@ -87,7 +88,6 @@ import {
   Wallet,
   WifiOff,
   Wrench,
-  X,
   XCircle,
   Zap,
 } from 'lucide-react';
@@ -163,6 +163,7 @@ const ICONS = {
   Tags,
   Target,
   Ticket,
+  X,
   Timer,
   Trash2,
   TrendingDown,
@@ -176,7 +177,6 @@ const ICONS = {
   Wallet,
   WifiOff,
   Wrench,
-  X,
   XCircle,
   Zap,
 };

@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
 import { limpiarStorageAlLogout } from '../utils/sessionDraft';
+import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
 
@@ -12,17 +13,33 @@ export const AuthProvider = ({ children, onLogin, onLogout }) => {
       return null;
     }
   });
+  const [authLoading, setAuthLoading] = useState(true);
 
   const onLoginRef = useRef(onLogin);
   useEffect(() => { onLoginRef.current = onLogin; }, [onLogin]);
 
-  // ← ESTE es el fix: al restaurar sesión desde localStorage, precargar datos
   useEffect(() => {
-    if (user && onLoginRef.current) {
-      onLoginRef.current(user);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // solo al montar
+    let activo = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!activo) return;
+      if (!data.session) {
+        setUser(null);
+        localStorage.removeItem('luxfarmaUser');
+      } else {
+        try {
+          const guardado = JSON.parse(localStorage.getItem('luxfarmaUser') || 'null');
+          if (guardado) onLoginRef.current?.(guardado);
+        } catch { /* perfil local inválido */ }
+      }
+      setAuthLoading(false);
+    }).catch(() => { if (activo) setAuthLoading(false); });
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== 'SIGNED_OUT') return;
+      setUser(null);
+      localStorage.removeItem('luxfarmaUser');
+    });
+    return () => { activo = false; listener.subscription.unsubscribe(); };
+  }, []);
 
   const login = useCallback((userData) => {
     setUser(userData);
@@ -33,13 +50,14 @@ export const AuthProvider = ({ children, onLogin, onLogout }) => {
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('luxfarmaUser');
+    void supabase.auth.signOut();
     // POS, borradores Compras/Pedidos/Notas, filtro Conteo Físico, turno activo
     limpiarStorageAlLogout();
     if (onLogout) onLogout();
   }, [onLogout]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, authLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
 import { formatearEquivalenciaStock } from './equivalenciaStock.js';
 import { diasHastaFecha, formatearFechaPE } from './fechas.js';
 import { UMBRAL_POR_VENCER_DIAS, estaPorVencer } from './umbralesVencimiento.js';
+import { cantidadLote, loteDisponible } from './stockLotes.js';
 
 export const DIAS_VENTAS_ASISTENTE = 30;
 export const LIMITE_ITEMS_IA = 10;
@@ -28,13 +29,13 @@ function productoVista(producto, stockBase) {
   };
 }
 
-function construirStockPorProducto(lotes) {
+function construirStockPorProducto(lotes, fechaReferencia) {
   const stock = new Map();
   for (const lote of (lotes || [])) {
-    if (lote?.estado !== 'VIGENTE') continue;
+    if (!loteDisponible(lote, fechaReferencia)) continue;
     const id = idNumerico(lote.id_producto);
     if (id == null) continue;
-    stock.set(id, numero(stock.get(id)) + numero(lote.cantidad_actual));
+    stock.set(id, numero(stock.get(id)) + cantidadLote(lote));
   }
   for (const [id, cantidad] of stock) stock.set(id, Math.max(0, cantidad));
   return stock;
@@ -79,7 +80,7 @@ export function construirResumenAsistenteIA({
   const sucursalesPorId = new Map(
     sucursales.map((sucursal) => [idNumerico(sucursal.id_sucursal), sucursal]),
   );
-  const stockPorProducto = construirStockPorProducto(lotes);
+  const stockPorProducto = construirStockPorProducto(lotes, fechaReferencia);
   const movimientoPorProducto = construirMovimientoPorProducto(detallesVenta);
   const usados = setIds(idsConMovimiento);
 
@@ -107,12 +108,12 @@ export function construirResumenAsistenteIA({
 
   const proximosVencer = (lotes || [])
     .map((lote) => {
-      if (lote?.estado !== 'VIGENTE' || numero(lote.cantidad_actual) <= 0) return null;
+      if (!loteDisponible(lote, fechaReferencia)) return null;
       const dias = diasHastaFecha(lote.fecha_vencimiento, fechaReferencia);
       if (!estaPorVencer(dias)) return null;
       const producto = productosPorId.get(idNumerico(lote.id_producto));
       if (!producto) return null;
-      const stockBase = Math.max(0, numero(lote.cantidad_actual));
+      const stockBase = cantidadLote(lote);
       const idSucursal = idNumerico(lote.id_sucursal);
       return {
         ...productoVista(producto, stockBase),

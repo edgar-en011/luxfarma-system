@@ -11,6 +11,7 @@ import SearchableSelect from '../../components/SearchableSelect';
 import './AdminPedidos.css';
 import LogoLuxFarma from '../../components/LogoLuxFarma';
 import UiIcon from '../../components/UiIcon';
+import { resumirStockLotes } from '../../utils/stockLotes';
 
 // Fase 1 de "Gestionar Pedido Proveedor": armar/listar pedidos futuros a un proveedor
 // (BORRADOR→ENVIADO→CANCELADO). La conversión ENVIADO→RECIBIDO (Fase 2) vive en
@@ -287,30 +288,29 @@ export default function AdminPedidos() {
       setCargandoProductosLab(true);
       const { data } = await supabase
         .from('productos')
-        .select('id_producto, codigo_barras, descripcion, stock_minimo, inventario_lotes(cantidad_actual, estado)')
+        .select('id_producto, codigo_barras, descripcion, stock_minimo, inventario_lotes(cantidad_actual, estado, fecha_vencimiento)')
         .eq('id_laboratorio', laboratorioFiltro)
         .eq('activo', 1)
         .order('descripcion', { ascending: true });
       if (cancelado) return;
-      // stockActual (mostrado en la columna) sigue incluyendo VENCIDO — es el stock
-      // físico total, informativo. bajoMinimo usa el criterio único del sistema
-      // (calcularProductosStockBajo: solo VIGENTE, stock_minimo o 3, solo productos
+      // bajoMinimo usa el criterio único del sistema (solo stock vigente disponible,
+      // stock_minimo o 3, solo productos
       // con movimiento) en vez del `stockActual < stock_minimo` de antes.
       const lotesFlat = (data || []).flatMap(prod =>
-        (prod.inventario_lotes || []).map(l => ({ id_producto: prod.id_producto, cantidad_actual: l.cantidad_actual, estado: l.estado }))
+        (prod.inventario_lotes || []).map(l => ({ id_producto: prod.id_producto, cantidad_actual: l.cantidad_actual, estado: l.estado, fecha_vencimiento: l.fecha_vencimiento }))
       );
       const idsMovimiento = await cargarIdsProductosConMovimiento();
       const stockBajoIds = new Set(calcularProductosStockBajo(data, lotesFlat, idsMovimiento).map(item => Number(item.id_producto)));
       const lista = (data || []).map(prod => {
-        const stockActual = (prod.inventario_lotes || [])
-          .filter(l => ['VIGENTE', 'VENCIDO'].includes(l.estado))
-          .reduce((s, l) => s + Number(l.cantidad_actual), 0);
+        const resumenStock = resumirStockLotes(prod.inventario_lotes || []);
+        const stockActual = resumenStock.disponible;
         return {
           id_producto: prod.id_producto,
           codigo_barras: prod.codigo_barras,
           descripcion: prod.descripcion,
           stock_minimo: Number(prod.stock_minimo) || 0,
           stockActual,
+          stockVencido: resumenStock.vencido,
           bajoMinimo: stockBajoIds.has(Number(prod.id_producto)),
         };
       });

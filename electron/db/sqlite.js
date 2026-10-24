@@ -246,11 +246,13 @@ function recalcProductoStock(database, idProducto) {
     SELECT COALESCE(SUM(cantidad_actual), 0) AS s
     FROM inventario_lotes_local
     WHERE id_producto = ? AND estado = 'VIGENTE' AND cantidad_actual > 0
+      AND (fecha_vencimiento IS NULL OR date(fecha_vencimiento) >= date('now', 'localtime'))
   `).get(idProducto)
   const total = Number(row?.s || 0)
   const lote = database.prepare(`
     SELECT nro_lote, fecha_vencimiento FROM inventario_lotes_local
     WHERE id_producto = ? AND estado = 'VIGENTE' AND cantidad_actual > 0
+      AND (fecha_vencimiento IS NULL OR date(fecha_vencimiento) >= date('now', 'localtime'))
     ORDER BY (fecha_vencimiento IS NULL), fecha_vencimiento ASC
     LIMIT 1
   `).get(idProducto)
@@ -274,8 +276,14 @@ function recalcProductoStock(database, idProducto) {
 }
 
 /** Descuenta FEFO en lotes locales y registra reservas. */
-function applyReservasForVenta(database, idLocal, carrito) {
-  database.prepare('DELETE FROM stock_reservas_offline WHERE id_local = ?').run(idLocal)
+function applyReservasForVenta(database, idLocal, carrito, idsFiltrados = null) {
+  const ids = idsFiltrados ? [...idsFiltrados] : null
+  if (ids?.length) {
+    const placeholders = ids.map(() => '?').join(',')
+    database.prepare(`DELETE FROM stock_reservas_offline WHERE id_local = ? AND id_producto IN (${placeholders})`).run(idLocal, ...ids)
+  } else {
+    database.prepare('DELETE FROM stock_reservas_offline WHERE id_local = ?').run(idLocal)
+  }
   const touched = new Set()
   const insR = database.prepare(
     'INSERT INTO stock_reservas_offline (id_local, id_producto, cantidad_base) VALUES (?, ?, ?)',
@@ -283,12 +291,14 @@ function applyReservasForVenta(database, idLocal, carrito) {
 
   for (const item of carrito || []) {
     const idProducto = item.id_producto
+    if (idsFiltrados && !idsFiltrados.has(Number(idProducto))) continue
     let restante = Number(item.cantidad || 0) * Number(item.factor || 1)
     if (!idProducto || restante <= 0) continue
 
     const lotes = database.prepare(`
       SELECT id_lote, cantidad_actual FROM inventario_lotes_local
       WHERE id_producto = ? AND estado = 'VIGENTE' AND cantidad_actual > 0
+        AND (fecha_vencimiento IS NULL OR date(fecha_vencimiento) >= date('now', 'localtime'))
       ORDER BY (fecha_vencimiento IS NULL), fecha_vencimiento ASC
     `).all(idProducto)
 
@@ -311,6 +321,44 @@ function applyReservasForVenta(database, idLocal, carrito) {
     }
   }
   for (const id of touched) recalcProductoStock(database, id)
+}
+
+/** Actualiza lotes de productos afectados sin reemplazar todo el catálogo. */
+export function replaceCatalogStock({ id_sucursal = null, productos = [], lotes = [] } = {}) {
+  const database = ensureDb()
+  const ids = [...new Set(productos.map((p) => Number(p.id_producto)).filter(Number.isFinite))]
+  if (!ids.length) return { ok: true, total: 0 }
+  const idsSet = new Set(ids)
+  const databaseTx = database.transaction(() => {
+    const placeholders = ids.map(() => '?').join(',')
+    database.prepare(`DELETE FROM inventario_lotes_local WHERE id_producto IN (${placeholders})`).run(...ids)
+    const insLote = database.prepare(`
+      INSERT INTO inventario_lotes_local (id_lote, id_producto, id_sucursal, nro_lote, fecha_vencimiento, cantidad_actual, estado)
+      VALUES (@id_lote, @id_producto, @id_sucursal, @nro_lote, @fecha_vencimiento, @cantidad_actual, @estado)
+    `)
+    for (const lote of lotes) {
+      if (lote.id_lote == null || !idsSet.has(Number(lote.id_producto))) continue
+      insLote.run({
+        id_lote: lote.id_lote,
+        id_producto: lote.id_producto,
+        id_sucursal: lote.id_sucursal ?? id_sucursal,
+        nro_lote: lote.nro_lote || null,
+        fecha_vencimiento: lote.fecha_vencimiento || null,
+        cantidad_actual: Math.max(0, Number(lote.cantidad_actual) || 0),
+        estado: lote.estado || 'VIGENTE',
+      })
+    }
+    for (const id of ids) recalcProductoStock(database, id)
+    const pendientes = database.prepare('SELECT id_local, payload_json FROM ventas_pendientes WHERE sincronizado = 0').all()
+    for (const row of pendientes) {
+      let payload
+      try { payload = JSON.parse(row.payload_json) } catch { continue }
+      applyReservasForVenta(database, row.id_local, payload?.carrito || [], idsSet)
+    }
+    setMeta('last_stock_sync_at', new Date().toISOString())
+  })
+  databaseTx()
+  return { ok: true, total: ids.length }
 }
 
 export function searchProductos(termino, limit = 30) {

@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { supabase } from '../supabaseClient';
-import { useAuth } from '../context/AuthContext';
-import { verificarYMigrarSiPlano } from '../utils/passwordHash';
+import { verificarPasswordCuenta } from '../services/authCuenta';
 import UiIcon from './UiIcon';
 
 // Confirmación de contraseña sin cerrar sesión — misma lógica que Login
 // (bcrypt + migración lazy de texto plano legado).
 export default function ReautenticacionModal({ visible, mensaje, onConfirmar, onCancelar }) {
-  const { user } = useAuth();
   const [password, setPassword] = useState('');
   const [verificando, setVerificando] = useState(false);
   const [error, setError] = useState('');
@@ -25,27 +22,7 @@ export default function ReautenticacionModal({ visible, mensaje, onConfirmar, on
     setError('');
     setVerificando(true);
     try {
-      const { data, error: errFetch } = await supabase
-        .from('usuarios')
-        .select('id_usuario, password_hash')
-        .eq('id_usuario', user.id_usuario)
-        .maybeSingle();
-      if (errFetch || !data) {
-        setError('No se pudo verificar el usuario.');
-        setVerificando(false);
-        return;
-      }
-
-      const { ok } = await verificarYMigrarSiPlano({
-        id_usuario: data.id_usuario,
-        plain: password,
-        stored: data.password_hash,
-      });
-      if (!ok) {
-        setError('Contraseña incorrecta.');
-        setVerificando(false);
-        return;
-      }
+      await verificarPasswordCuenta(password);
       setPassword('');
       setVerificando(false);
       onConfirmar();

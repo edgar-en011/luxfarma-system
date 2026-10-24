@@ -361,6 +361,41 @@ async function consultar(request: Request, db: ReturnType<typeof createClient>, 
   return respuestaJson(request, { respuesta: texto });
 }
 
+async function guardarFeedback(request: Request, db: ReturnType<typeof createClient>, body: Record<string, unknown>) {
+  const validacion = await validarSesion(request, db, false);
+  if (validacion.error) return validacion.error;
+  const respuestaId = String(body.respuesta_id || '');
+  if (!/^[a-zA-Z0-9_-]{8,80}$/.test(respuestaId) || typeof body.util !== 'boolean') {
+    return respuestaJson(request, { code: 'INVALID_INPUT', message: 'La valoraciÃ³n no es vÃ¡lida.' }, 400);
+  }
+  const { error } = await db.from('asistente_ia_feedback').upsert({
+    id_sesion: validacion.sesion.id_sesion,
+    id_usuario: validacion.sesion.id_usuario,
+    respuesta_id: respuestaId,
+    util: body.util,
+  }, { onConflict: 'id_sesion,respuesta_id' });
+  if (error) throw error;
+  return respuestaJson(request, { ok: true });
+}
+
+async function resumenFeedback(request: Request, db: ReturnType<typeof createClient>) {
+  const validacion = await validarSesion(request, db, false);
+  if (validacion.error) return validacion.error;
+  const desde = new Date(Date.now() - 30 * 86400_000).toISOString();
+  const [{ count: total, error: errorTotal }, { count: utiles, error: errorUtiles }] = await Promise.all([
+    db.from('asistente_ia_feedback').select('id_feedback', { count: 'exact', head: true }).gte('created_at', desde),
+    db.from('asistente_ia_feedback').select('id_feedback', { count: 'exact', head: true }).gte('created_at', desde).eq('util', true),
+  ]);
+  if (errorTotal || errorUtiles) throw errorTotal || errorUtiles;
+  const respuestas = total || 0;
+  return respuestaJson(request, {
+    total: respuestas,
+    utiles: utiles || 0,
+    porcentajeUtiles: respuestas ? Math.round(((utiles || 0) / respuestas) * 100) : null,
+    periodoDias: 30,
+  });
+}
+
 Deno.serve(async (request) => {
   const cors = corsPara(request);
   if (request.method === 'OPTIONS') return new Response('ok', { headers: cors.headers });
@@ -379,6 +414,8 @@ Deno.serve(async (request) => {
     if (body.accion === 'crear_sesion') return await crearSesion(request, db, body);
     if (body.accion === 'resumen') return await obtenerResumen(request, db, body);
     if (body.accion === 'consultar') return await consultar(request, db, body);
+    if (body.accion === 'feedback') return await guardarFeedback(request, db, body);
+    if (body.accion === 'feedback_resumen') return await resumenFeedback(request, db);
     return respuestaJson(request, { code: 'INVALID_ACTION', message: 'Acción no válida.' }, 400);
   } catch (error) {
     console.error('[asistente-ia] Error no controlado', error);

@@ -10,6 +10,7 @@ import { formatSolesUnitario } from '../../utils/precioExacto';
 import { fetchLaboratorios, suscribirLaboratoriosChanged } from '../../utils/laboratoriosCatalogo';
 import { esAdmin as rolEsAdmin } from '../../utils/roles';
 import { publicarInventarioSesion, suscribirInventarioSesion } from '../../utils/inventarioSesionSync';
+import { loteDisponible, cantidadLote } from '../../utils/stockLotes';
 import SearchableSelect from '../../components/SearchableSelect';
 import LogoCargandoOverlay from '../../components/LogoCargandoOverlay';
 import './TomaInventario.css';
@@ -641,7 +642,7 @@ export default function TomaInventario() {
       const [{ data: lotes }, { data: conteosExistentes }] = await Promise.all([
         supabase
           .from('inventario_lotes')
-          .select('id_producto, cantidad_actual')
+          .select('id_producto, cantidad_actual, estado, fecha_vencimiento')
           .in('id_producto', ids)
           .eq('id_sucursal', idSucursalActual)
           .eq('estado', 'VIGENTE'),
@@ -655,8 +656,8 @@ export default function TomaInventario() {
       ]);
 
       const stockMap = {};
-      (lotes || []).forEach(l => {
-        stockMap[l.id_producto] = (stockMap[l.id_producto] || 0) + Number(l.cantidad_actual || 0);
+      (lotes || []).filter((lote) => loteDisponible(lote)).forEach(l => {
+        stockMap[l.id_producto] = (stockMap[l.id_producto] || 0) + cantidadLote(l);
       });
       const conteoMap = {};
       (conteosExistentes || []).forEach(c => { conteoMap[c.id_producto] = c; });

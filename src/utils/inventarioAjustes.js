@@ -1,6 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { resultadoEscritura } from './supaWrite';
 import { publicarInventarioSesion } from './inventarioSesionSync';
+import { notificarInventarioCambiado } from './catalogoCache';
 
 // Aplica el ajuste de stock de un conteo de inventario: busca (o crea) el lote VIGENTE
 // del producto en la sucursal, le suma la diferencia, registra el movimiento en el
@@ -69,6 +70,7 @@ export async function aplicarAjusteInventario({ conteo, idSucursal, idUsuario })
       if (!r.ok) return r;
     }
 
+    notificarInventarioCambiado([conteo.id_producto]);
     return { ok: true };
   } catch (error) {
     return { ok: false, error };

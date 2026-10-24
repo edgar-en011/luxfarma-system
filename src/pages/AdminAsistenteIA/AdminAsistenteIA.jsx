@@ -7,6 +7,8 @@ import {
   cargarDatosAsistenteIA,
   consultarAsistenteIA,
   consultarStockActualAsistenteIA,
+  enviarFeedbackAsistenteIA,
+  cargarFeedbackAsistenteIA,
 } from '../../services/asistenteIA';
 import { leerSesionAsistenteIA, limpiarSesionAsistenteIA } from '../../utils/asistenteIASesion';
 import { esConsultaStockActual } from '../../utils/stockAsistenteIA';
@@ -149,6 +151,29 @@ export default function AdminAsistenteIA() {
   const [pregunta, setPregunta] = useState('');
   const [consultando, setConsultando] = useState(false);
   const [errorChat, setErrorChat] = useState('');
+  const [feedbackPorRespuesta, setFeedbackPorRespuesta] = useState({});
+  const [resumenFeedback, setResumenFeedback] = useState(null);
+
+  useEffect(() => {
+    if (!sesionIA?.token) { setResumenFeedback(null); return undefined; }
+    let vigente = true;
+    cargarFeedbackAsistenteIA(sesionIA.token)
+      .then((resumen) => { if (vigente) setResumenFeedback(resumen); })
+      .catch(() => { if (vigente) setResumenFeedback(null); });
+    return () => { vigente = false; };
+  }, [sesionIA?.token]);
+
+  const valorarRespuesta = useCallback(async (mensaje, util) => {
+    if (!mensaje?.feedbackId || !sesionIA?.token) return;
+    setFeedbackPorRespuesta((actual) => ({ ...actual, [mensaje.feedbackId]: util }));
+    try {
+      await enviarFeedbackAsistenteIA({ token: sesionIA.token, respuestaId: mensaje.feedbackId, util });
+      const siguiente = await cargarFeedbackAsistenteIA(sesionIA.token);
+      setResumenFeedback(siguiente);
+    } catch (error) {
+      setErrorChat(error?.message || 'No se pudo guardar la valoración.');
+    }
+  }, [sesionIA?.token]);
 
   const cargar = useCallback(async () => {
     const idCarga = ++cargaActual.current;
@@ -284,6 +309,7 @@ export default function AdminAsistenteIA() {
         id: `a-${Date.now()}`,
         rol: 'assistant',
         texto: alcance.mensaje,
+        feedbackId: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       }]);
       return;
     }
@@ -308,6 +334,7 @@ export default function AdminAsistenteIA() {
         id: `a-${Date.now()}`,
         rol: 'assistant',
         texto: resultado.respuesta,
+        feedbackId: `respuesta-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       }]);
     } catch (error) {
       if (['SESSION_EXPIRED', 'SESSION_INVALID', 'SESSION_LIMIT'].includes(error?.code)) {
@@ -407,6 +434,9 @@ export default function AdminAsistenteIA() {
             <span className="aia-live"><UiIcon name="Database" size={14} /> Stock verificado</span>
             <span className="aia-memory"><UiIcon name="Timer" size={14} /> Memoria 10 min</span>
             <span className="aia-readonly"><UiIcon name="Shield" size={14} /> Solo lectura</span>
+            {resumenFeedback?.porcentajeUtiles != null && (
+              <span className="aia-feedback-kpi"><UiIcon name="CheckCircle2" size={14} /> Útiles: {resumenFeedback.porcentajeUtiles}% · 30 días</span>
+            )}
           </div>
         </div>
 
@@ -452,9 +482,22 @@ export default function AdminAsistenteIA() {
               {mensajes.map((mensaje) => (
                 <div key={mensaje.id} className={`aia-message aia-message--${mensaje.rol}`}>
                   <span>{mensaje.rol === 'assistant' ? <UiIcon name="Lightbulb" size={17} /> : <UiIcon name="User" size={17} />}</span>
-                  {mensaje.rol === 'assistant'
-                    ? <RespuestaIA texto={mensaje.texto} />
-                    : <p>{mensaje.texto}</p>}
+                  <div className="aia-message-content">
+                    {mensaje.rol === 'assistant'
+                      ? <RespuestaIA texto={mensaje.texto} />
+                      : <p>{mensaje.texto}</p>}
+                    {mensaje.rol === 'assistant' && mensaje.feedbackId && (
+                      <div className="aia-feedback" aria-label="Valorar respuesta">
+                        <span>¿Te sirvió?</span>
+                        <button type="button" className={feedbackPorRespuesta[mensaje.feedbackId] === true ? 'selected' : ''}
+                          aria-label="Respuesta útil" aria-pressed={feedbackPorRespuesta[mensaje.feedbackId] === true}
+                          onClick={() => valorarRespuesta(mensaje, true)}><UiIcon name="Check" size={14} /> Sí</button>
+                        <button type="button" className={feedbackPorRespuesta[mensaje.feedbackId] === false ? 'selected' : ''}
+                          aria-label="Respuesta no útil" aria-pressed={feedbackPorRespuesta[mensaje.feedbackId] === false}
+                          onClick={() => valorarRespuesta(mensaje, false)}><UiIcon name="X" size={14} /> No</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
               {consultando && <div className="aia-message aia-message--assistant"><span><UiIcon name="Loader" size={17} className="aia-spin" /></span><p>Consultando datos verificados…</p></div>}

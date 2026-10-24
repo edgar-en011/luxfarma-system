@@ -53,7 +53,7 @@ export default function AdminUsuarios() {
     setCargando(true);
     try {
       const [resUsu, resSuc, resRol] = await Promise.all([
-        supabase.from('usuarios').select('*').order('nombres', { ascending: true }),
+        supabase.from('usuarios').select('id_usuario, dni, nombres, apellidos, email, telefono, id_rol, id_sucursal, activo, roles(nombre), sucursales(id_sucursal, nombre_comercial)').order('nombres', { ascending: true }),
         supabase.from('sucursales').select('*').order('id_sucursal', { ascending: true }),
         supabase.from('roles').select('*'),
       ]);
