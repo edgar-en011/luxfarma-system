@@ -275,6 +275,40 @@ export async function guardarCatalogoLocal({
   return { ok: true, total: productos.length }
 }
 
+/** Actualiza existencias de productos puntuales sin reemplazar el catálogo completo. */
+export async function actualizarStockCatalogoLocal({ id_sucursal = null, productos = [], lotes = [] } = {}) {
+  if (!productos.length) return { ok: true, total: 0 }
+  await ensureOfflineReady()
+  if (isElectronApp() && electronDb()?.replaceCatalogStock) {
+    const result = await electronDb().replaceCatalogStock({ id_sucursal, productos, lotes })
+    if (result?.error) throw new Error(result.error)
+    return result
+  }
+
+  const db = await abrirIdb()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PRODUCTOS, 'readwrite')
+    const store = tx.objectStore(STORE_PRODUCTOS)
+    for (const cambio of productos) {
+      const req = store.get(cambio.id_producto)
+      req.onsuccess = () => {
+        if (!req.result) return
+        store.put({
+          ...req.result,
+          totalStock: Math.max(0, Number(cambio.totalStock) || 0),
+          loteActual: cambio.loteActual || null,
+          fechaVenceStr: cambio.fechaVenceStr || '',
+          ultima_actualizacion: new Date().toISOString(),
+        })
+      }
+      req.onerror = () => reject(req.error)
+    }
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+  return { ok: true, total: productos.length }
+}
+
 export async function buscarProductosOffline(termino) {
   await ensureOfflineReady()
   if (isElectronApp() && electronDb()) {

@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setMeta: (key, value) => ipcRenderer.invoke('db:setMeta', key, value),
     catalogCount: () => ipcRenderer.invoke('db:catalogCount'),
     replaceCatalog: (payload) => ipcRenderer.invoke('db:replaceCatalog', payload),
+    replaceCatalogStock: (payload) => ipcRenderer.invoke('db:replaceCatalogStock', payload),
     searchProductos: (termino, limit) => ipcRenderer.invoke('db:searchProductos', termino, limit),
     getFormasVenta: (idProducto) => ipcRenderer.invoke('db:getFormasVenta', idProducto),
     listUnidades: () => ipcRenderer.invoke('db:listUnidades'),

@@ -9,6 +9,7 @@ import SmartDateInput from '../../components/SmartDateInput';
 import UiIcon from '../../components/UiIcon';
 import LogoLuxFarma from '../../components/LogoLuxFarma';
 import { filaProductoPrecios } from '../../utils/productoPrecios';
+import { resumirStockLotes } from '../../utils/stockLotes';
 import { formatSolesUnitario } from '../../utils/precioExacto';
 import { formatearPorcentajeGanancia } from '../../utils/porcentajeGanancia';
 import {
@@ -654,7 +655,7 @@ export default function AdminProductos() {
       const data = await fetchAllRows(() => {
         let q = supabase
           .from('inventario_lotes')
-          .select('cantidad_actual, productos!inner(producto_precios(costo, precio_venta))')
+          .select('cantidad_actual, estado, fecha_vencimiento, productos!inner(producto_precios(costo, precio_venta))')
           .eq('estado', 'VIGENTE')
           .gt('cantidad_actual', 0);
 
@@ -677,7 +678,7 @@ export default function AdminProductos() {
 
       let costo = 0, venta = 0;
       (data || []).forEach(lote => {
-        const cant = Number(lote.cantidad_actual) || 0;
+        const cant = resumirStockLotes([lote]).disponible;
         const fp = filaProductoPrecios(lote.productos?.producto_precios);
         const costoUnit = Number(fp?.costo) || 0;
         const ventaUnit = Number(fp?.precio_venta) || 0;
@@ -768,10 +769,9 @@ export default function AdminProductos() {
         return q;
       };
 
-      const selectCols = '*, inventario_lotes(cantidad_actual, estado), presentaciones(nombre)';
+      const selectCols = '*, inventario_lotes(cantidad_actual, estado, fecha_vencimiento), presentaciones(nombre)';
       const mapearProducto = (prod) => {
-        const lotes = (prod.inventario_lotes || []).filter(l => ['VIGENTE', 'VENCIDO'].includes(l.estado));
-        const stockTotal = lotes.reduce((acc, l) => acc + Number(l.cantidad_actual || 0), 0);
+        const stockTotal = resumirStockLotes(prod.inventario_lotes || []).disponible;
         const labObj = diccionarios.laboratorios.find(l => Number(l.id_laboratorio) === Number(prod.id_laboratorio));
         const famObj = diccionarios.familias.find(f => Number(f.idfamilia) === Number(prod.id_familia));
         return {
@@ -883,7 +883,7 @@ export default function AdminProductos() {
       while (true) {
         const { data, error } = await supabase
           .from('productos')
-          .select('codigo_barras, descripcion, id_familia, id_laboratorio, stock_minimo, activo, inventario_lotes(cantidad_actual, estado)')
+          .select('codigo_barras, descripcion, id_familia, id_laboratorio, stock_minimo, activo, inventario_lotes(cantidad_actual, estado, fecha_vencimiento)')
           .range(from, from + 999);
         if (error) throw error;
         allData = [...allData, ...(data || [])];
@@ -892,9 +892,7 @@ export default function AdminProductos() {
       }
       const encabezados = "CÓDIGO,PRODUCTO,DPTO,LABORATORIO,STOCK,STOCK MÍNIMO,ACTIVO\n";
       const filas = allData.map(p => {
-        const stock = (p.inventario_lotes || [])
-          .filter(l => ['VIGENTE', 'VENCIDO'].includes(l.estado))
-          .reduce((acc, l) => acc + Number(l.cantidad_actual || 0), 0);
+        const stock = resumirStockLotes(p.inventario_lotes || []).disponible;
         const famObj = diccionarios.familias.find(f => Number(f.idfamilia) === Number(p.id_familia));
         const labObj = diccionarios.laboratorios.find(l => Number(l.id_laboratorio) === Number(p.id_laboratorio));
         const activoTxt = (p.activo === 1 || p.activo === true || String(p.activo) === '1') ? 'SI' : 'NO';
@@ -1005,16 +1003,14 @@ export default function AdminProductos() {
     const idsOtros = pares.map(p => p.id_producto_otro);
     const { data: prods } = await supabase
       .from('productos')
-      .select('id_producto, codigo_barras, descripcion, stock_minimo, laboratorios(nombre), presentaciones(nombre), inventario_lotes(cantidad_actual, estado), producto_precios(costo)')
+      .select('id_producto, codigo_barras, descripcion, stock_minimo, laboratorios(nombre), presentaciones(nombre), inventario_lotes(cantidad_actual, estado, fecha_vencimiento), producto_precios(costo)')
       .in('id_producto', idsOtros);
 
     return pares
       .map(par => {
         const prod = (prods || []).find(p => p.id_producto === par.id_producto_otro);
         if (!prod) return null;
-        const stockTotal = (prod.inventario_lotes || [])
-          .filter(l => ['VIGENTE', 'VENCIDO'].includes(l.estado))
-          .reduce((acc, l) => acc + Number(l.cantidad_actual || 0), 0);
+        const stockTotal = resumirStockLotes(prod.inventario_lotes || []).disponible;
         return {
           id_relacion: par.id_relacion,
           id_producto: prod.id_producto,

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { filaProductoPrecios } from '../../utils/productoPrecios';
 import { formatPrecioUnitario } from '../../utils/precioExacto';
 import { formatearEquivalenciaStock } from '../../utils/equivalenciaStock';
+import { loteDisponible, cantidadLote } from '../../utils/stockLotes';
 import './Catalogo.css';
 import UiIcon from '../../components/UiIcon';
 
@@ -75,13 +76,13 @@ export default function Catalogo() {
       });
 
       const processedData = (data || []).map(prod => {
-        const activeLots = (lotesMap[prod.id_producto] || [])
+        const activeLots = (lotesMap[prod.id_producto] || []).filter((lote) => loteDisponible(lote))
           .sort((a, b) => {
             if (!a.fecha_vencimiento) return 1;
             if (!b.fecha_vencimiento) return -1;
             return new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento);
           });
-        const totalStock = activeLots.reduce((sum, lot) => sum + Number(lot.cantidad_actual || 0), 0);
+        const totalStock = activeLots.reduce((sum, lot) => sum + cantidadLote(lot), 0);
         return {
           ...prod,
           lotesActivos: activeLots,

@@ -1,35 +1,36 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
 
-import Login from './pages/Login/Login';
-import POS from './pages/POS/POS';
-import Dashboard from './pages/Dashboard/Dashboard';
-import VentasPerdidas from './pages/VentasPerdidas/VentasPerdidas';
-import Soporte from './pages/Soporte/Soporte';
-import MisVentas from './pages/MisVentas/MisVentas';
-import Catalogo from './pages/Catalogo/Catalogo';
-import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
+const Login = lazy(() => import('./pages/Login/Login'));
+const POS = lazy(() => import('./pages/POS/POS'));
+const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
+const VentasPerdidas = lazy(() => import('./pages/VentasPerdidas/VentasPerdidas'));
+const Soporte = lazy(() => import('./pages/Soporte/Soporte'));
+const MisVentas = lazy(() => import('./pages/MisVentas/MisVentas'));
+const Catalogo = lazy(() => import('./pages/Catalogo/Catalogo'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard/AdminDashboard'));
 import MainLayout from './layouts/MainLayout';
-import AdminVentas from './pages/AdminVentas/AdminVentas';
-import AdminSunat from './pages/AdminSunat/AdminSunat';
-import AdminSeriesSunat from './pages/AdminSeriesSunat/AdminSeriesSunat';
-import AdminCodigosProveedor from './pages/AdminCodigosProveedor/AdminCodigosProveedor';
-import AdminImpresora from './pages/AdminImpresora/AdminImpresora';
-import AdminCompras from './pages/AdminCompras/AdminCompras';
-import AdminInventario from './pages/AdminInventario/AdminInventario';
-import AdminProductos from './pages/AdminProductos/AdminProductos';
-import AdminPedidos from './pages/AdminPedidos/AdminPedidos';
-import AdminCuentas from './pages/AdminCuentas/AdminCuentas';
-import AdminUsuarios from './pages/AdminUsuarios/AdminUsuarios';
-import AdminAlertas from './pages/AdminAlertas/AdminAlertas';
-import AdminReportes from './pages/AdminReportes/AdminReportes';
-import AdminGanancias from './pages/AdminGanancias/AdminGanancias';
-import AdminAsistenteIA from './pages/AdminAsistenteIA/AdminAsistenteIA';
-import Kardex from './pages/Kardex/Kardex';
-import AdminTomaInventario from './pages/AdminTomaInventario/AdminTomaInventario';
-import TomaInventario from './pages/TomaInventario/TomaInventario';
-import Notificaciones from './pages/Notificaciones/Notificaciones';
+const AdminVentas = lazy(() => import('./pages/AdminVentas/AdminVentas'));
+const AdminSunat = lazy(() => import('./pages/AdminSunat/AdminSunat'));
+const AdminSeriesSunat = lazy(() => import('./pages/AdminSeriesSunat/AdminSeriesSunat'));
+const AdminCodigosProveedor = lazy(() => import('./pages/AdminCodigosProveedor/AdminCodigosProveedor'));
+const AdminImpresora = lazy(() => import('./pages/AdminImpresora/AdminImpresora'));
+const AdminCompras = lazy(() => import('./pages/AdminCompras/AdminCompras'));
+const AdminInventario = lazy(() => import('./pages/AdminInventario/AdminInventario'));
+const AdminProductos = lazy(() => import('./pages/AdminProductos/AdminProductos'));
+const AdminPedidos = lazy(() => import('./pages/AdminPedidos/AdminPedidos'));
+const AdminCuentas = lazy(() => import('./pages/AdminCuentas/AdminCuentas'));
+const AdminUsuarios = lazy(() => import('./pages/AdminUsuarios/AdminUsuarios'));
+const AdminAlertas = lazy(() => import('./pages/AdminAlertas/AdminAlertas'));
+const AdminReportes = lazy(() => import('./pages/AdminReportes/AdminReportes'));
+const AdminGanancias = lazy(() => import('./pages/AdminGanancias/AdminGanancias'));
+const AdminAsistenteIA = lazy(() => import('./pages/AdminAsistenteIA/AdminAsistenteIA'));
+const Kardex = lazy(() => import('./pages/Kardex/Kardex'));
+const AdminTomaInventario = lazy(() => import('./pages/AdminTomaInventario/AdminTomaInventario'));
+const TomaInventario = lazy(() => import('./pages/TomaInventario/TomaInventario'));
+const Notificaciones = lazy(() => import('./pages/Notificaciones/Notificaciones'));
 import LogoCargandoOverlay from './components/LogoCargandoOverlay';
 import PwaUpdateBanner from './components/PwaUpdateBanner';
 import ElectronFunctionKeysToast from './components/ElectronFunctionKeysToast';
@@ -43,9 +44,10 @@ function AppLoadingScreen() {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
   const { appReady, appLoading } = useAppData();
 
+  if (authLoading) return <AppLoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
 
   // Muestra pantalla de precarga solo si los datos aún no están listos
@@ -60,7 +62,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 const RootRedirect = () => {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
+  if (authLoading) return <AppLoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (esAdmin(user.id_rol)) return <Navigate to="/admin-dashboard" replace />;
   if (esRolCaja(user.id_rol)) return <Navigate to="/dashboard" replace />;
@@ -94,6 +97,7 @@ function App() {
           {!enElectron && <PwaUpdateBanner />}
           <ElectronFunctionKeysToast />
           {enElectron && <ActualizacionApp />}
+          <Suspense fallback={<AppLoadingScreen />}>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<Login />} />
@@ -140,6 +144,7 @@ function App() {
               <Route path="/admin-toma-inventario" element={<AdminTomaInventario />} />
             </Route>
           </Routes>
+          </Suspense>
         </AppProviders>
       </Router>
     </AppDataProvider>

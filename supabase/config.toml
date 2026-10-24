@@ -1,2 +1,5 @@
 [functions.asistente-ia]
 verify_jwt = false
+
+[functions.auth-cuenta]
+verify_jwt = false

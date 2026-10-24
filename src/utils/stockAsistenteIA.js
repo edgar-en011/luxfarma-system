@@ -1,5 +1,5 @@
 import { formatearEquivalenciaStock } from './equivalenciaStock.js';
-import { fechaLocalStr } from './fechas.js';
+import { estadoStockLote, cantidadLote } from './stockLotes.js';
 
 const PALABRAS_VACIAS = new Set([
   'a', 'actual', 'actualmente', 'al', 'cual', 'cuales', 'cuanto', 'cuantos',
@@ -78,9 +78,7 @@ function cantidadTexto(valor) {
 }
 
 function estadoEfectivoLote(lote, fechaReferencia) {
-  const fecha = String(lote?.fecha_vencimiento || '').slice(0, 10);
-  if (lote?.estado === 'VENCIDO' || (fecha && fecha < fechaLocalStr(fechaReferencia))) return 'VENCIDO';
-  return lote?.estado;
+  return estadoStockLote(lote, fechaReferencia);
 }
 
 export function construirDetallesStock(productos, lotes, sucursales, idSucursal = 'TODAS', fechaReferencia = new Date()) {
@@ -97,10 +95,10 @@ export function construirDetallesStock(productos, lotes, sucursales, idSucursal 
     ));
     const disponible = Math.max(0, lotesProducto
       .filter((lote) => estadoEfectivoLote(lote, fechaReferencia) === 'VIGENTE')
-      .reduce((total, lote) => total + numero(lote.cantidad_actual), 0));
+      .reduce((total, lote) => total + cantidadLote(lote), 0));
     const vencido = Math.max(0, lotesProducto
       .filter((lote) => estadoEfectivoLote(lote, fechaReferencia) === 'VENCIDO')
-      .reduce((total, lote) => total + numero(lote.cantidad_actual), 0));
+      .reduce((total, lote) => total + cantidadLote(lote), 0));
 
     const porSucursal = new Map();
     for (const lote of lotesProducto) {
@@ -108,8 +106,8 @@ export function construirDetallesStock(productos, lotes, sucursales, idSucursal 
       if (!['VIGENTE', 'VENCIDO'].includes(estado)) continue;
       const id = Number(lote.id_sucursal);
       const actual = porSucursal.get(id) || { idSucursal: id, disponible: 0, vencido: 0 };
-      if (estado === 'VIGENTE') actual.disponible += numero(lote.cantidad_actual);
-      if (estado === 'VENCIDO') actual.vencido += numero(lote.cantidad_actual);
+      if (estado === 'VIGENTE') actual.disponible += cantidadLote(lote);
+      if (estado === 'VENCIDO') actual.vencido += cantidadLote(lote);
       porSucursal.set(id, actual);
     }
 

@@ -148,3 +148,11 @@ export async function consultarAsistenteIA({ token, pregunta, snapshot, historia
     historial,
   }, token);
 }
+
+export async function enviarFeedbackAsistenteIA({ token, respuestaId, util }) {
+  return invocarAsistente({ accion: 'feedback', respuesta_id: respuestaId, util }, token);
+}
+
+export async function cargarFeedbackAsistenteIA(token) {
+  return invocarAsistente({ accion: 'feedback_resumen' }, token);
+}

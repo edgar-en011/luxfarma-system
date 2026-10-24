@@ -290,7 +290,7 @@ export default function AdminDashboard() {
       const [resTickets, resLotes, resCompras, resProductos] = await Promise.all([
         supabase.from('tickets_soporte').select('*', { count: 'exact', head: true }).eq('estado', 'PENDIENTE'),
         idsUsados.length
-          ? supabase.from('inventario_lotes').select('id_producto, cantidad_actual, id_sucursal, estado').eq('estado', 'VIGENTE').in('id_producto', idsUsados)
+          ? supabase.from('inventario_lotes').select('id_producto, cantidad_actual, id_sucursal, estado, fecha_vencimiento').eq('estado', 'VIGENTE').in('id_producto', idsUsados)
           : Promise.resolve({ data: [] }),
         supabase.from('compras').select('total_compra, monto_pagado, fecha_vencimiento').not('forma_pago', 'ilike', 'contado').neq('estado_pago', 'PAGADO'),
         idsUsados.length

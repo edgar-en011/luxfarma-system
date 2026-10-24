@@ -6,8 +6,10 @@
 import { supabase } from '../supabaseClient'
 import { filaProductoPrecios } from './productoPrecios'
 import { nombreLaboratorioProducto } from './buscarProductosCatalogo'
+import { cantidadLote, loteDisponible } from './stockLotes.js'
 import {
   guardarCatalogoLocal,
+  actualizarStockCatalogoLocal,
   buscarProductosOffline,
   catalogoTieneDatos,
   ensureOfflineReady,
@@ -131,8 +133,9 @@ export async function descargarCatalogo(id_sucursal, onProgreso) {
     const productosConStock = todosLosProductos.map((prod) => {
       const lotes = (lotesMap[prod.id_producto] || [])
         .sort((a, b) => new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento))
-      const loteActual = lotes[0] || null
-      const totalStock = lotes.reduce((s, l) => s + Number(l.cantidad_actual), 0)
+      const lotesVendibles = lotes.filter((lote) => loteDisponible(lote))
+      const loteActual = lotesVendibles[0] || null
+      const totalStock = lotesVendibles.reduce((s, l) => s + cantidadLote(l), 0)
       let fechaVenceStr = ''
       if (loteActual?.fecha_vencimiento) {
         const [year, month] = loteActual.fecha_vencimiento.split('-')
@@ -172,7 +175,7 @@ export async function descargarCatalogo(id_sucursal, onProgreso) {
       productos: productosConStock,
       formas,
       unidades,
-      lotes: lotesData,
+        lotes: lotesData,
     })
 
     limpiarCatalogoStaleFlag()
@@ -187,6 +190,7 @@ export async function descargarCatalogo(id_sucursal, onProgreso) {
 
 const CATALOGO_STALE_KEY = 'luxfarma_catalogo_stale'
 const EVENTO_PRODUCTOS = 'luxfarma:productos-changed'
+const EVENTO_INVENTARIO = 'luxfarma:inventario-changed'
 
 /** Marca el catálogo offline como obsoleto (crear/editar producto) y notifica a POS. */
 export function marcarCatalogoOfflineStale() {
@@ -209,6 +213,63 @@ export function suscribirProductosChanged(callback) {
   const handler = () => { callback?.() }
   window.addEventListener(EVENTO_PRODUCTOS, handler)
   return () => window.removeEventListener(EVENTO_PRODUCTOS, handler)
+}
+
+export function notificarInventarioCambiado(idsProducto = []) {
+  if (typeof window === 'undefined') return
+  const ids = [...new Set((idsProducto || []).map(Number).filter(Number.isFinite))]
+  window.dispatchEvent(new CustomEvent(EVENTO_INVENTARIO, { detail: { idsProducto: ids } }))
+}
+
+export function suscribirInventarioChanged(callback) {
+  if (typeof window === 'undefined') return () => {}
+  const handler = (event) => callback?.(event.detail || {})
+  window.addEventListener(EVENTO_INVENTARIO, handler)
+  return () => window.removeEventListener(EVENTO_INVENTARIO, handler)
+}
+
+/** Sincroniza lotes solo para productos cuyo stock cambió. */
+export async function actualizarStockProductos(idsProducto, id_sucursal = null) {
+  const ids = [...new Set((idsProducto || []).map(Number).filter(Number.isFinite))]
+  if (!ids.length) return { ok: true, total: 0 }
+  const productos = []
+  const lotes = []
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100)
+    const [{ data: prodData, error: prodError }, { data: loteData, error: loteError }] = await Promise.all([
+      supabase.from('productos').select('id_producto').in('id_producto', chunk),
+      (() => {
+        let query = supabase.from('inventario_lotes')
+          .select('id_lote, id_producto, id_sucursal, nro_lote, fecha_vencimiento, cantidad_actual, estado')
+          .in('id_producto', chunk)
+        if (id_sucursal) query = query.or(`id_sucursal.eq.${id_sucursal},id_sucursal.is.null`)
+        return query
+      })(),
+    ])
+    if (prodError || loteError) throw prodError || loteError
+    productos.push(...(prodData || []))
+    lotes.push(...(loteData || []))
+  }
+  const lotesPorProducto = new Map()
+  for (const lote of lotes) {
+    const rows = lotesPorProducto.get(Number(lote.id_producto)) || []
+    rows.push(lote)
+    lotesPorProducto.set(Number(lote.id_producto), rows)
+  }
+  const cambios = productos.map((producto) => {
+    const disponibles = (lotesPorProducto.get(Number(producto.id_producto)) || [])
+      .filter((lote) => loteDisponible(lote))
+      .sort((a, b) => String(a.fecha_vencimiento || '9999-12-31').localeCompare(String(b.fecha_vencimiento || '9999-12-31')))
+    const lote = disponibles[0]
+    return {
+      id_producto: producto.id_producto,
+      totalStock: disponibles.reduce((suma, item) => suma + cantidadLote(item), 0),
+      loteActual: lote ? { nro_lote: lote.nro_lote, fecha_vencimiento: lote.fecha_vencimiento } : null,
+      fechaVenceStr: lote?.fecha_vencimiento ? `${lote.fecha_vencimiento.slice(5, 7)}/${lote.fecha_vencimiento.slice(0, 4)}` : '',
+    }
+  })
+  const result = await actualizarStockCatalogoLocal({ id_sucursal, productos: cambios, lotes })
+  return result
 }
 
 // ─── Actualizar solo el stock (más rápido) — re-descarga catálogo ligero vía stock ─

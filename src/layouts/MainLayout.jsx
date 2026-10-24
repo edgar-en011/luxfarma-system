@@ -27,7 +27,8 @@ import { calcularProductosStockBajo, cargarIdsProductosConMovimiento } from '../
 import { verificarEstadosSunatPosteriores } from '../services/comprobantesSunat';
 import { clasificarBoletasPendientesSunat, listarSeriesCortas } from '../utils/estadoSunat';
 import { DIAS_PLAZO_LEGAL_RESUMEN, INTERVALO_VERIFICACION_SUNAT_MS } from '../utils/plazosSunatBoleta';
-import { hashPassword, verificarYMigrarSiPlano } from '../utils/passwordHash';
+import { hashPassword } from '../utils/passwordHash';
+import { cambiarPasswordCuenta } from '../services/authCuenta';
 import LogoLuxFarma from '../components/LogoLuxFarma';
 import './MainLayout.css';
 import UiIcon from '../components/UiIcon';
@@ -216,7 +217,7 @@ export default function MainLayout() {
           const [{ data: lotesStock }, { data: productosStock }] = await Promise.all([
             supabase
               .from('inventario_lotes')
-              .select('id_producto, id_sucursal, cantidad_actual, estado')
+              .select('id_producto, id_sucursal, cantidad_actual, estado, fecha_vencimiento')
               .eq('estado', 'VIGENTE')
               .in('id_producto', idsUsados),
             supabase
@@ -840,28 +841,7 @@ export default function MainLayout() {
       return setMsgClave({ texto: 'La nueva contraseña no puede ser igual a la actual.', ok: false });
     setCambiandoClave(true);
     try {
-      const { data: check, error: errCheck } = await supabase
-        .from('usuarios')
-        .select('id_usuario, password_hash')
-        .eq('id_usuario', user.id_usuario)
-        .maybeSingle();
-      if (errCheck || !check)
-        return setMsgClave({ texto: 'La contraseña actual es incorrecta.', ok: false });
-
-      const { ok } = await verificarYMigrarSiPlano({
-        id_usuario: check.id_usuario,
-        plain: claveActual,
-        stored: check.password_hash,
-      });
-      if (!ok)
-        return setMsgClave({ texto: 'La contraseña actual es incorrecta.', ok: false });
-
-      const nuevoHash = await hashPassword(claveNueva);
-      const { error } = await supabase
-        .from('usuarios')
-        .update({ password_hash: nuevoHash })
-        .eq('id_usuario', user.id_usuario);
-      if (error) throw error;
+      await cambiarPasswordCuenta(claveActual, claveNueva);
       setMsgClave({ texto: 'Contraseña actualizada correctamente.', ok: true });
       setClaveActual(''); setClaveNueva(''); setClaveConfirm('');
       setTimeout(() => cerrarModalClave(), 2000);

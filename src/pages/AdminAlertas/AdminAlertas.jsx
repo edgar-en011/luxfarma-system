@@ -19,6 +19,7 @@ import { diasHastaFecha, formatearFechaPE } from '../../utils/fechas';
 import { estaPorVencer } from '../../utils/umbralesVencimiento';
 import { marcarLotesVencidos } from '../../utils/lotesVencidos';
 import { assertEscritura } from '../../utils/supaWrite';
+import { loteDisponible } from '../../utils/stockLotes';
 import './AdminAlertas.css';
 import UiIcon from '../../components/UiIcon';
 import {
@@ -217,7 +218,7 @@ export default function AdminAlertas() {
         : { data: [] };
 
       const idsConVigente = new Set(
-        (resLotes.data || []).filter((l) => l.estado === 'VIGENTE').map((l) => Number(l.id_producto))
+        (resLotes.data || []).filter((lote) => loteDisponible(lote)).map((l) => Number(l.id_producto))
       );
       const idsSinVigente = [...idsMov].filter((id) => !idsConVigente.has(Number(id)));
       setLotesSedeRespaldo(await cargarLotesParaSede(idsSinVigente));

@@ -5,9 +5,10 @@ import { supabase } from "../../supabaseClient";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { guardarVentaOffline, contarPendientes, obtenerVentasPendientes, ensureOfflineReady } from "../../utils/offlineQueue";
 import { sincronizarCola } from "../../utils/syncEngine";
-import { buscarProductosOffline, descargarCatalogo, catalogoTieneDatos, catalogoMarcadoStale, suscribirProductosChanged } from "../../utils/catalogoCache";
+import { buscarProductosOffline, descargarCatalogo, catalogoTieneDatos, catalogoMarcadoStale, suscribirProductosChanged, suscribirInventarioChanged, actualizarStockProductos } from "../../utils/catalogoCache";
 import { ordenarResultadosBusqueda, terminoBusquedaSeguro, SELECT_POS_BUSQUEDA, nombreLaboratorioProducto, DEBOUNCE_BUSQUEDA_MS, MIN_CHARS_BUSQUEDA_VIVA } from "../../utils/buscarProductosCatalogo";
 import { obtenerFormasVentaOffline, obtenerUnidadesOffline } from "../../utils/offlineStore";
+import { loteDisponible } from "../../utils/stockLotes";
 
 /** Umbral de stock bajo (unidades base del snapshot local) para aviso offline entre cajeros. */
 const STOCK_BAJO_OFFLINE = 3;
@@ -790,11 +791,37 @@ export default function POS() {
       }).catch((err) => console.error('[POS] Error refrescando catálogo:', err));
     });
 
+    let stockTimer = null;
+    const sincronizarIdsStock = (ids = []) => {
+      if (!isOnline) return;
+      if (stockTimer) clearTimeout(stockTimer);
+      stockTimer = setTimeout(async () => {
+        const sucursal = user?.id_sucursal || null;
+        try {
+          if (ids.length) await actualizarStockProductos(ids, sucursal);
+          else await descargarCatalogo(sucursal, null);
+        } catch (err) {
+          console.error('[POS] Error sincronizando existencias:', err);
+          try { localStorage.setItem('luxfarma_catalogo_stale', '1'); } catch { /* ignore */ }
+        }
+      }, 250);
+    };
+    const unsubInventario = suscribirInventarioChanged(({ idsProducto }) => sincronizarIdsStock(idsProducto || []));
+    const canalStock = supabase.channel(`pos-stock-${user?.id_sucursal || 'todas'}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventario_lotes' }, (payload) => {
+        const idProducto = payload.new?.id_producto ?? payload.old?.id_producto;
+        sincronizarIdsStock(idProducto == null ? [] : [idProducto]);
+      })
+      .subscribe();
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       unsubProductos();
+      unsubInventario();
+      if (stockTimer) clearTimeout(stockTimer);
+      supabase.removeChannel(canalStock);
     };
-  }, [isOnline]);
+  }, [isOnline, user?.id_sucursal]);
   // Trae las formas de venta configuradas para un producto (Unidad, Caja, Blister, Xmayor1...)
   const cargarFormasVentaProducto = async (idProducto) => {
     if (!isOnline) {
@@ -903,7 +930,7 @@ export default function POS() {
         lotesMap[l.id_producto].push(l);
       });
       const processedData = (data || []).map((prod) => {
-        const activeLots = (lotesMap[prod.id_producto] || [])
+        const activeLots = (lotesMap[prod.id_producto] || []).filter((lot) => loteDisponible(lot))
           .sort((a, b) => new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento));
         const currentLot = activeLots[0] || null;
         const totalStock = activeLots.reduce((sum, lot) => sum + Number(lot.cantidad_actual), 0);
