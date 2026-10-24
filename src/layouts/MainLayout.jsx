@@ -33,7 +33,7 @@ import './MainLayout.css';
 import UiIcon from '../components/UiIcon';
 import { esAdmin, esRolCaja, labelRol } from '../utils/roles';
 import { playNotifSound } from '../utils/notifSound';
-import { scheduleWelcomeVoice } from '../utils/welcomeVoice';
+import { suscribirSoporteSync } from '../utils/soporteRealtime';
 import { partesMensajeNotif } from '../utils/notifDisplay';
 import { facturacionElectronica } from '../config/empresa';
 import { APP_VERSION } from '../appVersion';
@@ -81,6 +81,8 @@ export default function MainLayout() {
   // ── Notificaciones (tabla notificaciones, ambos roles)
   const [notificaciones, setNotificaciones] = useState([]);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const notifWrapperRef = useRef(null);
+  const profileWrapperRef = useRef(null);
   const [notifLimpiando, setNotifLimpiando] = useState(false);
   const notifIntervalRef = useRef(null);
   const notifPanelVaciadoRef = useRef(false);
@@ -127,12 +129,6 @@ export default function MainLayout() {
     return () => clearInterval(t);
   }, []);
 
-  // Bienvenida por voz — una sola vez por día en esta máquina (localStorage).
-  useEffect(() => {
-    if (!user?.id_usuario) return undefined;
-    return scheduleWelcomeVoice(user);
-  }, [user]);
-
   // Carga de notificaciones + polling cada 30s (Admin: globales+propias; Vendedor: solo propias)
   const cargarNotificaciones = async () => {
     if (!user) return;
@@ -167,6 +163,23 @@ export default function MainLayout() {
     notifIntervalRef.current = setInterval(cargarNotificaciones, 30000);
     return () => clearInterval(notifIntervalRef.current);
   }, [user, isAdmin, isVendedor]);
+
+  useEffect(() => {
+    if (!showNotifPanel && !showPerfil) return undefined;
+    const onDown = (e) => {
+      const t = e.target;
+      if (!(t instanceof Node)) return;
+      if (showNotifPanel && notifWrapperRef.current && !notifWrapperRef.current.contains(t)) {
+        notifPanelVaciadoRef.current = false;
+        setShowNotifPanel(false);
+      }
+      if (showPerfil && profileWrapperRef.current && !profileWrapperRef.current.contains(t)) {
+        setShowPerfil(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [showNotifPanel, showPerfil]);
 
   // Admin: genera alertas automáticas en la tabla notificaciones
   useEffect(() => {
@@ -376,47 +389,39 @@ export default function MainLayout() {
     generarAlertas();
     const interval = setInterval(generarAlertas, 300000); // cada 5 min
 
-    // Toast de ticket nuevo + recarga de alertas en tiempo real
-    const canal = supabase
-      .channel('mainlayout-tickets-rt')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets_soporte' }, (payload) => {
-        const ticket = payload.new;
-        if ((ticket.estado || '').toUpperCase() === 'PENDIENTE') {
-          setToastTicket({
-            tipo: 'nuevo',
-            id_ticket: ticket.id_ticket,
-            asunto: ticket.asunto || 'Nuevo ticket',
-            urgencia: ticket.prioridad || ticket.nivel_urgencia || 'MEDIA',
-          });
-          playNotifSound();
-          if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-          toastTimerRef.current = setTimeout(() => setToastTicket(null), 5000);
-        }
-        generarAlertas();
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets_soporte' }, (payload) => {
-        generarAlertas();
-        // Si el admin responde/resuelve, cerrar toast de ESE ticket (no esperar los 5s)
-        const id = payload.new?.id_ticket;
-        const huboRespuesta = payload.new?.respuesta_admin
-          && payload.new.respuesta_admin !== payload.old?.respuesta_admin;
-        const resuelto = (payload.new?.estado || '').toUpperCase() === 'RESUELTO';
-        if (id != null && (huboRespuesta || resuelto)) {
-          setToastTicket(prev => {
-            if (!prev || prev.tipo === 'respuesta') return prev;
-            if (Number(prev.id_ticket) !== Number(id)) return prev;
-            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-            return null;
-          });
-        }
-      })
-      .subscribe();
-
     return () => {
       clearInterval(interval);
-      supabase.removeChannel(canal);
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!isAdmin || !user) return undefined;
+    return suscribirSoporteSync(({ tipo, ticket }) => {
+      if (!ticket) return;
+      if (tipo === 'INSERT' && (ticket.estado || '').toUpperCase() === 'PENDIENTE') {
+        setToastTicket({
+          tipo: 'nuevo',
+          id_ticket: ticket.id_ticket,
+          asunto: ticket.asunto || 'Nuevo ticket',
+          urgencia: ticket.prioridad || ticket.nivel_urgencia || 'MEDIA',
+        });
+        playNotifSound();
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setToastTicket(null), 5000);
+        cargarNotificaciones();
+      }
+      const id = ticket.id_ticket;
+      const resuelto = (ticket.estado || '').toUpperCase() === 'RESUELTO';
+      if (id != null && (ticket.respuesta_admin || resuelto)) {
+        setToastTicket((prev) => {
+          if (!prev || prev.tipo === 'respuesta') return prev;
+          if (Number(prev.id_ticket) !== Number(id)) return prev;
+          if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+          return null;
+        });
+      }
+    });
+  }, [isAdmin, user]);
 
   // Consulta a Nubefact el estado de boletas ya enviadas (no reemite).
   // Arranque del admin + cada 12 h; la campana lee el resultado desde la tabla.
@@ -467,7 +472,7 @@ export default function MainLayout() {
       } catch { /* empty */ }
     };
 
-    const mostrarToastVendedor = ({ tipo, id_ticket, asunto, notifId }) => {
+    const mostrarToastVendedor = ({ tipo, id_ticket, asunto, notifId, respuesta }) => {
       const now = Date.now();
       const prev = toastRespuestaDedupRef.current;
       // Evita doble toast (Realtime notificaciones + respaldo tickets UPDATE)
@@ -483,6 +488,7 @@ export default function MainLayout() {
         tipo: tipo || 'respuesta',
         id_ticket: id_ticket ?? null,
         asunto: asunto || (tipo === 'en_curso' ? 'Tu ticket está en curso' : 'Tu ticket tiene respuesta'),
+        respuesta: respuesta || '',
         notifId: notifId ?? undefined,
       });
       playNotifSound();
@@ -495,36 +501,33 @@ export default function MainLayout() {
     const onVista = () => { refrescarBadgeSoporte(); };
     window.addEventListener('soporte-respuesta-vista', onVista);
 
+    const offTickets = suscribirSoporteSync(({ ticket, tipo }) => {
+      if (!ticket || Number(ticket.id_usuario) !== Number(user.id_usuario)) return;
+      if (tipo === 'INSERT') return;
+      const est = (ticket.estado || '').toUpperCase();
+      if (ticket.respuesta_admin) {
+        limpiarRespuestaTicketVista(user.id_usuario, ticket.id_ticket);
+        refrescarBadgeSoporte();
+        mostrarToastVendedor({
+          tipo: 'respuesta',
+          id_ticket: ticket.id_ticket,
+          asunto: ticket.asunto || 'tu ticket',
+          respuesta: ticket.respuesta_admin || '',
+        });
+      } else if (est === 'EN PROCESO') {
+        refrescarBadgeSoporte();
+        mostrarToastVendedor({
+          tipo: 'en_curso',
+          id_ticket: ticket.id_ticket,
+          asunto: 'El admin vio tu ticket y ya está en curso',
+        });
+      } else {
+        refrescarBadgeSoporte();
+      }
+    });
+
     canalVendedorRef.current = supabase
       .channel(`vendedor-respuestas-${user.id_usuario}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets_soporte' }, (payload) => {
-        if (payload.new.id_usuario !== user.id_usuario) return;
-        const huboRespuesta = payload.new.respuesta_admin
-          && payload.new.respuesta_admin !== payload.old?.respuesta_admin;
-        const pasoAEnCurso = (payload.new?.estado || '').toUpperCase() === 'EN PROCESO'
-          && (payload.old?.estado || '').toUpperCase() !== 'EN PROCESO';
-
-        if (huboRespuesta) {
-          // Nueva respuesta → marcar ticket como "sin ver" de nuevo
-          limpiarRespuestaTicketVista(user.id_usuario, payload.new.id_ticket);
-          refrescarBadgeSoporte();
-          // Respaldo toast (no depende de Realtime en tabla notificaciones)
-          mostrarToastVendedor({
-            tipo: 'respuesta',
-            id_ticket: payload.new.id_ticket,
-            asunto: `Respuesta a: ${payload.new.asunto || 'tu ticket'}`,
-          });
-        } else if (pasoAEnCurso) {
-          refrescarBadgeSoporte();
-          mostrarToastVendedor({
-            tipo: 'en_curso',
-            id_ticket: payload.new.id_ticket,
-            asunto: 'El admin vio tu ticket y ya está en curso',
-          });
-        } else {
-          refrescarBadgeSoporte();
-        }
-      })
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -557,6 +560,7 @@ export default function MainLayout() {
 
     return () => {
       window.removeEventListener('soporte-respuesta-vista', onVista);
+      offTickets();
       if (canalVendedorRef.current) supabase.removeChannel(canalVendedorRef.current);
     };
   }, [user, isVendedor]);
@@ -1088,9 +1092,12 @@ export default function MainLayout() {
               {toastTicket.tipo === 'en_curso'
                 ? (toastTicket.asunto || 'El admin vio tu ticket y ya está en curso')
                 : toastTicket.tipo === 'respuesta'
-                  ? (toastTicket.asunto || 'El administrador respondió')
+                  ? (toastTicket.asunto || 'Tu ticket')
                   : `"${toastTicket.asunto}"`}
             </span>
+            {toastTicket.tipo === 'respuesta' && toastTicket.respuesta && (
+              <span className="ticket-toast-respuesta">«{String(toastTicket.respuesta).slice(0, 140)}{String(toastTicket.respuesta).length > 140 ? '…' : ''}»</span>
+            )}
             {toastTicket.tipo !== 'respuesta' && toastTicket.tipo !== 'en_curso' && (
               <span className={`ticket-toast-urg u-${(toastTicket.urgencia || 'MEDIA').toLowerCase()}`}>{toastTicket.urgencia}</span>
             )}
@@ -1300,7 +1307,7 @@ export default function MainLayout() {
             </div>
 
             {/* ── CAMPANA NOTIFICACIONES (admin + vendedor) */}
-            {(isAdmin || isVendedor) && <div className="notif-wrapper">
+            {(isAdmin || isVendedor) && <div className="notif-wrapper" ref={notifWrapperRef}>
               <button
                 className={`notification-btn${noLeidas > 0 ? ' has-alerts' : ''}${showNotifPanel ? ' is-open' : ''}`}
                 onClick={() => {
@@ -1398,7 +1405,7 @@ export default function MainLayout() {
             </div>}
 
             {/* ── AVATAR + PERFIL DROPDOWN */}
-            <div className="profile-wrapper">
+            <div className="profile-wrapper" ref={profileWrapperRef}>
               <button
                 className={`user-avatar-btn${showPerfil ? ' is-open' : ''}`}
                 onClick={() => { setShowPerfil(v => !v); setShowNotifPanel(false); }}

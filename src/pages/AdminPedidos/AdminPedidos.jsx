@@ -32,6 +32,78 @@ function LogoCargando({ texto }) {
 
 const ESTADO_LABEL = { BORRADOR: 'Borrador', ENVIADO: 'Enviado', RECIBIDO: 'Recibido', CANCELADO: 'Cancelado' };
 
+function formatoFactor(n) {
+  const x = Number(n) || 1;
+  return Number.isInteger(x) ? String(x) : x.toFixed(2);
+}
+
+function etiquetaForma(forma) {
+  const nombre = forma?.unidades_medida?.nombre || 'UNIDAD';
+  const factor = Number(forma?.factor) || 1;
+  return factor > 1 ? `${nombre} (×${formatoFactor(factor)})` : nombre;
+}
+
+function formaPorDefecto(formas) {
+  if (!formas?.length) return { id_medida: '', factor: 1, uMedida: 'UNIDAD', p_compra: 0 };
+  const unidad = formas.find((f) => Number(f.factor) === 1) || formas[0];
+  return {
+    id_medida: unidad.id_medida,
+    factor: Number(unidad.factor) || 1,
+    uMedida: unidad.unidades_medida?.nombre || 'UNIDAD',
+    p_compra: Number(unidad.p_compra) || 0,
+  };
+}
+
+function filaPedidoNueva(prod) {
+  return {
+    ui_id: Date.now() + Math.random(),
+    id_producto: prod.id_producto,
+    descripcion: prod.descripcion,
+    cantidad_pedida: 1,
+    costo_estimado: 0,
+    factor: 1,
+    uMedida: 'UNIDAD',
+    idMedidaSeleccionada: '',
+    formas: [],
+    formasCargadas: false,
+  };
+}
+
+async function fetchFormasPedidos(idsProducto) {
+  const ids = [...new Set((idsProducto || []).filter(Boolean))];
+  if (ids.length === 0) return {};
+  const { data, error } = await supabase
+    .from('producto_formas_venta')
+    .select('id_forma, id_producto, id_medida, factor, p_compra, unidades_medida(nombre)')
+    .in('id_producto', ids)
+    .eq('activo', true)
+    .order('orden');
+  if (error) throw error;
+  const map = {};
+  for (const f of data || []) {
+    (map[f.id_producto] ||= []).push(f);
+  }
+  return map;
+}
+
+function aplicarFormasAFila(fila, formas) {
+  const lista = formas || [];
+  const def = formaPorDefecto(lista);
+  const yaEligio = fila.idMedidaSeleccionada !== '' && fila.idMedidaSeleccionada != null;
+  const costoActual = Number(fila.costo_estimado);
+  return {
+    ...fila,
+    formas: lista,
+    formasCargadas: true,
+    factor: yaEligio ? (Number(fila.factor) || 1) : def.factor,
+    uMedida: yaEligio ? (fila.uMedida || def.uMedida) : def.uMedida,
+    idMedidaSeleccionada: yaEligio ? fila.idMedidaSeleccionada : def.id_medida,
+    costo_estimado: (!Number.isFinite(costoActual) || costoActual === 0) && def.p_compra
+      ? def.p_compra
+      : fila.costo_estimado,
+  };
+}
+
 export default function AdminPedidos() {
   const { user } = useAuth();
   const location = useLocation();
@@ -177,7 +249,7 @@ export default function AdminPedidos() {
     setVista('nuevo');
     setCarritoPedido(prev => {
       if (prev.some(p => p.id_producto === prod.id_producto)) return prev;
-      return [...prev, { ui_id: Date.now(), id_producto: prod.id_producto, descripcion: prod.descripcion, cantidad_pedida: 1, costo_estimado: 0 }];
+      return [...prev, filaPedidoNueva(prod)];
     });
   }, [location.state]);
 
@@ -248,6 +320,30 @@ export default function AdminPedidos() {
     return () => { cancelado = true; };
   }, [laboratorioFiltro]);
 
+  // Carga las formas de venta (unidad / caja + factor) de cada línea que aún no las tiene.
+  useEffect(() => {
+    if (vista !== 'nuevo') return undefined;
+    const pendientes = carritoPedido.filter((f) => !f.formasCargadas && f.id_producto);
+    if (pendientes.length === 0) return undefined;
+    let cancelado = false;
+    (async () => {
+      try {
+        const map = await fetchFormasPedidos(pendientes.map((f) => f.id_producto));
+        if (cancelado) return;
+        setCarritoPedido((prev) => prev.map((f) => {
+          if (f.formasCargadas) return f;
+          return aplicarFormasAFila(f, map[f.id_producto] || []);
+        }));
+      } catch {
+        if (cancelado) return;
+        setCarritoPedido((prev) => prev.map((f) => (
+          f.formasCargadas ? f : { ...f, formasCargadas: true, formas: f.formas || [] }
+        )));
+      }
+    })();
+    return () => { cancelado = true; };
+  }, [vista, carritoPedido]);
+
   // ════════════════════════════════════════
   // ARMAR PEDIDO NUEVO
   // ════════════════════════════════════════
@@ -282,7 +378,10 @@ export default function AdminPedidos() {
   };
 
   const agregarProductoCarrito = (prod) => {
-    setCarritoPedido(prev => [...prev, { ui_id: Date.now(), id_producto: prod.id_producto, descripcion: prod.descripcion, cantidad_pedida: 1, costo_estimado: 0 }]);
+    setCarritoPedido((prev) => {
+      if (prev.some((p) => p.id_producto === prod.id_producto)) return prev;
+      return [...prev, filaPedidoNueva(prod)];
+    });
     setBusquedaProducto('');
     setResultadosBusqueda([]);
   };
@@ -291,15 +390,38 @@ export default function AdminPedidos() {
     setCarritoPedido(prev => prev.map(f => f.ui_id === ui_id ? { ...f, [campo]: valor } : f));
   };
 
+  const cambiarMedidaFila = (ui_id, idMedida) => {
+    setCarritoPedido((prev) => prev.map((f) => {
+      if (f.ui_id !== ui_id) return f;
+      const forma = (f.formas || []).find((x) => String(x.id_medida) === String(idMedida));
+      if (!forma) {
+        return { ...f, idMedidaSeleccionada: '', factor: 1, uMedida: 'UNIDAD' };
+      }
+      const pCompra = Number(forma.p_compra) || 0;
+      return {
+        ...f,
+        idMedidaSeleccionada: forma.id_medida,
+        factor: Number(forma.factor) || 1,
+        uMedida: forma.unidades_medida?.nombre || 'UNIDAD',
+        costo_estimado: pCompra > 0 ? pCompra : f.costo_estimado,
+      };
+    }));
+  };
+
   const eliminarFilaCarrito = (ui_id) => {
     setCarritoPedido(prev => prev.filter(f => f.ui_id !== ui_id));
   };
 
   const totalEstimadoCarrito = carritoPedido.reduce((s, f) => s + (Number(f.cantidad_pedida) || 0) * (Number(f.costo_estimado) || 0), 0);
 
+  const unidadesDeFila = (f) => (Number(f.cantidad_pedida) || 0) * (Number(f.factor) || 1);
+
   const guardarPedido = async () => {
     if (!proveedorNuevo) return mostrarAlerta('Elige un proveedor para el pedido.', 'warning');
     if (carritoPedido.length === 0) return mostrarAlerta('Agrega al menos un producto al pedido.', 'warning');
+    if (carritoPedido.some((f) => !(Number(f.cantidad_pedida) > 0))) {
+      return mostrarAlerta('Cada producto del pedido debe tener una cantidad mayor a 0.', 'warning');
+    }
     const sucursalId = user.id_sucursal || user.sucursales?.id_sucursal || null;
     if (!sucursalId) return mostrarAlerta('Tu usuario no tiene una sucursal asignada. Contacta al administrador.', 'warning');
 
@@ -317,12 +439,17 @@ export default function AdminPedidos() {
         .single();
       if (errP) throw errP;
 
-      const detalles = carritoPedido.map(f => ({
-        id_pedido: nuevoPedido.id_pedido,
-        id_producto: f.id_producto,
-        cantidad_pedida: Number(f.cantidad_pedida) || 0,
-        costo_estimado: Number(f.costo_estimado) || 0,
-      }));
+      const detalles = carritoPedido.map((f) => {
+        const factor = Number(f.factor) || 1;
+        const qty = Number(f.cantidad_pedida) || 0;
+        const costoForma = Number(f.costo_estimado) || 0;
+        return {
+          id_pedido: nuevoPedido.id_pedido,
+          id_producto: f.id_producto,
+          cantidad_pedida: qty * factor,
+          costo_estimado: factor ? Number((costoForma / factor).toFixed(4)) : costoForma,
+        };
+      });
       const { error: errD } = await supabase.from('pedido_proveedor_detalle').insert(detalles);
       if (errD) throw errD;
 
@@ -606,6 +733,7 @@ export default function AdminPedidos() {
                   <thead>
                     <tr>
                       <th className="col-producto">Producto</th>
+                      <th className="col-medida">Pedir en</th>
                       <th className="col-cantidad">Cantidad</th>
                       <th className="col-costo">Costo Estimado</th>
                       <th className="col-subtotal">Subtotal</th>
@@ -614,21 +742,48 @@ export default function AdminPedidos() {
                   </thead>
                   <tbody>
                     {carritoPedido.length === 0 ? (
-                      <tr><td colSpan={5} className="empty-ped">Busca y agrega productos arriba.</td></tr>
+                      <tr><td colSpan={6} className="empty-ped">Busca y agrega productos arriba.</td></tr>
                     ) : (
-                      carritoPedido.map(f => (
-                        <tr key={f.ui_id}>
-                          <td className="col-producto ped-td-truncate" title={f.descripcion}>{f.descripcion}</td>
-                          <td className="col-cantidad">
-                            <input type="number" min="1" className="ped-input-carrito" value={f.cantidad_pedida} onChange={e => actualizarFilaCarrito(f.ui_id, 'cantidad_pedida', e.target.value)} />
-                          </td>
-                          <td className="col-costo">
-                            <input type="number" min="0" step="0.01" className="ped-input-carrito" value={f.costo_estimado} onChange={e => actualizarFilaCarrito(f.ui_id, 'costo_estimado', e.target.value)} />
-                          </td>
-                          <td className="col-subtotal">S/ {((Number(f.cantidad_pedida) || 0) * (Number(f.costo_estimado) || 0)).toFixed(2)}</td>
-                          <td className="col-eliminar"><button type="button" className="btn-ped-eliminar-fila" onClick={() => eliminarFilaCarrito(f.ui_id)}><UiIcon name="Trash2" size={16} /></button></td>
-                        </tr>
-                      ))
+                      carritoPedido.map((f) => {
+                        const factor = Number(f.factor) || 1;
+                        const qty = Number(f.cantidad_pedida) || 0;
+                        const und = unidadesDeFila(f);
+                        const formas = f.formas || [];
+                        return (
+                          <tr key={f.ui_id}>
+                            <td className="col-producto ped-td-truncate" title={f.descripcion}>{f.descripcion}</td>
+                            <td className="col-medida">
+                              {formas.length > 0 ? (
+                                <select
+                                  className="ped-input-carrito ped-select-medida"
+                                  value={f.idMedidaSeleccionada || ''}
+                                  onChange={(e) => cambiarMedidaFila(f.ui_id, e.target.value)}
+                                >
+                                  {formas.map((forma) => (
+                                    <option key={forma.id_forma} value={forma.id_medida}>
+                                      {etiquetaForma(forma)}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span className="text-muted">{f.uMedida || 'UNIDAD'}</span>
+                              )}
+                            </td>
+                            <td className="col-cantidad">
+                              <input type="number" min="1" className="ped-input-carrito" value={f.cantidad_pedida} onChange={(e) => actualizarFilaCarrito(f.ui_id, 'cantidad_pedida', e.target.value)} />
+                              {factor > 1 && (
+                                <small className="ped-equiv-unidades">{qty} × {formatoFactor(factor)} = {und} und</small>
+                              )}
+                            </td>
+                            <td className="col-costo">
+                              <input type="number" min="0" step="0.01" className="ped-input-carrito" value={f.costo_estimado} onChange={(e) => actualizarFilaCarrito(f.ui_id, 'costo_estimado', e.target.value)} />
+                              {factor > 1 && <small className="ped-equiv-unidades">por {String(f.uMedida || 'caja').toLowerCase()}</small>}
+                            </td>
+                            <td className="col-subtotal">S/ {(qty * (Number(f.costo_estimado) || 0)).toFixed(2)}</td>
+                            <td className="col-eliminar"><button type="button" className="btn-ped-eliminar-fila" onClick={() => eliminarFilaCarrito(f.ui_id)}><UiIcon name="Trash2" size={16} /></button></td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -666,7 +821,7 @@ export default function AdminPedidos() {
                     {detalleItems.map(d => (
                       <tr key={d.id_pedido_detalle}>
                         <td>{d.productos?.descripcion || '---'}</td>
-                        <td>{d.cantidad_pedida}</td>
+                        <td>{d.cantidad_pedida} und</td>
                         <td>S/ {Number(d.costo_estimado).toFixed(2)}</td>
                         <td>S/ {(Number(d.cantidad_pedida) * Number(d.costo_estimado)).toFixed(2)}</td>
                       </tr>

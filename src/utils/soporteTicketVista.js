@@ -16,12 +16,17 @@ export function limpiarRespuestaTicketVista(idUsuario, idTicket) {
   localStorage.removeItem(keyRespuestaTicketVista(idUsuario, idTicket));
 }
 
+export function ticketRespuestaSinVer(idUsuario, ticket) {
+  if (idUsuario == null || !ticket?.respuesta_admin) return false;
+  const id = ticket.id_ticket;
+  return !localStorage.getItem(keyRespuestaTicketVista(idUsuario, id))
+    && !localStorage.getItem(keyRespuestaTicketVista(idUsuario, Number(id)));
+}
+
 /** Tickets con respuesta que el vendedor aún no abrió/vió. */
 export function contarRespuestasSinVer(idUsuario, tickets) {
   if (idUsuario == null) return 0;
-  return (tickets || []).filter(
-    (t) => t.respuesta_admin && !localStorage.getItem(keyRespuestaTicketVista(idUsuario, t.id_ticket))
-  ).length;
+  return (tickets || []).filter((t) => ticketRespuestaSinVer(idUsuario, t)).length;
 }
 
 /** Clase CSS segura para estado (EN PROCESO → en-proceso). */

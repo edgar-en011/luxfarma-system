@@ -72,5 +72,6 @@ export function limpiarStorageAlLogout() {
   } catch { /* ignore */ }
   try { localStorage.removeItem('luxfarma_turnoActivo'); } catch { /* ignore */ }
   try { localStorage.removeItem('luxfarma_borrador_compra'); } catch { /* ignore */ }
+  try { localStorage.removeItem('ti_v_filtro_conteo'); } catch { /* ignore */ }
   try { resetWelcomeVoice(); } catch { /* ignore */ }
 }

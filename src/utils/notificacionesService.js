@@ -292,6 +292,20 @@ export async function marcarTodasNotificacionesLeidas(idUsuario, { soloPropias =
  * Notifica al vendedor cuando el admin marca el ticket EN PROCESO.
  * Dedup estable por ticket (no re-spamea si marcan en curso varias veces).
  */
+/** Aviso inmediato a admins cuando un vendedor abre un ticket (no espera el ciclo de 5 min). */
+export async function notificarNuevoTicketAdmins({ id_ticket, asunto, prioridad }) {
+  if (id_ticket == null) return;
+  const asuntoCorto = (asunto || 'Sin asunto').slice(0, 80);
+  await insertarNotifConDedup({
+    tipo: 'info',
+    categoria: 'Soporte',
+    mensaje: `Ticket #${id_ticket}: ${asuntoCorto}`,
+    accion_label: 'Ver ticket',
+    accion_url: `/admin-alertas?tab=SOPORTE&ticketId=${id_ticket}`,
+    claveDedup: `soporte:ticket:${id_ticket}`,
+  });
+}
+
 export async function notificarTicketEnCursoVendedor({
   id_usuario,
   id_ticket,
@@ -333,7 +347,7 @@ export async function notificarRespuestaTicketVendedor({
     usuario_id: id_usuario,
     tipo: 'ok',
     categoria: 'Soporte',
-    mensaje: `El administrador respondió tu ticket #${id_ticket}: ${asuntoCorto}`,
+    mensaje: `Respondieron tu ticket #${id_ticket}: ${asuntoCorto}${s ? ` — «${s.slice(0, 120)}${s.length > 120 ? '…' : ''}»` : ''}`,
     accion_label: 'Ver respuesta',
     accion_url: `/soporte?ticketId=${id_ticket}`,
     claveDedup: `soporte:respuesta:${id_ticket}:${fp}`,

@@ -4,7 +4,9 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 import { EVT_NOTIF_MARCADA_LEIDA } from '../../utils/notificacionesService';
-import { marcarRespuestaTicketVista } from '../../utils/soporteTicketVista';
+import { limpiarRespuestaTicketVista, marcarRespuestaTicketVista, ticketRespuestaSinVer } from '../../utils/soporteTicketVista';
+import { fusionarTicketEnLista, publicarCambioTicket, sameTicketId, suscribirSoporteSync } from '../../utils/soporteRealtime';
+import { notificarNuevoTicketAdmins } from '../../utils/notificacionesService';
 import './Soporte.css';
 import UiIcon from '../../components/UiIcon';
 
@@ -41,7 +43,6 @@ export default function Soporte() {
   const [ticketResaltado, setTicketResaltado] = useState(null);
   const [respHighlightId, setRespHighlightId] = useState(null);
   const [nuevasRespuestas, setNuevasRespuestas] = useState(new Set());
-  const canalRef = useRef(null);
   const deepLinkTicketRef = useRef(null);
   const deepLinkNonceRef = useRef(null);
   const deepLinkAplicadoNonceRef = useRef(null);
@@ -67,29 +68,39 @@ export default function Soporte() {
 
   useEffect(() => {
     cargarReportes();
-
-    canalRef.current = supabase
-      .channel(`soporte-vendedor-${user.id_usuario}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'tickets_soporte',
-      }, (payload) => {
-        const actualizado = payload.new;
-        if (actualizado.id_usuario !== user.id_usuario) return;
-        setReportes(prev =>
-          prev.map(r => r.id_ticket === actualizado.id_ticket ? { ...r, ...actualizado } : r)
-        );
-        if (actualizado.respuesta_admin) {
-          setNuevasRespuestas(prev => new Set([...prev, actualizado.id_ticket]));
+    const poll = setInterval(() => { cargarReportes(); }, 8000);
+    const off = suscribirSoporteSync(({ ticket }) => {
+      if (!ticket || !sameTicketId(ticket.id_usuario, user.id_usuario)) return;
+      setReportes((prev) => {
+        const habia = prev.find((r) => sameTicketId(r.id_ticket, ticket.id_ticket));
+        const nuevaResp = ticket.respuesta_admin
+          && ticket.respuesta_admin !== (habia?.respuesta_admin || '');
+        if (nuevaResp) {
+          limpiarRespuestaTicketVista(user.id_usuario, ticket.id_ticket);
+          queueMicrotask(() => {
+            const id = Number(ticket.id_ticket);
+            setTicketExpandido(id);
+            setTicketResaltado(id);
+            requestAnimationFrame(() => enfocarBloqueRespuesta(id));
+          });
         }
-      })
-      .subscribe();
-
+        return fusionarTicketEnLista(prev, ticket);
+      });
+    });
     return () => {
-      if (canalRef.current) supabase.removeChannel(canalRef.current);
+      clearInterval(poll);
+      off();
     };
   }, [user.id_usuario]);
+
+  useEffect(() => {
+    if (!user?.id_usuario) return;
+    const s = new Set();
+    for (const t of reportes) {
+      if (ticketRespuestaSinVer(user.id_usuario, t)) s.add(Number(t.id_ticket));
+    }
+    setNuevasRespuestas(s);
+  }, [reportes, user?.id_usuario]);
 
   // Deep-link: campana / toast → abrir ticket + scroll/highlight (re-aplica con deepLinkNonce)
   useEffect(() => {
@@ -127,11 +138,7 @@ export default function Soporte() {
     setTicketResaltado(Number(ticket.id_ticket));
     if (ticket.respuesta_admin) {
       setTicketExpandido(ticket.id_ticket);
-      setNuevasRespuestas(prev => {
-        const s = new Set(prev);
-        s.delete(ticket.id_ticket);
-        return s;
-      });
+      marcarRespuestaTicketVista(user.id_usuario, Number(ticket.id_ticket));
       requestAnimationFrame(() => {
         requestAnimationFrame(() => enfocarBloqueRespuesta(ticket.id_ticket));
       });
@@ -226,7 +233,7 @@ export default function Soporte() {
 
     setEnviando(true);
     try {
-      const { error } = await supabase.from('tickets_soporte').insert({
+      const { data: creado, error } = await supabase.from('tickets_soporte').insert({
         id_usuario: user.id_usuario,
         id_sucursal: user.id_sucursal,
         asunto,
@@ -234,8 +241,15 @@ export default function Soporte() {
         prioridad: nivelUrgencia,
         tipo: 'Prob. técnico',
         estado: 'PENDIENTE',
-      });
+      }).select().single();
       if (error) throw error;
+
+      await notificarNuevoTicketAdmins({
+        id_ticket: creado?.id_ticket,
+        asunto: creado?.asunto,
+        prioridad: creado?.prioridad,
+      });
+      await publicarCambioTicket('INSERT', creado);
 
       setAsunto(''); setDescripcion(''); setNivelUrgencia('ALTA');
       mostrarAlerta(
@@ -250,15 +264,21 @@ export default function Soporte() {
     }
   };
 
-  const toggleRespuesta = (id) => {
-    const abriendo = ticketExpandido !== id;
-    setTicketExpandido(prev => prev === id ? null : id);
-    setNuevasRespuestas(prev => { const s = new Set(prev); s.delete(id); return s; });
-    if (abriendo) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => enfocarBloqueRespuesta(id));
-      });
-    }
+  const marcarAbierto = (idTicket) => {
+    const id = Number(idTicket);
+    marcarRespuestaTicketVista(user.id_usuario, id);
+    setNuevasRespuestas((prev) => {
+      const s = new Set(prev);
+      s.delete(id);
+      s.delete(idTicket);
+      return s;
+    });
+  };
+
+  const ticketsSinAbrir = reportes.filter((t) => nuevasRespuestas.has(Number(t.id_ticket)) || ticketRespuestaSinVer(user.id_usuario, t));
+  const numeroSinAbrir = (idTicket) => {
+    const i = ticketsSinAbrir.findIndex((t) => Number(t.id_ticket) === Number(idTicket));
+    return i >= 0 ? i + 1 : null;
   };
 
   const getEstadoStyle = (estado) => {
@@ -274,14 +294,6 @@ export default function Soporte() {
       <AlertaSistemaModal alerta={alertaSistema} onClose={() => setAlertaSistema(null)} />
 
       <div className="sop-page-card">
-
-      <div className="sop-info-banner">
-        <div className="sop-info-icon">i</div>
-        <div className="sop-info-text">
-          <strong>¿Cómo funciona?</strong>
-          <p>Envía tu consulta o problema. El administrador lo revisará y verás la respuesta <strong>aquí mismo en tiempo real</strong> — sin necesidad de recargar la página.</p>
-        </div>
-      </div>
 
       <div className="sop-top-grid">
 
@@ -338,8 +350,10 @@ export default function Soporte() {
               <span className="sop-stat-label">Resueltos</span>
             </div>
           </div>
-          {nuevasRespuestas.size > 0 && (
-            <div className="sop-new-reply-banner"><UiIcon name="Bell" size={16} /><strong>{nuevasRespuestas.size} nueva(s) respuesta(s)</strong> del administrador ↓
+          {ticketsSinAbrir.length > 0 && (
+            <div className="sop-new-reply-banner">
+              <span className="sop-badge-num">{ticketsSinAbrir.length}</span>
+              <strong>{ticketsSinAbrir.length === 1 ? 'respuesta por abrir' : 'respuestas por abrir'}</strong>
             </div>
           )}
         </div>
@@ -348,97 +362,98 @@ export default function Soporte() {
       <div className="sop-card sop-table-card">
         <div className="sop-table-header">
           <h3>Mis reportes enviados</h3>
-          <button className="sop-btn-refresh" onClick={cargarReportes}><UiIcon name="RefreshCw" size={15} /> Actualizar</button>
+          {ticketsSinAbrir.length > 0 && (
+            <span className="sop-badge-num sop-badge-num-header" title="Respuestas que aún no abriste">{ticketsSinAbrir.length}</span>
+          )}
         </div>
 
-        <div className="table-responsive">
-          <table className="sop-reportes-table" style={{ marginTop: 0 }}>
-            <thead>
-              <tr>
-                <th>ASUNTO</th>
-                <th>PRIORIDAD</th>
-                <th>FECHA</th>
-                <th>ESTADO</th>
-                <th>RESPUESTA DEL ADMIN</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>Cargando tus reportes...</td></tr>
-              ) : reportes.length === 0 ? (
-                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--lf-text-muted)', fontStyle: 'italic' }}>No tienes reportes enviados aún.</td></tr>
-              ) : (
-                reportes.map(ticket => {
-                  const { label, cls } = getEstadoStyle(ticket.estado);
-                  const tieneRespuesta = !!ticket.respuesta_admin;
-                  const esNueva = nuevasRespuestas.has(ticket.id_ticket);
-                  const expandido = ticketExpandido === ticket.id_ticket;
-
-                  return (
-                    <React.Fragment key={ticket.id_ticket}>
-                      <tr
-                        id={`sop-ticket-${ticket.id_ticket}`}
-                        className={[
-                          esNueva ? 'sop-row-nueva' : '',
-                          Number(ticket.id_ticket) === Number(ticketResaltado) ? 'sop-row-resaltado' : '',
-                        ].filter(Boolean).join(' ') || undefined}
-                      >
-                        <td>
-                          <strong style={{ color: 'var(--lf-text)', display: 'block' }}>{ticket.asunto}</strong>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)' }}>#{String(ticket.id_ticket).padStart(4, '0')} · {ticket.tipo}</span>
-                        </td>
-                        <td>
-                          <span className={`sop-badge-tipo prio-${(ticket.prioridad || 'media').toLowerCase()}`}>{ticket.prioridad || 'Media'}</span>
-                        </td>
-                        <td style={{ color: 'var(--lf-text-muted)', fontSize: '0.85rem' }}>
-                          {new Date(ticket.created_at).toLocaleDateString('es-PE')}<br />
-                          <small>{new Date(ticket.created_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</small>
-                        </td>
-                        <td>
-                          <span className={`sop-badge-estado ${cls}`}>{label}</span>
-                        </td>
-                        <td>
-                          {tieneRespuesta ? (
-                            <button
-                              className={`sop-btn-ver-respuesta ${esNueva ? 'nueva-resp' : ''}`}
-                              onClick={() => toggleRespuesta(ticket.id_ticket)}
-                            >
-                              {esNueva && <span className="sop-punto-nuevo"></span>}
-                              {expandido ? <><UiIcon name="ChevronUp" size={14} /> Ocultar</> : <><UiIcon name="MessageSquare" size={14} /> Ver respuesta</>}
-                            </button>
-                          ) : (
-                            <span style={{ color: 'var(--lf-text-muted)', fontSize: '0.82rem' }}><UiIcon name="Loader" size={15} /> Esperando al admin...</span>
-                          )}
-                        </td>
-                      </tr>
-                      {tieneRespuesta && expandido && (
-                        <tr key={`resp-${ticket.id_ticket}`} className="sop-row-respuesta">
-                          <td colSpan="5">
-                            <div
-                              id={`sop-resp-${ticket.id_ticket}`}
-                              className={`sop-respuesta-inline${Number(respHighlightId) === Number(ticket.id_ticket) ? ' sop-resp-highlight' : ''}`}
-                            >
-                              <div className="sop-resp-header">
-                                <span><UiIcon name="MessageSquare" size={15} /> Respuesta del Administrador</span>
-                                <small>{ticket.created_at ? new Date(ticket.created_at).toLocaleString('es-PE') : ''}</small>
-                              </div>
-                              <p className="sop-resp-texto">{ticket.respuesta_admin}</p>
-                            </div>
-                          </td>
-                        </tr>
+        {loading ? (
+          <p className="sop-lista-vacia">Cargando tus reportes...</p>
+        ) : reportes.length === 0 ? (
+          <p className="sop-lista-vacia">No tienes reportes enviados aún.</p>
+        ) : (
+          <div className="sop-lista-tickets">
+            {reportes.map((ticket) => {
+              const { label, cls } = getEstadoStyle(ticket.estado);
+              const tieneRespuesta = !!ticket.respuesta_admin;
+              const esNueva = nuevasRespuestas.has(Number(ticket.id_ticket));
+              const resaltado = Number(ticket.id_ticket) === Number(ticketResaltado);
+              const expandido = Number(ticketExpandido) === Number(ticket.id_ticket);
+              const fecha = ticket.created_at
+                ? `${new Date(ticket.created_at).toLocaleDateString('es-PE')} ${new Date(ticket.created_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`
+                : '';
+              const preview = tieneRespuesta
+                ? String(ticket.respuesta_admin).replace(/\s+/g, ' ').slice(0, 80)
+                : 'Esperando respuesta del administrador';
+              return (
+                <article
+                  key={ticket.id_ticket}
+                  id={`sop-ticket-${ticket.id_ticket}`}
+                  className={[
+                    'sop-ticket-hilo',
+                    esNueva ? 'es-nueva' : '',
+                    resaltado ? 'es-resaltado' : '',
+                    expandido ? 'esta-abierto' : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <button
+                    type="button"
+                    className="sop-hilo-cabecera"
+                    onClick={() => {
+                      const id = Number(ticket.id_ticket);
+                      const abrir = Number(ticketExpandido) !== id;
+                      setTicketExpandido(abrir ? ticket.id_ticket : null);
+                      setTicketResaltado(id);
+                      if (abrir && tieneRespuesta) {
+                        marcarAbierto(id);
+                        requestAnimationFrame(() => enfocarBloqueRespuesta(id));
+                      }
+                    }}
+                  >
+                    <div className="sop-hilo-titulo">
+                      <strong>{ticket.asunto}</strong>
+                      <span className="sop-hilo-meta">#{String(ticket.id_ticket).padStart(4, '0')} · {fecha}</span>
+                      {!expandido && (
+                        <span className={`sop-hilo-preview${esNueva && tieneRespuesta ? ' es-nueva' : ''}`}>
+                          {tieneRespuesta ? `Admin: ${preview}${String(ticket.respuesta_admin).length > 80 ? '…' : ''}` : preview}
+                        </span>
                       )}
-                    </React.Fragment>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="sop-footer-note">
-          <span style={{ color: 'var(--lf-text-muted)' }}>Las respuestas aparecen aquí automáticamente.</span>
-          <strong> Sin necesidad de recargar.</strong>
-        </div>
+                    </div>
+                    <div className="sop-hilo-badges">
+                      {esNueva && tieneRespuesta && (
+                        <span className="sop-badge-num" title="Falta abrir esta respuesta">{numeroSinAbrir(ticket.id_ticket)}</span>
+                      )}
+                      <span className={`sop-badge-tipo prio-${(ticket.prioridad || 'media').toLowerCase()}`}>{ticket.prioridad || 'Media'}</span>
+                      <span className={`sop-badge-estado ${cls}`}>{label}</span>
+                      <UiIcon name={expandido ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                    </div>
+                  </button>
+                  {expandido && (
+                    <div className="sop-hilo-mensajes">
+                      <div className="sop-burbuja sop-burbuja-yo">
+                        <span className="sop-burbuja-quien">Tú</span>
+                        <p>{ticket.descripcion || '—'}</p>
+                      </div>
+                      {tieneRespuesta ? (
+                        <div
+                          id={`sop-resp-${ticket.id_ticket}`}
+                          className={`sop-burbuja sop-burbuja-admin${Number(respHighlightId) === Number(ticket.id_ticket) ? ' sop-resp-highlight' : ''}${esNueva ? ' es-nueva' : ''}`}
+                        >
+                          <span className="sop-burbuja-quien">Administrador</span>
+                          <p>{ticket.respuesta_admin}</p>
+                        </div>
+                      ) : (
+                        <div className="sop-burbuja sop-burbuja-espera">
+                          <UiIcon name="Loader" size={14} /> Esperando respuesta del administrador
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       </div>

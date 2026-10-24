@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import LogoLuxFarma from '../../components/LogoLuxFarma';
 import { supabase } from '../../supabaseClient';
+import { publicarCambioTicket } from '../../utils/soporteRealtime';
+import { notificarNuevoTicketAdmins } from '../../utils/notificacionesService';
 import './ForgotModal.css';
 import UiIcon from '../../components/UiIcon';
 
@@ -51,7 +53,7 @@ export default function ForgotModal({ onClose }) {
     if (!usuarioEncontrado) return;
     setEnviando(true);
     try {
-      const { error } = await supabase.from('tickets_soporte').insert({
+      const { data: creado, error } = await supabase.from('tickets_soporte').insert({
         id_usuario: usuarioEncontrado.id_usuario,
         id_sucursal: usuarioEncontrado.id_sucursal,
         asunto: 'Recuperación de contraseña',
@@ -59,8 +61,14 @@ export default function ForgotModal({ onClose }) {
         prioridad: 'Alta',
         tipo: 'Prob. Técnico',
         estado: 'PENDIENTE',
-      });
+      }).select().single();
       if (error) throw error;
+      await notificarNuevoTicketAdmins({
+        id_ticket: creado?.id_ticket,
+        asunto: creado?.asunto,
+        prioridad: creado?.prioridad,
+      });
+      await publicarCambioTicket('INSERT', creado);
       setExitoso(true);
     } catch {
       setError('Error al enviar el ticket. Intenta nuevamente.');

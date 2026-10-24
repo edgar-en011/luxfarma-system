@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient';
 import { resultadoEscritura } from './supaWrite';
+import { publicarInventarioSesion } from './inventarioSesionSync';
 
 // Aplica el ajuste de stock de un conteo de inventario: busca (o crea) el lote VIGENTE
 // del producto en la sucursal, le suma la diferencia, registra el movimiento en el
@@ -91,7 +92,10 @@ export async function cerrarSesionInventario(idSesion) {
       .select('id_sesion, estado, fecha_cierre')
       .maybeSingle();
     if (error) return { ok: false, error };
-    if (data?.estado === 'CERRADA') return { ok: true, sesion: data };
+    if (data?.estado === 'CERRADA') {
+      void publicarInventarioSesion();
+      return { ok: true, sesion: data };
+    }
 
     // Idempotente: si ya estaba cerrada, cuenta como éxito.
     const { data: actual, error: errActual } = await supabase
@@ -100,7 +104,10 @@ export async function cerrarSesionInventario(idSesion) {
       .eq('id_sesion', idSesion)
       .maybeSingle();
     if (errActual) return { ok: false, error: errActual };
-    if (actual?.estado === 'CERRADA') return { ok: true, yaCerrada: true, sesion: actual };
+    if (actual?.estado === 'CERRADA') {
+      void publicarInventarioSesion();
+      return { ok: true, yaCerrada: true, sesion: actual };
+    }
 
     return {
       ok: false,
