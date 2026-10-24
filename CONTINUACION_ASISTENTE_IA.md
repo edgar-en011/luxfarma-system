@@ -22,6 +22,34 @@ El stock continúa calculándose desde `inventario_lotes.cantidad_actual` en uni
 - La RPC limita cada categoría a 10 elementos y no devuelve ventas ni lotes
   completos. El cálculo local anterior permanece como respaldo temporal.
 
+## Ajustes de acceso (24 de octubre de 2026)
+
+- La API key permanece exclusivamente en los secretos de Supabase y nunca se
+  escribe en React, archivos `.env` del cliente, localStorage ni el instalador.
+- El login del administrador obtiene automáticamente una autorización temporal
+  de IA. La pantalla ya no solicita una segunda contraseña.
+- Cada PC mantiene una autorización efímera durante la sesión abierta (máximo
+  12 horas); iniciar desde otro equipo no invalida el primero. El usuario nunca
+  ve ni configura ese token y el servidor conserva únicamente su hash.
+- El resumen gerencial se obtiene mediante la Edge Function después de validar
+  al administrador. La anon key ya no puede ejecutar directamente la RPC.
+- Las consultas clínicas, ajenas a LuxFarma o que intenten cambiar las reglas
+  se rechazan antes de consumir una llamada al proveedor de IA.
+- Las consultas de stock actual ya no se delegan al modelo: buscan el producto
+  por nombre o código y calculan directamente los lotes. La respuesta separa
+  disponible (`VIGENTE`), vencido/no vendible y stock físico registrado.
+- Las cinco consultas sugeridas se responden de forma determinística con las
+  cifras del resumen; el proveedor de IA queda para análisis no predefinidos.
+- La vista muestra cobertura de inventario y advierte cuando existe catálogo
+  pero no hay lotes sincronizados, evitando presentar ceros como una estimación.
+
+## Despliegue requerido para estos ajustes
+
+1. Aplicar `supabase/migrations/20261024120000_asistente_ia_solo_admin.sql`.
+2. Volver a desplegar la Edge Function `asistente-ia`.
+3. No volver a configurar `OPENAI_API_KEY` o `GEMINI_API_KEY` en cada PC: el
+   secreto ya configurado pertenece al proyecto remoto de Supabase.
+
 ## Pendiente para habilitar las respuestas reales
 
 1. Probar la reautenticación y una consulta real con un administrador activo.
@@ -31,7 +59,15 @@ El stock continúa calculándose desde `inventario_lotes.cantidad_actual` en uni
 ## Comprobaciones realizadas
 
 - `node scripts/test-asistente-ia-analitica.mjs`: aprobado.
-- `node scripts/test-asistente-ia-rpc.mjs`: aprobado contra Supabase real.
+- `node scripts/test-asistente-ia-rpc.mjs`: comprueba que la anon key no pueda
+  leer el resumen después de aplicar la migración de seguridad.
+- `node scripts/test-asistente-ia-alcance.mjs`: comprueba el filtro temático.
+- `node scripts/test-asistente-ia-stock.mjs`: valida búsqueda y separación de
+  stock vigente, vencido y físico.
+- `node scripts/test-asistente-ia-respuestas.mjs`: valida las respuestas
+  determinísticas de reposición, vencimientos, stock bajo y movimiento.
+- `node scripts/auditar-asistente-ia-stock.mjs`: compara el resumen con los
+  lotes reales de Supabase sin modificar datos.
 - `npm run lint`: aprobado sin errores; permanecen advertencias preexistentes.
 - `npm run build`: aprobado.
 - Bundle revisado sin claves privadas ni llamadas directas a OpenAI desde el frontend.

@@ -13,6 +13,8 @@ import { APP_VERSION } from '../../appVersion';
 import { EMPRESA } from '../../config/empresa';
 import { esEscenaNoche } from '../../utils/loginEscena';
 import UiIcon from '../../components/UiIcon';
+import { crearSesionAsistenteIA } from '../../services/asistenteIA';
+import { guardarSesionAsistenteIA, limpiarSesionAsistenteIA } from '../../utils/asistenteIASesion';
 
 /** Estrellas: densas arriba, casi ninguna cerca del horizonte. 3 tamaños. */
 const LOGIN_STARS = [
@@ -376,6 +378,22 @@ export default function Login() {
         setLoading(false);
         return;
       }
+
+      if (esAdmin(data.id_rol)) {
+        try {
+          const sesionIA = await crearSesionAsistenteIA({
+            idUsuario: data.id_usuario,
+            password,
+          });
+          guardarSesionAsistenteIA(data.id_usuario, sesionIA);
+        } catch (errorSesionIA) {
+          limpiarSesionAsistenteIA();
+          console.warn('[asistente-ia] No se pudo preparar la sesión:', errorSesionIA?.message);
+        }
+      } else {
+        limpiarSesionAsistenteIA();
+      }
+
       setTimeout(() => {
         const { password_hash: _password_hash, ...userData } = data;
         login(userData);

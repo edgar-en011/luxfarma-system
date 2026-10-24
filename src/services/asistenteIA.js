@@ -1,124 +1,50 @@
 import { supabase } from '../supabaseClient';
-import { construirResumenAsistenteIA, crearSnapshotAsistenteIA, DIAS_VENTAS_ASISTENTE, normalizarResumenAsistenteIARpc } from '../utils/analiticaAsistenteIA';
-import { fechaLocalStr, hoyLocal, boundsISOPeru } from '../utils/fechas';
-import { calcularProductosStockBajo, cargarIdsProductosConMovimiento } from '../utils/stockBajo';
+import { crearSnapshotAsistenteIA, DIAS_VENTAS_ASISTENTE, normalizarResumenAsistenteIARpc } from '../utils/analiticaAsistenteIA';
+import { buscarProductosParaStock, construirDetallesStock, respuestaStockExacto } from '../utils/stockAsistenteIA';
 import { fetchAllRows } from '../utils/supabasePage';
 
-const TAMANO_CHUNK_VENTAS = 200;
-
-function inicioPeriodo(dias) {
-  const fecha = new Date();
-  fecha.setHours(12, 0, 0, 0);
-  fecha.setDate(fecha.getDate() - (dias - 1));
-  return fechaLocalStr(fecha);
-}
+const CACHE_CATALOGO_STOCK_MS = 5 * 60 * 1000;
+let cacheCatalogoStock = { at: 0, productos: null, inflight: null };
 
 function esTodas(idSucursal) {
   return idSucursal == null || idSucursal === '' || idSucursal === 'TODAS';
 }
 
-async function cargarVentasYDetalles({ idSucursal, start, end }) {
-  const ventas = await fetchAllRows(() => {
-    let consulta = supabase
-      .from('ventas')
-      .select('id_venta, id_sucursal, created_at, estado_anulacion')
-      .gte('created_at', start)
-      .lte('created_at', end)
-      .or('estado_anulacion.is.null,estado_anulacion.neq.ANULADO')
-      .order('id_venta', { ascending: true });
-    if (!esTodas(idSucursal)) consulta = consulta.eq('id_sucursal', idSucursal);
-    return consulta;
-  });
-
-  const idsVenta = ventas
-    .filter((venta) => venta.estado_anulacion !== 'ANULADO')
-    .map((venta) => venta.id_venta);
-  if (idsVenta.length === 0) return [];
-
-  const chunks = [];
-  for (let i = 0; i < idsVenta.length; i += TAMANO_CHUNK_VENTAS) {
-    chunks.push(idsVenta.slice(i, i + TAMANO_CHUNK_VENTAS));
-  }
-  const resultados = await Promise.all(chunks.map((ids) => fetchAllRows(() => (
-    supabase
-      .from('venta_detalle')
-      .select('id_venta, id_producto, cantidad, factor')
-      .in('id_venta', ids)
-      .order('id_venta', { ascending: true })
-  ))));
-  return resultados.flat();
-}
-
-export async function cargarDatosAsistenteIA({ idSucursal = 'TODAS' } = {}) {
+export async function cargarDatosAsistenteIA({ idSucursal = 'TODAS', token } = {}) {
   const idSucursalRpc = esTodas(idSucursal) ? null : Number(idSucursal);
-  const { data: dataRpc, error: errorRpc } = await supabase.rpc('resumen_asistente_ia', {
-    p_id_sucursal: idSucursalRpc,
-    p_dias: DIAS_VENTAS_ASISTENTE,
-    p_limite: 10,
-  });
-  if (!errorRpc && dataRpc) {
-    const resumen = normalizarResumenAsistenteIARpc(dataRpc);
-    const { data: sucursales = [] } = await supabase
-      .from('sucursales')
-      .select('id_sucursal, nombre_comercial, activo')
-      .eq('activo', true)
-      .order('id_sucursal', { ascending: true });
-    return { resumen, snapshotIA: crearSnapshotAsistenteIA(resumen), sucursales };
+  let resultado;
+  try {
+    resultado = await invocarAsistente({
+      accion: 'resumen',
+      id_sucursal: idSucursalRpc,
+      dias: DIAS_VENTAS_ASISTENTE,
+      limite: 10,
+    }, token);
+  } catch (error) {
+    // Compatibilidad temporal mientras se despliega la nueva Edge Function.
+    if (error?.code !== 'INVALID_ACTION') throw error;
+    const [{ data: resumen, error: errorResumen }, { data: sucursales, error: errorSucursales }] = await Promise.all([
+      supabase.rpc('resumen_asistente_ia', {
+        p_id_sucursal: idSucursalRpc,
+        p_dias: DIAS_VENTAS_ASISTENTE,
+        p_limite: 10,
+      }),
+      supabase
+        .from('sucursales')
+        .select('id_sucursal, nombre_comercial, activo')
+        .eq('activo', true)
+        .order('id_sucursal', { ascending: true }),
+    ]);
+    if (errorResumen || errorSucursales) throw errorResumen || errorSucursales;
+    resultado = { resumen, sucursales };
   }
-  console.warn('resumen_asistente_ia: se usa respaldo local:', errorRpc?.message);
+  if (!resultado?.resumen) throw new Error('El servicio no devolvió un resumen válido.');
 
-  const periodoHasta = hoyLocal();
-  const periodoDesde = inicioPeriodo(DIAS_VENTAS_ASISTENTE);
-  const { start, end } = boundsISOPeru(periodoDesde, periodoHasta);
-
-  const [productos, lotes, sucursales, idsMovimiento, detallesVenta] = await Promise.all([
-    fetchAllRows(() => supabase
-      .from('productos')
-      .select('id_producto, codigo_barras, descripcion, stock_minimo, activo, producto_formas_venta(factor, activo, unidades_medida(nombre))')
-      .eq('activo', 1)
-      .order('id_producto', { ascending: true })),
-    fetchAllRows(() => {
-      let consulta = supabase
-        .from('inventario_lotes')
-        .select('id_lote, id_producto, id_sucursal, nro_lote, fecha_vencimiento, cantidad_actual, estado, created_at')
-        .order('id_lote', { ascending: true });
-      if (!esTodas(idSucursal)) consulta = consulta.eq('id_sucursal', idSucursal);
-      return consulta;
-    }),
-    fetchAllRows(() => supabase
-      .from('sucursales')
-      .select('id_sucursal, nombre_comercial, activo')
-      .eq('activo', true)
-      .order('id_sucursal', { ascending: true })),
-    cargarIdsProductosConMovimiento(),
-    cargarVentasYDetalles({ idSucursal, start, end }),
-  ]);
-
-  const idsLotesDelAlcance = new Set(lotes.map((lote) => Number(lote.id_producto)));
-  const idsMovimientoAlcance = esTodas(idSucursal)
-    ? idsMovimiento
-    : new Set([...idsMovimiento].filter((id) => idsLotesDelAlcance.has(Number(id))));
-  const stockBajo = calcularProductosStockBajo(productos, lotes, idsMovimientoAlcance);
-  const sucursalElegida = sucursales.find((sucursal) => (
-    Number(sucursal.id_sucursal) === Number(idSucursal)
-  ));
-
-  const resumen = construirResumenAsistenteIA({
-    productos,
-    lotes,
-    detallesVenta,
-    productosStockBajo: stockBajo,
-    idsConMovimiento: idsMovimientoAlcance,
-    sucursales,
-    alcance: sucursalElegida?.nombre_comercial || 'Todas las sedes',
-    periodoDesde,
-    periodoHasta,
-  });
-
+  const resumen = normalizarResumenAsistenteIARpc(resultado.resumen);
   return {
     resumen,
     snapshotIA: crearSnapshotAsistenteIA(resumen),
-    sucursales,
+    sucursales: Array.isArray(resultado.sucursales) ? resultado.sucursales : [],
   };
 }
 
@@ -129,6 +55,69 @@ async function detalleErrorFuncion(error) {
   } catch {
     return null;
   }
+}
+
+async function cargarCatalogoParaStock() {
+  const ahora = Date.now();
+  if (cacheCatalogoStock.productos && ahora - cacheCatalogoStock.at < CACHE_CATALOGO_STOCK_MS) {
+    return cacheCatalogoStock.productos;
+  }
+  if (cacheCatalogoStock.inflight) return cacheCatalogoStock.inflight;
+
+  cacheCatalogoStock.inflight = fetchAllRows(() => supabase
+    .from('productos')
+    .select('id_producto, descripcion, codigo_barras')
+    .eq('activo', 1)
+    .order('descripcion', { ascending: true }))
+    .then((productos) => {
+      cacheCatalogoStock = { at: Date.now(), productos, inflight: null };
+      return productos;
+    })
+    .catch((error) => {
+      cacheCatalogoStock.inflight = null;
+      throw error;
+    });
+  return cacheCatalogoStock.inflight;
+}
+
+export async function consultarStockActualAsistenteIA({ pregunta, idSucursal = 'TODAS', sucursales = [] }) {
+  const catalogo = await cargarCatalogoParaStock();
+  const coincidencias = buscarProductosParaStock(pregunta, catalogo, 5);
+  if (coincidencias.length === 0) {
+    return { respuesta: respuestaStockExacto([], 'el alcance elegido'), tipo: 'stock_actual' };
+  }
+
+  const ids = coincidencias.map((producto) => producto.id_producto);
+  const [{ data: productos, error: errorProductos }, lotes] = await Promise.all([
+    supabase
+      .from('productos')
+      .select('id_producto, descripcion, codigo_barras, producto_formas_venta(factor, activo, unidades_medida(nombre))')
+      .in('id_producto', ids),
+    fetchAllRows(() => {
+      let consulta = supabase
+        .from('inventario_lotes')
+        .select('id_lote, id_producto, id_sucursal, cantidad_actual, estado, fecha_vencimiento')
+        .in('id_producto', ids)
+        .in('estado', ['VIGENTE', 'VENCIDO'])
+        .order('id_lote', { ascending: true });
+      if (idSucursal !== 'TODAS' && idSucursal != null && idSucursal !== '') {
+        consulta = consulta.eq('id_sucursal', Number(idSucursal));
+      }
+      return consulta;
+    }),
+  ]);
+  if (errorProductos) throw errorProductos;
+
+  const orden = new Map(ids.map((id, indice) => [Number(id), indice]));
+  const productosOrdenados = (productos || []).sort((a, b) => (
+    (orden.get(Number(a.id_producto)) ?? 999) - (orden.get(Number(b.id_producto)) ?? 999)
+  ));
+  const detalles = construirDetallesStock(productosOrdenados, lotes, sucursales, idSucursal);
+  const alcance = idSucursal === 'TODAS'
+    ? 'todas las sedes'
+    : sucursales.find((sucursal) => Number(sucursal.id_sucursal) === Number(idSucursal))?.nombre_comercial
+      || `la sede ${idSucursal}`;
+  return { respuesta: respuestaStockExacto(detalles, alcance), tipo: 'stock_actual', detalles };
 }
 
 async function invocarAsistente(body, token = null) {

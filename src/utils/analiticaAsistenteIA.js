@@ -231,7 +231,16 @@ export function normalizarResumenAsistenteIARpc(data) {
 export function crearSnapshotAsistenteIA(resumen) {
   if (!resumen) return null;
   return {
-    metadata: resumen.metadata,
+    metadata: {
+      ...resumen.metadata,
+      limiteItemsPorCategoria: LIMITE_ITEMS_IA,
+      listasCompletas: false,
+      definiciones: {
+        stockDisponible: 'Suma de cantidad_actual solo en lotes con estado VIGENTE.',
+        stockVencido: 'No está incluido en stockBase; se consulta por separado.',
+        unidades: 'Todas las cantidades se expresan en unidades base.',
+      },
+    },
     totales: resumen.totales,
     stock_bajo: recortar(resumen.stockBajo),
     proximos_a_vencer: recortar(resumen.proximosVencer),
