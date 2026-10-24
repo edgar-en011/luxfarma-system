@@ -31,6 +31,8 @@ El stock continúa calculándose desde `inventario_lotes.cantidad_actual` en uni
 - Cada PC mantiene una autorización efímera durante la sesión abierta (máximo
   12 horas); iniciar desde otro equipo no invalida el primero. El usuario nunca
   ve ni configura ese token y el servidor conserva únicamente su hash.
+- La memoria conversacional se limpia después de 10 minutos sin preguntas,
+  pero eso no cierra ni invalida la autorización del administrador.
 - El resumen gerencial se obtiene mediante la Edge Function después de validar
   al administrador. La anon key ya no puede ejecutar directamente la RPC.
 - Las consultas clínicas, ajenas a LuxFarma o que intenten cambiar las reglas
@@ -38,16 +40,19 @@ El stock continúa calculándose desde `inventario_lotes.cantidad_actual` en uni
 - Las consultas de stock actual ya no se delegan al modelo: buscan el producto
   por nombre o código y calculan directamente los lotes. La respuesta separa
   disponible (`VIGENTE`), vencido/no vendible y stock físico registrado.
-- Las cinco consultas sugeridas se responden de forma determinística con las
-  cifras del resumen; el proveedor de IA queda para análisis no predefinidos.
+- Las consultas sugeridas vuelven a responderse con el modelo para conservar
+  una conversación natural, usando el resumen real y hasta seis mensajes de
+  contexto. Solo el stock exacto conserva una respuesta determinística.
 - La vista muestra cobertura de inventario y advierte cuando existe catálogo
   pero no hay lotes sincronizados, evitando presentar ceros como una estimación.
 
-## Despliegue requerido para estos ajustes
+## Despliegue de estos ajustes
 
-1. Aplicar `supabase/migrations/20261024120000_asistente_ia_solo_admin.sql`.
-2. Volver a desplegar la Edge Function `asistente-ia`.
-3. No volver a configurar `OPENAI_API_KEY` o `GEMINI_API_KEY` en cada PC: el
+- Edge Function `asistente-ia` desplegada nuevamente el 24 de octubre de 2026
+  con sesiones independientes por equipo y contexto conversacional.
+- Pendiente aplicar `supabase/migrations/20261024120000_asistente_ia_solo_admin.sql`
+  para cerrar el acceso directo de la anon key a la RPC.
+- No volver a configurar `OPENAI_API_KEY` o `GEMINI_API_KEY` en cada PC: el
    secreto ya configurado pertenece al proyecto remoto de Supabase.
 
 ## Pendiente para habilitar las respuestas reales
@@ -64,10 +69,10 @@ El stock continúa calculándose desde `inventario_lotes.cantidad_actual` en uni
 - `node scripts/test-asistente-ia-alcance.mjs`: comprueba el filtro temático.
 - `node scripts/test-asistente-ia-stock.mjs`: valida búsqueda y separación de
   stock vigente, vencido y físico.
-- `node scripts/test-asistente-ia-respuestas.mjs`: valida las respuestas
-  determinísticas de reposición, vencimientos, stock bajo y movimiento.
 - `node scripts/auditar-asistente-ia-stock.mjs`: compara el resumen con los
   lotes reales de Supabase sin modificar datos.
+- `node scripts/test-asistente-ia-edge.mjs`: confirma contra Supabase que está
+  desplegado el flujo nuevo y que exige una sesión válida.
 - `npm run lint`: aprobado sin errores; permanecen advertencias preexistentes.
 - `npm run build`: aprobado.
 - Bundle revisado sin claves privadas ni llamadas directas a OpenAI desde el frontend.

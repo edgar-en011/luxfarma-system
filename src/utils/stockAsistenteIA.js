@@ -27,7 +27,7 @@ function tokensRelevantes(valor) {
 
 export function esConsultaStockActual(pregunta) {
   const texto = normalizarTextoStock(pregunta);
-  if (/\bstock bajo\b|\bproductos? con (?:poco|menos) stock\b|\bvenc|\brotacion\b/.test(texto)) return false;
+  if (/\bstock bajo\b|\bpoco stock\b|\bmenos stock\b|\bvenc|\brotacion\b/.test(texto)) return false;
   return /\bstock\b|\bexistencias?\b|\bdisponibilidad\b|\bcantidad disponible\b|\bcuant\w* (?:hay|queda|quedan|tenemos)\b|\b(?:hay|queda|quedan|tenemos) cuant\w*\b|^hay\b/.test(texto);
 }
 
