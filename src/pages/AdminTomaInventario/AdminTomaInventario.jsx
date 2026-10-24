@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import AlertaSistemaModal from '../../components/AlertaSistemaModal';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import { aplicarAjusteInventario, cerrarSesionInventario } from '../../utils/inventarioAjustes';
+import { publicarInventarioSesion, suscribirInventarioSesion } from '../../utils/inventarioSesionSync';
 import { cargarKardexReciente, calcularMensajeConteo } from '../../utils/mensajeConteo';
 import SmartDateInput from '../../components/SmartDateInput';
 import NotaInventarioForm from './NotaInventarioForm';
@@ -74,8 +75,9 @@ export default function AdminTomaInventario() {
     setAlertaSistema({ mensaje, tipo, accionConfirmar, textoConfirmar, accionCancelar, textoCancelar });
   };
 
-  const cargarDatos = async () => {
-    setCargando(true);
+  const cargarDatos = useCallback(async (opts = {}) => {
+    const silent = opts.silent === true;
+    if (!silent) setCargando(true);
     try {
       const { data: dataSuc } = await supabase.from('sucursales').select('*');
       setSucursales((dataSuc || []).filter(s => String(s.activo) === '1' || s.activo === true));
@@ -86,14 +88,15 @@ export default function AdminTomaInventario() {
         .order('fecha_apertura', { ascending: false })
         .limit(30);
 
-      setSesiones(dataSesiones || []);
-      setSesionesActivas((dataSesiones || []).filter(s => s.estado === 'ABIERTA'));
+      const lista = dataSesiones || [];
+      setSesiones(lista);
+      setSesionesActivas(lista.filter(s => String(s.estado || '').trim().toUpperCase() === 'ABIERTA'));
     } catch (error) {
       console.error('Error cargando datos:', error);
     } finally {
-      setCargando(false);
+      if (!silent) setCargando(false);
     }
-  };
+  }, []);
 
   const cargarConteos = async (sesion) => {
     const { data } = await supabase
@@ -167,6 +170,13 @@ export default function AdminTomaInventario() {
   useEffect(() => {
     cargarDatos();
 
+    const refrescar = () => {
+      cargarDatos({ silent: true });
+      if (vistaDetalleRef.current) cargarConteos(vistaDetalleRef.current);
+    };
+    const offBroadcast = suscribirInventarioSesion(refrescar);
+    const poll = setInterval(refrescar, 6000);
+
     // Realtime en sesiones → detecta apertura/cierre
     const canalSesiones = supabase
       .channel('admin-sesiones-watch')
@@ -174,9 +184,7 @@ export default function AdminTomaInventario() {
         event: '*',
         schema: 'public',
         table: 'inventario_sesiones'
-      }, () => {
-        cargarDatos();
-      })
+      }, refrescar)
       .subscribe((status) => {
         console.log('Realtime admin sesiones:', status);
       });
@@ -196,13 +204,15 @@ export default function AdminTomaInventario() {
       .subscribe();
 
     return () => {
+      offBroadcast();
+      clearInterval(poll);
       supabase.removeChannel(canalSesiones);
       supabase.removeChannel(canalConteos);
     };
-  }, []);
+  }, [cargarDatos]);
 
   const sucursalesDisponibles = sucursales.filter(
-    s => !sesionesActivas.find(sa => sa.id_sucursal === s.id_sucursal)
+    s => !sesionesActivas.find(sa => Number(sa.id_sucursal) === Number(s.id_sucursal))
   );
 
   const abrirSesion = async () => {
@@ -210,13 +220,25 @@ export default function AdminTomaInventario() {
 
     setAbriendo(true);
     try {
-      const { error } = await supabase.from('inventario_sesiones').insert({
+      const { data: nueva, error } = await supabase.from('inventario_sesiones').insert({
         id_sucursal: Number(sucursalSeleccionada),
         id_usuario_admin: user.id_usuario,
         estado: 'ABIERTA'
-      });
+      }).select('*').single();
       if (error) throw error;
       setSucursalSeleccionada('');
+      if (nueva) {
+        const suc = sucursales.find((s) => Number(s.id_sucursal) === Number(nueva.id_sucursal));
+        const fila = {
+          ...nueva,
+          sucursales: suc ? { nombre_comercial: suc.nombre_comercial } : nueva.sucursales,
+          usuarios: { nombres: user?.nombres, apellidos: user?.apellidos },
+        };
+        setSesiones((prev) => [fila, ...prev.filter((s) => s.id_sesion !== nueva.id_sesion)]);
+        setSesionesActivas((prev) => [fila, ...prev.filter((s) => s.id_sesion !== nueva.id_sesion)]);
+      }
+      await cargarDatos({ silent: true });
+      await publicarInventarioSesion();
       mostrarAlerta('Sesión de inventario abierta. Los vendedores ya pueden comenzar el conteo.', 'success');
     } catch (error) {
       mostrarAlerta('Error: ' + error.message, 'error');
@@ -252,10 +274,15 @@ export default function AdminTomaInventario() {
         setCerrando(sesion.id_sesion);
         const resultado = await cerrarSesionInventario(sesion.id_sesion);
         if (resultado.ok) {
-          mostrarAlerta('Sesión cerrada correctamente.', 'success');
+          setSesionesActivas((prev) => prev.filter((s) => s.id_sesion !== sesion.id_sesion));
+          setSesiones((prev) => prev.map((s) => (
+            s.id_sesion === sesion.id_sesion ? { ...s, estado: 'CERRADA' } : s
+          )));
           if (vistaDetalleRef.current?.id_sesion === sesion.id_sesion) {
-            cargarConteos(vistaDetalleRef.current);
+            setVistaDetalle((v) => (v ? { ...v, estado: 'CERRADA' } : v));
           }
+          await cargarDatos({ silent: true });
+          mostrarAlerta('Sesión cerrada correctamente.', 'success');
         } else {
           mostrarAlerta('Error: ' + resultado.error.message, 'error');
         }
