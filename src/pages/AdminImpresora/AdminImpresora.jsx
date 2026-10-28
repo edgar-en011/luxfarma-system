@@ -43,7 +43,9 @@ export default function AdminImpresora() {
         api.list(),
         api.getConfig(),
       ])
-      const names = listRes?.printers || []
+      const names = [...(listRes?.printers || [])].sort((a, b) =>
+        a.localeCompare(b, 'es', { sensitivity: 'base' }),
+      )
       setPrinters(names)
       const saved = cfgRes?.printerName || null
       setSavedName(saved)
