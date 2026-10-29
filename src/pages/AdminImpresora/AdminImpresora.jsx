@@ -176,7 +176,7 @@ export default function AdminImpresora() {
           ) : (
             <>
               <label className="ai-label" htmlFor="ai-printer-select">
-                Impresoras instaladas
+                Impresoras instaladas{!loading && printers.length > 0 ? ` (${printers.length})` : ''}
               </label>
               <select
                 id="ai-printer-select"
@@ -230,8 +230,9 @@ export default function AdminImpresora() {
               </div>
 
               <p className="ai-hint">
-                «Probar impresión» solo verifica USB/ESC/POS (una página corta). El ticket de
-                boleta/factura con QR y hash está más abajo.
+                {printers.length === 0
+                  ? 'Conecta la térmica por USB, instálala en Windows y pulsa «Actualizar lista».'
+                  : '«Probar impresión» solo verifica USB/ESC/POS (una página corta). El ticket de boleta/factura con QR y hash está más abajo.'}
               </p>
             </>
           )}
