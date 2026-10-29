@@ -1412,8 +1412,12 @@ export default function POS() {
     if (!payload) return;
     void printTicketVenta(payload).catch((err) => {
       console.error('[POS] Impresión automática falló:', err);
+      mostrarAlerta(
+        'La venta quedó registrada, pero el ticket no se imprimió. Puedes reimprimirlo en Mis ventas.',
+        'warning',
+      );
     });
-  }, []);
+  }, [mostrarAlerta]);
 
   // Red de seguridad: si hay modal POS abierto y el foco está FUERA de cualquier
   // data-keyboard-trap, bloquear Enter/flechas en capture (antes que MainLayout).
