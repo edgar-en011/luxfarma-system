@@ -85,6 +85,7 @@
 
 .ai-select {
   width: 100%;
+  min-height: 2.75rem;
   padding: 0.55rem 2.2rem 0.55rem 0.8rem;
   border: 1px solid #E4E4E7;
   border-radius: 8px;
