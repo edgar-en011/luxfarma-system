@@ -46,6 +46,7 @@ export default function Catalogo() {
         `)
         .or(`codigo_barras.ilike.%${terminoSeguro}%,descripcion.ilike.%${terminoSeguro}%`)
         .eq('activo', 1)
+        .order('descripcion', { ascending: true })
         .limit(20);
       if (error) throw error;
 
