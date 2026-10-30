@@ -1009,7 +1009,7 @@ export default function MainLayout() {
       '/admin-sunat': { main: 'SUNAT', sub: 'Comprobantes electrónicos' },
       '/admin-series-sunat': { main: 'Configuración', sub: 'Series SUNAT por sucursal' },
       '/admin-codigos-proveedor': { main: 'Configuración', sub: 'Códigos de producto por proveedor' },
-      '/admin-impresora': { main: 'Impresora', sub: 'Configuración térmica de esta PC' },
+      '/admin-impresora': { main: 'Impresora', sub: 'Tickets ESC/POS de esta PC' },
       '/admin-compras': { main: 'Compras', sub: 'Nueva compra' },
       '/admin-inventario': { main: 'Inventario', sub: 'Gestión de productos' },
       '/admin-productos': { main: 'Productos', sub: 'Catálogo de productos' },
