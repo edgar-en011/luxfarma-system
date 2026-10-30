@@ -117,7 +117,7 @@ export default function Catalogo() {
               </svg>
               <input
                 type="text"
-                placeholder="Escanea el código de barras o escribe el nombre del medicamento..."
+                placeholder="Código de barras o nombre del producto..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 autoFocus
