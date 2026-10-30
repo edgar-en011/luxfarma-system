@@ -186,7 +186,7 @@ export default function AdminImpresora() {
                 disabled={printers.length === 0}
               >
                 {printers.length === 0 && (
-                  <option value="">No se detectaron impresoras</option>
+                  <option value="">Sin impresoras</option>
                 )}
                 {printers.map((name) => (
                   <option key={name} value={name}>
