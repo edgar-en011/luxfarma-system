@@ -9,7 +9,7 @@
 .cat-header-banner {
   background: linear-gradient(135deg, var(--lf-primary-darker) 0%, var(--lf-text) 100%);
   border-radius: 12px;
-  padding: 3rem 2rem;
+  padding: 2.5rem 2rem;
   color: white;
   text-align: center;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
