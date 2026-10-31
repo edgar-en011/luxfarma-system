@@ -1413,7 +1413,7 @@ export default function POS() {
     void printTicketVenta(payload).catch((err) => {
       console.error('[POS] Impresión automática falló:', err);
       mostrarAlerta(
-        'La venta quedó registrada, pero el ticket no se imprimió. Puedes reimprimirlo en Mis ventas.',
+        'Venta registrada. El ticket no se imprimió. Reimprímelo en Mis ventas.',
         'warning',
       );
     });
