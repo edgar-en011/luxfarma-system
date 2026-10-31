@@ -29,6 +29,7 @@ import Kardex from './pages/Kardex/Kardex';
 import AdminTomaInventario from './pages/AdminTomaInventario/AdminTomaInventario';
 import TomaInventario from './pages/TomaInventario/TomaInventario';
 import Notificaciones from './pages/Notificaciones/Notificaciones';
+import NoEncontrado from './pages/NoEncontrado/NoEncontrado';
 import LogoCargandoOverlay from './components/LogoCargandoOverlay';
 import PwaUpdateBanner from './components/PwaUpdateBanner';
 import ElectronFunctionKeysToast from './components/ElectronFunctionKeysToast';
@@ -137,6 +138,9 @@ function App() {
               <Route path="/admin-kardex" element={<Kardex />} />
               <Route path="/admin-toma-inventario" element={<AdminTomaInventario />} />
             </Route>
+
+            {/* Cualquier ruta inexistente → pantalla 404 (antes quedaba en blanco) */}
+            <Route path="*" element={<NoEncontrado />} />
           </Routes>
         </AppProviders>
       </Router>
