@@ -1003,7 +1003,7 @@ export default function MainLayout() {
       '/toma-inventario': { main: 'Inventario', sub: 'Conteo físico' },
       '/dashboard': { main: 'Mi Caja', sub: 'Apertura de turno' },
       '/admin-dashboard': { main: 'Dashboard', sub: 'Visión General' },
-      '/admin-pos': { main: 'Punto de Venta', sub: 'Nueva venta' },
+      '/admin-pos': { main: 'Punto de Venta', sub: 'Caja' },
       '/admin-mis-ventas': { main: 'Mis Ventas', sub: 'Historial del turno' },
       '/admin-ventas': { main: 'Ventas', sub: 'Historial de ventas' },
       '/admin-sunat': { main: 'SUNAT', sub: 'Comprobantes electrónicos' },
