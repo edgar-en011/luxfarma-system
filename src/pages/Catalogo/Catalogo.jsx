@@ -3,6 +3,8 @@ import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import { filaProductoPrecios } from '../../utils/productoPrecios';
 import { formatPrecioUnitario } from '../../utils/precioExacto';
+import { formatearEquivalenciaStock } from '../../utils/equivalenciaStock';
+import { loteDisponible, cantidadLote } from '../../utils/stockLotes';
 import './Catalogo.css';
 import UiIcon from '../../components/UiIcon';
 
@@ -39,7 +41,8 @@ export default function Catalogo() {
         .from('productos')
         .select(`
           id_producto, codigo_barras, descripcion, fraccion,
-          producto_precios (precio_venta)
+          producto_precios (precio_venta),
+          producto_formas_venta (factor, activo, unidades_medida(nombre))
         `)
         .or(`codigo_barras.ilike.%${terminoSeguro}%,descripcion.ilike.%${terminoSeguro}%`)
         .eq('activo', 1)
@@ -73,17 +76,18 @@ export default function Catalogo() {
       });
 
       const processedData = (data || []).map(prod => {
-        const activeLots = (lotesMap[prod.id_producto] || [])
+        const activeLots = (lotesMap[prod.id_producto] || []).filter((lote) => loteDisponible(lote))
           .sort((a, b) => {
             if (!a.fecha_vencimiento) return 1;
             if (!b.fecha_vencimiento) return -1;
             return new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento);
           });
-        const totalStock = activeLots.reduce((sum, lot) => sum + Number(lot.cantidad_actual || 0), 0);
+        const totalStock = activeLots.reduce((sum, lot) => sum + cantidadLote(lot), 0);
         return {
           ...prod,
           lotesActivos: activeLots,
           totalStock,
+          equivalenciaStock: formatearEquivalenciaStock(totalStock, prod.producto_formas_venta),
           precio_base: formatPrecioUnitario(filaProductoPrecios(prod.producto_precios)?.precio_venta || 0),
         };
       });
@@ -141,11 +145,17 @@ export default function Catalogo() {
                 <div className="cat-card-top">
                   <span className="cat-barcode">{item.codigo_barras || 'Sin código'}</span>
                   <span className={`cat-stock-badge ${item.totalStock > 20 ? 'green' : item.totalStock > 0 ? 'yellow' : 'red'}`}>
-                    {item.totalStock > 0 ? `Stock: ${item.totalStock}` : 'Agotado'}
+                    {item.totalStock > 0 ? `Stock disponible: ${item.totalStock} unidades` : 'Agotado'}
                   </span>
                 </div>
 
                 <h3 className="cat-prod-title">{item.descripcion}</h3>
+
+                {item.equivalenciaStock && (
+                  <p className="cat-stock-equivalence">
+                    <span>Equivalencia:</span> {item.equivalenciaStock}
+                  </p>
+                )}
 
                 <div className="cat-price-box">
                   <span className="cat-currency">S/</span>

@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { loteDisponible, cantidadLote } from './stockLotes.js';
 
 // Criterio único de stock bajo (campana + Alertas + Inventario + Pedidos +
 // Mi Caja + Dashboard): stock_minimo si está configurado (> 0); si no, 3.
@@ -29,14 +30,14 @@ export function calcularProductosStockBajo(productos, lotes, idsConMovimiento) {
 
   const mapa = {};
   for (const lote of (lotes || [])) {
-    if (lote.estado !== 'VIGENTE') continue;
+    if (!loteDisponible(lote)) continue;
     const id = Number(lote.id_producto);
     if (!permitidos.has(id)) continue;
     const key = `${id}-${lote.id_sucursal ?? ''}`;
     if (!mapa[key]) {
       mapa[key] = { id_producto: lote.id_producto, id_sucursal: lote.id_sucursal ?? null, stockTotal: 0 };
     }
-    mapa[key].stockTotal += Number(lote.cantidad_actual) || 0;
+    mapa[key].stockTotal += cantidadLote(lote);
   }
 
   const productosPorId = new Map((productos || []).map((p) => [Number(p.id_producto), p]));

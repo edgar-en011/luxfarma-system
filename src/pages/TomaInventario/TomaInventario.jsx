@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import AlertaSistemaModal from '../../components/AlertaSistemaModal';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +9,8 @@ import { filaProductoPrecios } from '../../utils/productoPrecios';
 import { formatSolesUnitario } from '../../utils/precioExacto';
 import { fetchLaboratorios, suscribirLaboratoriosChanged } from '../../utils/laboratoriosCatalogo';
 import { esAdmin as rolEsAdmin } from '../../utils/roles';
+import { publicarInventarioSesion, suscribirInventarioSesion } from '../../utils/inventarioSesionSync';
+import { loteDisponible, cantidadLote } from '../../utils/stockLotes';
 import SearchableSelect from '../../components/SearchableSelect';
 import LogoCargandoOverlay from '../../components/LogoCargandoOverlay';
 import './TomaInventario.css';
@@ -220,25 +222,57 @@ function TablaConteoProductos({ productos, guardandoFilas, kardexRecienteMap, on
   );
 }
 
-// Filtro laboratorio/texto en sessionStorage por usuario. No se acopla a la sesión
-// de inventario (crearla al 1er Enter no debe resetear el lab). Logout limpia la clave.
+// Filtro laboratorio/texto + tabla activa. sessionStorage sobrevive F5 en el mismo
+// visor; localStorage cubre recarga de Electron. Logout limpia ambas.
 const FILTRO_STORAGE_KEY = 'ti_v_filtro_conteo';
 function leerFiltroGuardado() {
   try {
-    const raw = sessionStorage.getItem(FILTRO_STORAGE_KEY);
+    const raw = sessionStorage.getItem(FILTRO_STORAGE_KEY) || localStorage.getItem(FILTRO_STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
+function escribirFiltroGuardado(payload) {
+  try {
+    const raw = JSON.stringify(payload);
+    sessionStorage.setItem(FILTRO_STORAGE_KEY, raw);
+    localStorage.setItem(FILTRO_STORAGE_KEY, raw);
+  } catch {
+    // storage lleno / privado — no bloquea el flujo
+  }
+}
 function limpiarFiltroGuardado() {
   try { sessionStorage.removeItem(FILTRO_STORAGE_KEY); } catch { /* ignore */ }
+  try { localStorage.removeItem(FILTRO_STORAGE_KEY); } catch { /* ignore */ }
+}
+
+function idSucursalUsuario(u) {
+  return u?.id_sucursal ?? u?.sucursales?.id_sucursal ?? null;
+}
+
+function esEstadoAbierta(estado) {
+  return String(estado || '').trim().toUpperCase() === 'ABIERTA';
+}
+
+function elegirSesionAbierta(filas, idSucursal) {
+  const abiertas = (filas || []).filter((s) => esEstadoAbierta(s.estado));
+  if (abiertas.length === 0) return { sesion: null, otras: [] };
+  if (idSucursal != null && idSucursal !== '') {
+    const mia = abiertas.find((s) => Number(s.id_sucursal) === Number(idSucursal));
+    if (mia) return { sesion: mia, otras: [] };
+    return { sesion: null, otras: abiertas };
+  }
+  return { sesion: abiertas[0], otras: [] };
 }
 
 export default function TomaInventario() {
   const { user } = useAuth();
+  const userRef = useRef(user);
+  userRef.current = user;
 
   const [sesionActiva, setSesionActiva] = useState(null);
+  const [hintOtrasSesiones, setHintOtrasSesiones] = useState('');
   const [cargando, setCargando] = useState(true);
   const [mensaje, setMensaje] = useState(null);
   const [conteosHoy, setConteosHoy] = useState([]);
@@ -268,6 +302,7 @@ export default function TomaInventario() {
   // Intent del usuario (lab elegido). Fuente de verdad frente a re-renders/refetch.
   const laboratorioFiltroRef = useRef('');
   const filtroHidratadoRef = useRef(false);
+  const [filtroListo, setFiltroListo] = useState(false);
 
   const elegirLaboratorio = (valor) => {
     const next = valor == null || valor === '' ? '' : String(valor);
@@ -279,6 +314,7 @@ export default function TomaInventario() {
   useEffect(() => {
     if (!user?.id_usuario) {
       filtroHidratadoRef.current = false;
+      setFiltroListo(false);
       laboratorioFiltroRef.current = '';
       setLaboratorioSeleccionado('');
       setFiltroNombreLaboratorio('');
@@ -294,6 +330,7 @@ export default function TomaInventario() {
       laboratorioFiltroRef.current = lab;
       setLaboratorioSeleccionado(lab);
       setFiltroNombreLaboratorio(saved.filtroNombreLaboratorio || '');
+      if (saved.tablaConteoActiva) setTablaConteoActiva(true);
     } else {
       laboratorioFiltroRef.current = '';
       setLaboratorioSeleccionado('');
@@ -301,22 +338,20 @@ export default function TomaInventario() {
       limpiarFiltroGuardado();
     }
     filtroHidratadoRef.current = true;
+    setFiltroListo(true);
   }, [user?.id_usuario]);
 
-  // Persiste solo después de hidratar; escribe siempre el ref (intent real del usuario).
+  // Persiste en el render siguiente a la hidratación (mismo ciclo pisaría tabla=false).
   useEffect(() => {
-    if (!user?.id_usuario || !filtroHidratadoRef.current) return;
+    if (!user?.id_usuario || !filtroListo) return;
     const lab = laboratorioFiltroRef.current || laboratorioSeleccionado || '';
-    try {
-      sessionStorage.setItem(FILTRO_STORAGE_KEY, JSON.stringify({
-        idUsuario: user.id_usuario,
-        laboratorioSeleccionado: lab,
-        filtroNombreLaboratorio,
-      }));
-    } catch {
-      // sessionStorage no disponible (ej. navegación privada) — no bloquea el flujo.
-    }
-  }, [laboratorioSeleccionado, filtroNombreLaboratorio, user?.id_usuario]);
+    escribirFiltroGuardado({
+      idUsuario: user.id_usuario,
+      laboratorioSeleccionado: lab,
+      filtroNombreLaboratorio,
+      tablaConteoActiva,
+    });
+  }, [filtroListo, laboratorioSeleccionado, filtroNombreLaboratorio, tablaConteoActiva, user?.id_usuario]);
 
   // ── Aprobación automática: aplica el ajuste de stock directamente, sin pasar por
   // revisión del Admin (ver src/utils/inventarioAjustes.js) ──
@@ -354,50 +389,89 @@ export default function TomaInventario() {
     setGuardandoFilas({});
   };
 
-  const cargarSesion = async () => {
+  const cargarConteosHoy = useCallback(async (idSesion) => {
+    const idUsuario = userRef.current?.id_usuario;
+    if (!idSesion || !idUsuario) return;
+    const { data } = await supabase
+      .from('inventario_conteos')
+      .select('*, productos(descripcion, activo, producto_precios(precio_venta, costo))')
+      .eq('id_sesion', idSesion)
+      .eq('id_usuario', idUsuario)
+      .order('created_at', { ascending: false });
+    setConteosHoy(data || []);
+  }, []);
+
+  const cargarSesion = useCallback(async () => {
+    const u = userRef.current;
+
+    // Usuario aún no hidratado: no mostrar "Sin sesión" ni borrar la tabla.
+    if (!u?.id_usuario) return;
+
     try {
-      if (!user?.id_sucursal) {
-        resetUISinSesion();
-        return;
+      let idSucursal = idSucursalUsuario(u);
+      const { data: filaUsuario } = await supabase
+        .from('usuarios')
+        .select('id_sucursal')
+        .eq('id_usuario', u.id_usuario)
+        .maybeSingle();
+      if (filaUsuario?.id_sucursal != null && filaUsuario.id_sucursal !== '') {
+        idSucursal = filaUsuario.id_sucursal;
       }
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('inventario_sesiones')
         .select('*, sucursales(nombre_comercial)')
         .eq('estado', 'ABIERTA')
-        .eq('id_sucursal', user.id_sucursal)
-        .limit(1);
+        .order('fecha_apertura', { ascending: false });
 
+      if (error) {
+        const retry = await supabase
+          .from('inventario_sesiones')
+          .select('*')
+          .eq('estado', 'ABIERTA');
+        data = retry.data;
+        error = retry.error;
+      }
       if (error) throw error;
 
-      const sesion = data && data.length > 0 ? data[0] : null;
+      const { sesion, otras } = elegirSesionAbierta(data, idSucursal);
       if (sesion) {
+        setHintOtrasSesiones('');
         setSesionActiva(sesion);
         sesionRef.current = sesion;
         setTablaConteoActiva(true);
         cargarConteosHoy(sesion.id_sesion);
       } else {
-        // Sin sesión ABIERTA: no dejar tabla fantasma con Físico vacío.
         resetUISinSesion();
+        const nombres = otras
+          .map((s) => s.sucursales?.nombre_comercial)
+          .filter(Boolean);
+        setHintOtrasSesiones(
+          nombres.length > 0
+            ? `Hay sesión abierta en ${nombres.join(', ')}, pero tu usuario está en otra sucursal.`
+            : ''
+        );
       }
     } catch (err) {
       console.error('Error cargando sesión:', err);
-      resetUISinSesion();
+      // Un fallo de red/Realtime no debe tumbar una sesión que ya está en pantalla.
+      if (!sesionRef.current) resetUISinSesion();
     } finally {
       setCargando(false);
     }
-  };
+  }, [cargarConteosHoy]);
 
   // Crea (o recupera, si otra pestaña/petición ganó la carrera del índice único parcial
   // en inventario_sesiones) la sesión ABIERTA de la sucursal del Admin, solo en el
   // momento en que realmente va a guardar su primer conteo — nunca al solo entrar/montar.
   const obtenerOcrearSesion = async () => {
     if (sesionActiva) return sesionActiva;
-    if (!esAdmin || !user?.id_sucursal) return null;
+    const idSucursal = idSucursalUsuario(user);
+    if (!esAdmin || !idSucursal) return null;
 
     const { data: nueva, error: errorInsert } = await supabase
       .from('inventario_sesiones')
-      .insert({ id_sucursal: user.id_sucursal, id_usuario_admin: user.id_usuario, estado: 'ABIERTA' })
+      .insert({ id_sucursal: idSucursal, id_usuario_admin: user.id_usuario, estado: 'ABIERTA' })
       .select('*, sucursales(nombre_comercial)')
       .single();
 
@@ -407,7 +481,7 @@ export default function TomaInventario() {
         .from('inventario_sesiones')
         .select('*, sucursales(nombre_comercial)')
         .eq('estado', 'ABIERTA')
-        .eq('id_sucursal', user.id_sucursal)
+        .eq('id_sucursal', idSucursal)
         .limit(1);
       sesion = existenteAhora && existenteAhora.length > 0 ? existenteAhora[0] : null;
     } else if (!errorInsert) {
@@ -421,18 +495,9 @@ export default function TomaInventario() {
       // Reafirmar filtro: crear sesión no debe dejar el selector en "Todos".
       const labIntent = laboratorioFiltroRef.current;
       if (labIntent) setLaboratorioSeleccionado(labIntent);
+      void publicarInventarioSesion();
     }
     return sesion;
-  };
-
-  const cargarConteosHoy = async (idSesion) => {
-    const { data } = await supabase
-      .from('inventario_conteos')
-      .select('*, productos(descripcion, activo, producto_precios(precio_venta, costo))')
-      .eq('id_sesion', idSesion)
-      .eq('id_usuario', user.id_usuario)
-      .order('created_at', { ascending: false });
-    setConteosHoy(data || []);
   };
 
   // ── Mensaje de conteo enriquecido con Kardex (lógica compartida con
@@ -444,7 +509,7 @@ export default function TomaInventario() {
   // Batch solo para las filas con Físico ya ingresado, debounced igual que
   // cargarProductosLaboratorio.
   useEffect(() => {
-    const idSucursalActual = sesionActiva?.id_sucursal || (esAdmin ? user?.id_sucursal : null);
+    const idSucursalActual = sesionActiva?.id_sucursal || idSucursalUsuario(user);
     const idsConDiferencia = productosLaboratorio
       .filter(p => p.cantidadFisica !== '' && !isNaN(parseInt(p.cantidadFisica)))
       .map(p => p.id_producto);
@@ -459,7 +524,7 @@ export default function TomaInventario() {
 
   // "Mis conteos de esta sesión": batch para todos los que ya tienen diferencia.
   useEffect(() => {
-    const idSucursalActual = sesionActiva?.id_sucursal || (esAdmin ? user?.id_sucursal : null);
+    const idSucursalActual = sesionActiva?.id_sucursal || idSucursalUsuario(user);
     const ids = conteosHoy.filter(c => c.diferencia !== 0).map(c => c.id_producto);
     if (ids.length === 0 || !idSucursalActual) return undefined;
     if (debounceKardexConteosRef.current) clearTimeout(debounceKardexConteosRef.current);
@@ -490,6 +555,9 @@ export default function TomaInventario() {
   useEffect(() => {
     cargarSesion();
 
+    const offBroadcast = suscribirInventarioSesion(() => { cargarSesion(); });
+    const pollSesion = setInterval(() => { cargarSesion(); }, 6000);
+
     // Realtime en inventario_sesiones → detecta cuando admin abre/cierra
     const canalSesion = supabase
       .channel('vendedor-sesion-watch')
@@ -517,10 +585,12 @@ export default function TomaInventario() {
       .subscribe();
 
     return () => {
+      offBroadcast();
+      clearInterval(pollSesion);
       supabase.removeChannel(canalSesion);
       supabase.removeChannel(canalConteos);
     };
-  }, []);
+  }, [cargarSesion, cargarConteosHoy]);
 
   // Catálogo de laboratorios (solo activos en el filtro de conteo) — carga inicial +
   // refresh cuando Gestionar Laboratorios (u otro alta) notifica cambios.
@@ -541,7 +611,7 @@ export default function TomaInventario() {
   // combinados) + su stock de sistema (batch) + los conteos ya guardados en esta
   // sesión para precargar el campo Físico
   const cargarProductosLaboratorio = async (idLaboratorio, textoFiltro) => {
-    const idSucursalActual = sesionActiva?.id_sucursal || (esAdmin ? user?.id_sucursal : null);
+    const idSucursalActual = sesionActiva?.id_sucursal || idSucursalUsuario(user);
     if (!idSucursalActual || (!idLaboratorio && !textoFiltro)) { setProductosLaboratorio([]); return; }
     setCargandoLaboratorio(true);
     try {
@@ -572,7 +642,7 @@ export default function TomaInventario() {
       const [{ data: lotes }, { data: conteosExistentes }] = await Promise.all([
         supabase
           .from('inventario_lotes')
-          .select('id_producto, cantidad_actual')
+          .select('id_producto, cantidad_actual, estado, fecha_vencimiento')
           .in('id_producto', ids)
           .eq('id_sucursal', idSucursalActual)
           .eq('estado', 'VIGENTE'),
@@ -586,8 +656,8 @@ export default function TomaInventario() {
       ]);
 
       const stockMap = {};
-      (lotes || []).forEach(l => {
-        stockMap[l.id_producto] = (stockMap[l.id_producto] || 0) + Number(l.cantidad_actual || 0);
+      (lotes || []).filter((lote) => loteDisponible(lote)).forEach(l => {
+        stockMap[l.id_producto] = (stockMap[l.id_producto] || 0) + cantidadLote(l);
       });
       const conteoMap = {};
       (conteosExistentes || []).forEach(c => { conteoMap[c.id_producto] = c; });
@@ -631,7 +701,7 @@ export default function TomaInventario() {
     }, 400);
     return () => clearTimeout(debounceLaboratorioRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [laboratorioSeleccionado, filtroNombreLaboratorio, tablaConteoActiva]);
+  }, [laboratorioSeleccionado, filtroNombreLaboratorio, tablaConteoActiva, sesionActiva?.id_sesion]);
 
   const iniciarConteoLaboratorio = () => {
     const lab = laboratorioFiltroRef.current || laboratorioSeleccionado;
@@ -730,7 +800,7 @@ export default function TomaInventario() {
     setOverlayAplicar({ mensaje: 'Aplicando cambios de inventario...', exito: false });
 
     const idSesionCerrar = sesionRef.current?.id_sesion ?? sesionActiva?.id_sesion ?? null;
-    const idSucursal = sesionRef.current?.id_sucursal || sesionActiva?.id_sucursal || user?.id_sucursal;
+    const idSucursal = sesionRef.current?.id_sucursal || sesionActiva?.id_sucursal || idSucursalUsuario(user);
     let exitosos = 0;
 
     try {
@@ -1002,7 +1072,11 @@ export default function TomaInventario() {
           <div className="ti-v-sin-sesion-card">
             <span className="ti-v-icon-big"><UiIcon name="Lock" size={16} /></span>
             <h2>Sin sesión activa</h2>
-            <p>El administrador aún no ha abierto una sesión de inventario.<br />Consulta con {nombreAdmin || 'tu administrador'} para continuar.</p>
+            <p>
+              {hintOtrasSesiones || (
+                <>El administrador aún no ha abierto una sesión de inventario.<br />Consulta con {nombreAdmin || 'tu administrador'} para continuar.</>
+              )}
+            </p>
             <button onClick={cargarSesion} style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', background: 'var(--lf-primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}><UiIcon name="RefreshCw" size={15} /> Verificar nuevamente
             </button>
           </div>

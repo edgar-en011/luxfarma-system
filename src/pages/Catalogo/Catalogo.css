@@ -116,6 +116,7 @@
   font-weight: 800;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
+  text-align: right;
 }
 
 .cat-stock-badge.green { background-color: #dcfce7; color: #166534; }
@@ -127,6 +128,18 @@
   font-size: 1.1rem;
   color: var(--lf-text);
   line-height: 1.3;
+}
+
+.cat-stock-equivalence {
+  margin: -0.35rem 0 1rem;
+  color: var(--lf-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.cat-stock-equivalence span {
+  color: var(--lf-text);
+  font-weight: 700;
 }
 
 .cat-price-box {

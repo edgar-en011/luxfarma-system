@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
-import { verificarYMigrarSiPlano } from '../../utils/passwordHash';
 import { esAdmin } from '../../utils/roles';
 import PasswordField from '../../components/PasswordField';
 import './Login.css';
@@ -13,6 +11,9 @@ import { APP_VERSION } from '../../appVersion';
 import { EMPRESA } from '../../config/empresa';
 import { esEscenaNoche } from '../../utils/loginEscena';
 import UiIcon from '../../components/UiIcon';
+import { crearSesionAsistenteIA } from '../../services/asistenteIA';
+import { iniciarSesionCuenta } from '../../services/authCuenta';
+import { guardarSesionAsistenteIA, limpiarSesionAsistenteIA } from '../../utils/asistenteIASesion';
 
 /** Estrellas: densas arriba, casi ninguna cerca del horizonte. 3 tamaños. */
 const LOGIN_STARS = [
@@ -347,46 +348,33 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      // Buscar solo por DNI — la contraseña se verifica en cliente (bcrypt o legado plano).
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('*, roles(nombre), sucursales(id_sucursal, nombre_comercial, direccion, ruc, telefono)')
-        .eq('dni', dni)
-        .maybeSingle();
+      const data = await iniciarSesionCuenta({ dni, password });
 
-      if (error || !data) {
-        setError('DNI o contraseña incorrectos.');
-        setLoading(false);
-        return;
+      if (esAdmin(data.id_rol)) {
+        try {
+          const sesionIA = await crearSesionAsistenteIA({
+            idUsuario: data.id_usuario,
+            password,
+          });
+          guardarSesionAsistenteIA(data.id_usuario, sesionIA);
+        } catch (errorSesionIA) {
+          limpiarSesionAsistenteIA();
+          console.warn('[asistente-ia] No se pudo preparar la sesión:', errorSesionIA?.message);
+        }
+      } else {
+        limpiarSesionAsistenteIA();
       }
 
-      const { ok } = await verificarYMigrarSiPlano({
-        id_usuario: data.id_usuario,
-        plain: password,
-        stored: data.password_hash,
-      });
-      if (!ok) {
-        setError('DNI o contraseña incorrectos.');
-        setLoading(false);
-        return;
-      }
-
-      if (!data.activo) {
-        setError('Este usuario está inactivo. Contacte a soporte.');
-        setLoading(false);
-        return;
-      }
       setTimeout(() => {
-        const { password_hash: _password_hash, ...userData } = data;
-        login(userData);
-        if (esAdmin(userData.id_rol)) {
+        login(data);
+        if (esAdmin(data.id_rol)) {
           navigate('/admin-dashboard');
         } else {
           navigate('/dashboard');
         }
       }, 800);
-    } catch {
-      setError('Error de conexión con el servidor.');
+    } catch (error) {
+      setError(error?.code === 'INVALID_CREDENTIALS' ? 'DNI o contraseña incorrectos.' : error?.message || 'Error de conexión con el servidor.');
       setLoading(false);
     }
   };

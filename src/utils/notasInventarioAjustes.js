@@ -1,4 +1,6 @@
 import { supabase } from '../supabaseClient';
+import { loteDisponible, cantidadLote } from './stockLotes';
+import { notificarInventarioCambiado } from './catalogoCache';
 
 // numero_correlativo independiente por tipo (INGRESO/SALIDA) — mismo patrón manual
 // max(id)+1 que ya usa todo el sistema (productos, laboratorios, pedidos_proveedor),
@@ -22,11 +24,11 @@ export async function obtenerSiguienteCorrelativo(tipo) {
 export async function obtenerStockDisponible(idProducto, idSucursal) {
   const { data } = await supabase
     .from('inventario_lotes')
-    .select('cantidad_actual')
+    .select('cantidad_actual, estado, fecha_vencimiento')
     .eq('id_producto', idProducto)
     .eq('id_sucursal', idSucursal)
     .eq('estado', 'VIGENTE');
-  return (data || []).reduce((acc, l) => acc + Number(l.cantidad_actual || 0), 0);
+  return (data || []).filter((lote) => loteDisponible(lote)).reduce((acc, l) => acc + cantidadLote(l), 0);
 }
 
 // Nota de INGRESO: crea un lote NUEVO real (con su propio nro_lote/vencimiento/costo)
@@ -124,7 +126,7 @@ async function aplicarSalida(nota) {
 
   const { data: lotes, error: errorLotes } = await supabase
     .from('inventario_lotes')
-    .select('id_lote, cantidad_actual')
+    .select('id_lote, cantidad_actual, estado, fecha_vencimiento')
     .eq('id_producto', nota.id_producto)
     .eq('id_sucursal', nota.id_sucursal)
     .eq('estado', 'VIGENTE')
@@ -133,7 +135,7 @@ async function aplicarSalida(nota) {
   if (errorLotes) throw errorLotes;
 
   let restante = nota.cantidad;
-  for (const lote of (lotes || [])) {
+  for (const lote of (lotes || []).filter((item) => loteDisponible(item))) {
     if (restante <= 0) break;
     const descontar = Math.min(restante, Number(lote.cantidad_actual));
     const nuevaCantidad = Number(lote.cantidad_actual) - descontar;
@@ -196,6 +198,7 @@ export async function guardarNotaInventario(datos) {
       } else {
         await aplicarSalida({ ...datosTabla, id_lote_especifico, numero_correlativo });
       }
+      notificarInventarioCambiado([datos.id_producto]);
       return { ok: true, nota: notaGuardada };
     } catch (error) {
       await supabase.from('notas_inventario').delete().eq('id_nota', notaGuardada.id_nota);

@@ -151,16 +151,26 @@
 
 .ped-carrito-tabla-wrap { border: 1px solid var(--lf-border); border-radius: 8px; overflow: hidden; }
 .ped-carrito-tabla { width: 100%; table-layout: fixed; border-collapse: collapse; }
-.ped-carrito-tabla .col-producto { width: 46%; }
-.ped-carrito-tabla .col-cantidad { width: 14%; }
-.ped-carrito-tabla .col-costo { width: 16%; }
-.ped-carrito-tabla .col-subtotal { width: 16%; }
+.ped-carrito-tabla .col-producto { width: 34%; }
+.ped-carrito-tabla .col-medida { width: 16%; }
+.ped-carrito-tabla .col-cantidad { width: 16%; }
+.ped-carrito-tabla .col-costo { width: 14%; }
+.ped-carrito-tabla .col-subtotal { width: 12%; }
 .ped-carrito-tabla .col-eliminar { width: 8%; }
 .ped-carrito-tabla th { text-align: left; padding: 0.75rem; font-size: 0.7rem; font-weight: 800; color: var(--lf-text-muted); border-bottom: 2px solid var(--lf-info-bg); text-transform: uppercase; letter-spacing: 0.03em; background: var(--lf-bg); }
 .ped-carrito-tabla td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--lf-bg); font-size: 0.85rem; vertical-align: middle; }
 
 .ped-input-carrito { width: 100%; padding: 0.45rem 0.6rem; border: 1px solid var(--lf-border); border-radius: 6px; font-family: inherit; font-size: 0.85rem; outline: none; }
 .ped-input-carrito:focus { border-color: var(--lf-primary); }
+.ped-select-medida { cursor: pointer; }
+.ped-equiv-unidades {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--lf-text-muted);
+  line-height: 1.2;
+}
 
 .btn-ped-eliminar-fila { background: none; border: none; font-size: 1rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
 .btn-ped-eliminar-fila:hover { opacity: 1; }

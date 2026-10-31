@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AlertaSistemaModal from '../../components/AlertaSistemaModal';
 import { supabase } from '../../supabaseClient';
 import './AdminInventario.css';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductoFormModal from '../../components/ProductoFormModal';
 import { filaProductoPrecios } from '../../utils/productoPrecios';
 import { formatSolesUnitario } from '../../utils/precioExacto';
@@ -13,6 +13,8 @@ import { marcarLotesVencidos } from '../../utils/lotesVencidos';
 import { calcularProductosStockBajo, cargarIdsProductosConMovimiento } from '../../utils/stockBajo';
 import { fetchLaboratorios, suscribirLaboratoriosChanged } from '../../utils/laboratoriosCatalogo';
 import { marcarCatalogoOfflineStale } from '../../utils/catalogoCache';
+import { formatearEquivalenciaStock } from '../../utils/equivalenciaStock';
+import { resumirStockLotes } from '../../utils/stockLotes';
 import UiIcon from '../../components/UiIcon';
 
 /** Trae todas las filas de una query Supabase paginando de a 1000. */
@@ -31,6 +33,7 @@ async function fetchAllRows(buildQuery) {
 
 export default function AdminInventario() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // ── Catálogos auxiliares ────────────────────────────────────────
   const [sucursales, setSucursales] = useState([]);
@@ -118,7 +121,7 @@ export default function AdminInventario() {
 
       let q = supabase
         .from('productos')
-        .select('*, producto_precios(costo, precio_venta), inventario_lotes(cantidad_actual, costo_unitario_lote, fecha_vencimiento, estado, id_sucursal)', { count: 'exact' })
+        .select('*, producto_precios(costo, precio_venta), producto_formas_venta(factor, activo, unidades_medida(nombre)), inventario_lotes(cantidad_actual, costo_unitario_lote, fecha_vencimiento, estado, id_sucursal)', { count: 'exact' })
         .eq('activo', 1);
 
       if (busqueda.trim()) {
@@ -143,16 +146,19 @@ export default function AdminInventario() {
           (sucursalFiltro === 'TODAS' || Number(l.id_sucursal) === Number(sucursalFiltro))
         );
 
-        let stockTotal = 0, valorTotal = 0, fechaProxima = null;
+        let valorTotal = 0, fechaProxima = null;
         lotes.forEach(l => {
           const qty = Number(l.cantidad_actual || 0);
-          stockTotal += qty;
-          valorTotal += qty * Number(l.costo_unitario_lote || 0);
+          if (l.estado === 'VIGENTE' && (!l.fecha_vencimiento || diasHastaFecha(l.fecha_vencimiento) >= 0)) {
+            valorTotal += Math.max(0, qty) * Number(l.costo_unitario_lote || 0);
+          }
           if (qty > 0 && l.fecha_vencimiento) {
             const fv = parseFechaISO(l.fecha_vencimiento)?.iso;
             if (fv && (!fechaProxima || fv < fechaProxima)) fechaProxima = fv;
           }
         });
+        const stockResumen = resumirStockLotes(lotes);
+        const stockTotal = stockResumen.disponible;
 
         let estadoVenc = 'EN STOCK';
         if (fechaProxima) {
@@ -170,7 +176,9 @@ export default function AdminInventario() {
 
         return {
           ...prod,
-          stockTotal, valorTotalAlmacen: valorTotal,
+          stockTotal, stockVencido: stockResumen.vencido, stockFisico: stockTotal + stockResumen.vencido,
+          valorTotalAlmacen: valorTotal,
+          equivalenciaStock: formatearEquivalenciaStock(stockTotal, prod.producto_formas_venta),
           fechaVencimiento: fechaProxima,
           estadoVencimiento: estadoVenc,
           costo, pVenta, margen, minStock: 20,
@@ -272,15 +280,13 @@ export default function AdminInventario() {
       const allData = await fetchAllRows(() =>
         supabase
           .from('productos')
-          .select('*, producto_precios(costo, precio_venta), inventario_lotes(cantidad_actual, estado)')
+          .select('*, producto_precios(costo, precio_venta), inventario_lotes(cantidad_actual, estado, fecha_vencimiento)')
           .eq('activo', 1)
       );
       const encabezados = "CÓDIGO,PRODUCTO,STOCK,P.COSTO,P.VENTA\n";
       const filas = allData.map((p) => {
         const fp = filaProductoPrecios(p.producto_precios);
-        const stock = (p.inventario_lotes || [])
-          .filter((l) => ['VIGENTE', 'VENCIDO'].includes(l.estado))
-          .reduce((acc, l) => acc + Number(l.cantidad_actual || 0), 0);
+        const stock = resumirStockLotes(p.inventario_lotes || []).disponible;
         return `"${p.codigo_barras || ''}","${p.descripcion}",${stock},${fp?.costo || 0},${fp?.precio_venta || 0}`;
       }).join("\n");
       const blob = new Blob(["\uFEFF" + encabezados + filas], { type: 'text/csv;charset=utf-8;' });
@@ -350,6 +356,7 @@ export default function AdminInventario() {
       <div className="inv-top-actions">
         <div className="inv-title-area"><p>{kpis.totalCatalogo.toLocaleString()} productos en catálogo global</p></div>
         <div className="inv-buttons-area">
+          <button className="btn-inv-outline" onClick={() => navigate('/admin-toma-inventario', { state: { vista: 'nota-ingreso' } })}><UiIcon name="Package" size={15} /> Registrar lote</button>
           <button className="btn-inv-outline" onClick={exportarExcel}><UiIcon name="Download" size={15} /> Exportar Excel</button>
           <button className="btn-inv-primary" onClick={abrirModalNuevo}>+ Nuevo producto</button>
         </div>
@@ -395,7 +402,12 @@ export default function AdminInventario() {
                   <tr key={p.id_producto}>
                     <td><strong className="text-dark">{p.descripcion}</strong><br /><small className="text-muted">{p.nombreLaboratorio} · Cód: {p.codigo_barras || '---'}</small></td>
                     <td><span className={`cat-pill ${getCategoriaColor(p.nombreFamilia)}`}><span className="dot"></span> {p.nombreFamilia || 'Sin categoría'}</span></td>
-                    <td className="text-center"><strong className={stockColor.replace('bg-', 'text-')}>{p.stockTotal}</strong><div className="inv-bar-bg"><div className={`inv-bar-fill ${stockColor}`} style={{ width: `${pctStock}%` }}></div></div></td>
+                    <td className="text-center inv-stock-cell">
+                      <strong className={stockColor.replace('bg-', 'text-')}>{p.stockTotal} unidades</strong>
+                      {p.stockVencido > 0 && <small className="inv-stock-equivalence">Vencido: {p.stockVencido} · físico: {p.stockFisico}</small>}
+                      {p.equivalenciaStock && <small className="inv-stock-equivalence">Equivalencia: {p.equivalenciaStock}</small>}
+                      <div className="inv-bar-bg"><div className={`inv-bar-fill ${stockColor}`} style={{ width: `${pctStock}%` }}></div></div>
+                    </td>
                     <td className="text-center text-muted">{p.minStock}</td>
                     <td className="text-center text-muted">{formatSolesUnitario(p.costo)}</td>
                     <td className="text-center font-bold text-dark">{formatSolesUnitario(p.pVenta)}</td>

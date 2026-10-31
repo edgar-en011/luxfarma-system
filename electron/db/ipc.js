@@ -25,6 +25,7 @@ export function registerSqliteIpc() {
   ipcMain.handle('db:setMeta', wrap('setMeta', (key, value) => sqlite.setMeta(key, value)))
   ipcMain.handle('db:catalogCount', wrap('catalogCount', () => ({ ok: true, count: sqlite.catalogCount() })))
   ipcMain.handle('db:replaceCatalog', wrap('replaceCatalog', (payload) => sqlite.replaceCatalog(payload || {})))
+  ipcMain.handle('db:replaceCatalogStock', wrap('replaceCatalogStock', (payload) => sqlite.replaceCatalogStock(payload || {})))
   ipcMain.handle('db:searchProductos', wrap('searchProductos', (termino, limit) => ({
     ok: true,
     rows: sqlite.searchProductos(termino, limit),

@@ -1,6 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { calcularProductosStockBajo } from './stockBajo';
 import { hoyLocal } from './fechas';
+import { loteDisponible, cantidadLote } from './stockLotes';
 
 export async function insertarNotificacion({
   usuario_id = null, tipo, categoria, mensaje,
@@ -292,6 +293,20 @@ export async function marcarTodasNotificacionesLeidas(idUsuario, { soloPropias =
  * Notifica al vendedor cuando el admin marca el ticket EN PROCESO.
  * Dedup estable por ticket (no re-spamea si marcan en curso varias veces).
  */
+/** Aviso inmediato a admins cuando un vendedor abre un ticket (no espera el ciclo de 5 min). */
+export async function notificarNuevoTicketAdmins({ id_ticket, asunto }) {
+  if (id_ticket == null) return;
+  const asuntoCorto = (asunto || 'Sin asunto').slice(0, 80);
+  await insertarNotifConDedup({
+    tipo: 'info',
+    categoria: 'Soporte',
+    mensaje: `Ticket #${id_ticket}: ${asuntoCorto}`,
+    accion_label: 'Ver ticket',
+    accion_url: `/admin-alertas?tab=SOPORTE&ticketId=${id_ticket}`,
+    claveDedup: `soporte:ticket:${id_ticket}`,
+  });
+}
+
 export async function notificarTicketEnCursoVendedor({
   id_usuario,
   id_ticket,
@@ -333,7 +348,7 @@ export async function notificarRespuestaTicketVendedor({
     usuario_id: id_usuario,
     tipo: 'ok',
     categoria: 'Soporte',
-    mensaje: `El administrador respondió tu ticket #${id_ticket}: ${asuntoCorto}`,
+    mensaje: `Respondieron tu ticket #${id_ticket}: ${asuntoCorto}${s ? ` — «${s.slice(0, 120)}${s.length > 120 ? '…' : ''}»` : ''}`,
     accion_label: 'Ver respuesta',
     accion_url: `/soporte?ticketId=${id_ticket}`,
     claveDedup: `soporte:respuesta:${id_ticket}:${fp}`,
@@ -353,7 +368,7 @@ export async function verificarStockPostVenta(items = []) {
       if (!item.id_producto) continue;
       const [{ data: lotes }, { data: producto }] = await Promise.all([
         supabase.from('inventario_lotes')
-          .select('id_producto, cantidad_actual, id_sucursal, estado')
+          .select('id_producto, cantidad_actual, id_sucursal, estado, fecha_vencimiento')
           .eq('id_producto', item.id_producto)
           .eq('estado', 'VIGENTE'),
         supabase.from('productos')
@@ -365,9 +380,10 @@ export async function verificarStockPostVenta(items = []) {
       const lotesParaCalculo = (lotes && lotes.length > 0)
         ? lotes
         : [{ id_producto: item.id_producto, cantidad_actual: 0, id_sucursal: null, estado: 'VIGENTE' }];
+      const lotesVendibles = lotesParaCalculo.filter((lote) => loteDisponible(lote));
       const [resultado] = calcularProductosStockBajo(
         [producto],
-        lotesParaCalculo,
+        lotesVendibles.map((lote) => ({ ...lote, cantidad_actual: cantidadLote(lote) })),
         new Set([Number(item.id_producto)]),
       );
       if (!resultado) continue;

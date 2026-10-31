@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { calcularProductosStockBajo, cargarIdsProductosConMovimiento, resolverIdSucursalProducto, cargarLotesParaSede } from '../../utils/stockBajo';
 import { notificarRespuestaTicketVendedor, notificarTicketEnCursoVendedor, EVT_ADMIN_TOAST_CERRAR } from '../../utils/notificacionesService';
+import { fusionarTicketEnLista, publicarCambioTicket, suscribirSoporteSync } from '../../utils/soporteRealtime';
 import { claseEstadoTicket } from '../../utils/soporteTicketVista';
 
 const cerrarToastTicketAdmin = (idTicket) => {
@@ -18,6 +19,7 @@ import { diasHastaFecha, formatearFechaPE } from '../../utils/fechas';
 import { estaPorVencer } from '../../utils/umbralesVencimiento';
 import { marcarLotesVencidos } from '../../utils/lotesVencidos';
 import { assertEscritura } from '../../utils/supaWrite';
+import { loteDisponible } from '../../utils/stockLotes';
 import './AdminAlertas.css';
 import UiIcon from '../../components/UiIcon';
 import {
@@ -151,7 +153,6 @@ export default function AdminAlertas() {
 
   const [loteDetalle, setLoteDetalle] = useState(null);
   const [ticketsNuevos, setTicketsNuevos] = useState(0); // badge nuevos tickets en tiempo real
-  const canalTicketsRef = useRef(null);
 
   const [alertaSistema, setAlertaSistema] = useState(null);
   const alertOkBtnRef = useRef(null);
@@ -217,7 +218,7 @@ export default function AdminAlertas() {
         : { data: [] };
 
       const idsConVigente = new Set(
-        (resLotes.data || []).filter((l) => l.estado === 'VIGENTE').map((l) => Number(l.id_producto))
+        (resLotes.data || []).filter((lote) => loteDisponible(lote)).map((l) => Number(l.id_producto))
       );
       const idsSinVigente = [...idsMov].filter((id) => !idsConVigente.has(Number(id)));
       setLotesSedeRespaldo(await cargarLotesParaSede(idsSinVigente));
@@ -243,33 +244,25 @@ export default function AdminAlertas() {
 
   useEffect(() => {
     cargarDatos();
-
-    // ⚡ Realtime: nuevos tickets del vendedor aparecen al instante
-    canalTicketsRef.current = supabase
-      .channel('admin-tickets-realtime')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'tickets_soporte'
-      }, (payload) => {
-        // Agregar el nuevo ticket al inicio de la lista sin recargar
-        setRawTickets(prev => [payload.new, ...prev]);
-        setTicketsNuevos(prev => prev + 1);
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'tickets_soporte'
-      }, (payload) => {
-        // Actualizar el ticket que fue respondido
-        setRawTickets(prev =>
-          prev.map(t => t.id_ticket === payload.new.id_ticket ? { ...t, ...payload.new } : t)
-        );
-      })
-      .subscribe();
-
+    const pollTickets = setInterval(async () => {
+      try {
+        const { data, error } = await supabase.from('tickets_soporte').select('*').order('created_at', { ascending: false });
+        if (!error) setRawTickets(data || []);
+      } catch { /* empty */ }
+    }, 8000);
+    const off = suscribirSoporteSync(({ tipo, ticket }) => {
+      if (!ticket?.id_ticket) return;
+      setRawTickets((prev) => {
+        const existia = prev.some((t) => Number(t.id_ticket) === Number(ticket.id_ticket));
+        if (tipo === 'INSERT' && !existia) {
+          queueMicrotask(() => setTicketsNuevos((n) => n + 1));
+        }
+        return fusionarTicketEnLista(prev, ticket);
+      });
+    });
     return () => {
-      if (canalTicketsRef.current) supabase.removeChannel(canalTicketsRef.current);
+      clearInterval(pollTickets);
+      off();
     };
   }, []);
 
@@ -540,15 +533,17 @@ export default function AdminAlertas() {
       pendingTicketIdRef.current = null;
       deepLinkTicketAplicado.current = true;
 
-      const { error } = await supabase
+      const { data: actualizado, error } = await supabase
         .from('tickets_soporte')
         .update({ estado: 'EN PROCESO' })
-        .eq('id_ticket', ticket.id_ticket);
+        .eq('id_ticket', ticket.id_ticket)
+        .select()
+        .single();
       if (error) throw error;
 
-      setRawTickets(prev =>
-        prev.map(t => t.id_ticket === ticket.id_ticket ? { ...t, estado: 'EN PROCESO' } : t)
-      );
+      const ticketAct = actualizado || { ...ticket, estado: 'EN PROCESO' };
+      setRawTickets((prev) => fusionarTicketEnLista(prev, ticketAct));
+      await publicarCambioTicket('UPDATE', ticketAct);
       cerrarModalTicket();
       cerrarToastTicketAdmin(ticket.id_ticket);
 
@@ -726,8 +721,9 @@ export default function AdminAlertas() {
       const { data: ticketUpd, error: errTicket } = await supabase.from('tickets_soporte').update({
         respuesta_admin: respDev,
         estado: 'RESUELTO'
-      }).eq('id_ticket', ticketActivo.id_ticket).select('id_ticket');
+      }).eq('id_ticket', ticketActivo.id_ticket).select().single();
       assertEscritura(ticketUpd, errTicket, 'No se pudo cerrar el ticket de soporte tras la devolución.');
+      await publicarCambioTicket('UPDATE', ticketUpd || { ...ticketActivo, respuesta_admin: respDev, estado: 'RESUELTO' });
 
       await notificarRespuestaTicketVendedor({
         id_usuario: ticketActivo.id_usuario,
@@ -751,7 +747,14 @@ export default function AdminAlertas() {
     
     setGuardandoTicket(true);
     try {
-      await supabase.from('tickets_soporte').update({ respuesta_admin: respuestaAdmin, estado: 'RESUELTO' }).eq('id_ticket', ticketActivo.id_ticket);
+      const { data: respondido, error: errResp } = await supabase
+        .from('tickets_soporte')
+        .update({ respuesta_admin: respuestaAdmin, estado: 'RESUELTO' })
+        .eq('id_ticket', ticketActivo.id_ticket)
+        .select()
+        .single();
+      if (errResp) throw errResp;
+      await publicarCambioTicket('UPDATE', respondido || { ...ticketActivo, respuesta_admin: respuestaAdmin, estado: 'RESUELTO' });
       await notificarRespuestaTicketVendedor({
         id_usuario: ticketActivo.id_usuario,
         id_ticket: ticketActivo.id_ticket,
@@ -793,10 +796,11 @@ export default function AdminAlertas() {
 
       // 3️⃣ Cerrar el ticket con nota automática
       const respReset = `Contraseña restablecida correctamente. Tu nueva clave temporal es tu número de DNI (${usuData.dni}). Por seguridad, cámbiala en tu próximo ingreso.`;
-      await supabase.from('tickets_soporte').update({
+      const { data: ticketReset } = await supabase.from('tickets_soporte').update({
         respuesta_admin: respReset,
         estado: 'RESUELTO'
-      }).eq('id_ticket', ticketActivo.id_ticket);
+      }).eq('id_ticket', ticketActivo.id_ticket).select().single();
+      await publicarCambioTicket('UPDATE', ticketReset || { ...ticketActivo, respuesta_admin: respReset, estado: 'RESUELTO' });
 
       await notificarRespuestaTicketVendedor({
         id_usuario: ticketActivo.id_usuario,

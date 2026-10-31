@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import LogoLuxFarma from '../../components/LogoLuxFarma';
-import { supabase } from '../../supabaseClient';
+import { buscarCuentaRecuperacion, solicitarRecuperacionCuenta } from '../../services/authCuenta';
+import { publicarCambioTicket } from '../../utils/soporteRealtime';
+import { notificarNuevoTicketAdmins } from '../../utils/notificacionesService';
 import './ForgotModal.css';
 import UiIcon from '../../components/UiIcon';
 
@@ -23,13 +25,8 @@ export default function ForgotModal({ onClose }) {
     setError('');
     setBuscando(true);
     try {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('id_usuario, nombres, apellidos, id_sucursal, activo')
-        .eq('dni', dni)
-        .single();
-
-      if (error || !data) {
+      const data = await buscarCuentaRecuperacion(dni);
+      if (!data) {
         setError('No se encontró ningún usuario con ese DNI.');
         return;
       }
@@ -51,16 +48,13 @@ export default function ForgotModal({ onClose }) {
     if (!usuarioEncontrado) return;
     setEnviando(true);
     try {
-      const { error } = await supabase.from('tickets_soporte').insert({
-        id_usuario: usuarioEncontrado.id_usuario,
-        id_sucursal: usuarioEncontrado.id_sucursal,
-        asunto: 'Recuperación de contraseña',
-        descripcion: descripcion || 'El usuario solicita recuperación de contraseña.',
-        prioridad: 'Alta',
-        tipo: 'Prob. Técnico',
-        estado: 'PENDIENTE',
+      const creado = await solicitarRecuperacionCuenta({ dni, descripcion });
+      await notificarNuevoTicketAdmins({
+        id_ticket: creado?.id_ticket,
+        asunto: creado?.asunto,
+        prioridad: creado?.prioridad,
       });
-      if (error) throw error;
+      await publicarCambioTicket('INSERT', creado);
       setExitoso(true);
     } catch {
       setError('Error al enviar el ticket. Intenta nuevamente.');

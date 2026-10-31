@@ -3,6 +3,7 @@
  * Persisten al navegar entre rutas; se limpian al confirmar/cancelar o al logout.
  */
 import { resetWelcomeVoice } from './welcomeVoice';
+import { limpiarSesionAsistenteIA } from './asistenteIASesion';
 
 export function leerSessionDraft(key, defaultValue) {
   try {
@@ -72,5 +73,7 @@ export function limpiarStorageAlLogout() {
   } catch { /* ignore */ }
   try { localStorage.removeItem('luxfarma_turnoActivo'); } catch { /* ignore */ }
   try { localStorage.removeItem('luxfarma_borrador_compra'); } catch { /* ignore */ }
+  try { localStorage.removeItem('ti_v_filtro_conteo'); } catch { /* ignore */ }
+  try { limpiarSesionAsistenteIA(); } catch { /* ignore */ }
   try { resetWelcomeVoice(); } catch { /* ignore */ }
 }
