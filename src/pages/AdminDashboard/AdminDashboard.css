@@ -71,6 +71,10 @@
   box-shadow: 0 4px 12px rgb(225 29 46 / 0.28);
 }
 
+.filter-custom-dates { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.filter-custom-dates label { display: flex; align-items: center; gap: 0.4rem; color: var(--lf-text-muted); font-size: 0.78rem; font-weight: 650; }
+.filter-custom-dates input { min-height: 38px; padding: 0.35rem 0.55rem; border: 1px solid var(--lf-border); border-radius: 9px; color: var(--lf-text); background: #fff; font: inherit; }
+
 .filter-employees { display: flex; align-items: center; gap: 0.5rem; }
 .filter-employees .label { font-size: 0.75rem; color: var(--lf-text-muted); font-weight: 700; margin-right: 0.5rem; }
 .emp-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 0.7rem; font-weight: bold; }

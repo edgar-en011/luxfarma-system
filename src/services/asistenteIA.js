@@ -10,14 +10,14 @@ function esTodas(idSucursal) {
   return idSucursal == null || idSucursal === '' || idSucursal === 'TODAS';
 }
 
-export async function cargarDatosAsistenteIA({ idSucursal = 'TODAS', token } = {}) {
+export async function cargarDatosAsistenteIA({ idSucursal = 'TODAS', token, dias = DIAS_VENTAS_ASISTENTE } = {}) {
   const idSucursalRpc = esTodas(idSucursal) ? null : Number(idSucursal);
   let resultado;
   try {
     resultado = await invocarAsistente({
       accion: 'resumen',
       id_sucursal: idSucursalRpc,
-      dias: DIAS_VENTAS_ASISTENTE,
+      dias,
       limite: 10,
     }, token);
   } catch (error) {
@@ -26,7 +26,7 @@ export async function cargarDatosAsistenteIA({ idSucursal = 'TODAS', token } = {
     const [{ data: resumen, error: errorResumen }, { data: sucursales, error: errorSucursales }] = await Promise.all([
       supabase.rpc('resumen_asistente_ia', {
         p_id_sucursal: idSucursalRpc,
-        p_dias: DIAS_VENTAS_ASISTENTE,
+        p_dias: dias,
         p_limite: 10,
       }),
       supabase
@@ -140,12 +140,13 @@ export async function crearSesionAsistenteIA({ idUsuario, password }) {
   });
 }
 
-export async function consultarAsistenteIA({ token, pregunta, snapshot, historial = [] }) {
+export async function consultarAsistenteIA({ token, pregunta, snapshot, historial = [], periodoVentas = null }) {
   return invocarAsistente({
     accion: 'consultar',
     pregunta,
     resumen: snapshot,
     historial,
+    periodo_ventas: periodoVentas,
   }, token);
 }
 

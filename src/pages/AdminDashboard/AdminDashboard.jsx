@@ -30,12 +30,18 @@ const limpiarNombre = (nombre) => (nombre || '').replace(/\bundefined\b/gi, '').
 
 // A nivel de módulo (no closure del componente) para que los useCallback que dependen
 // del rango no se recreen en cada render ni arrastren dependencias fantasma.
-const rangoFechasPeriodo = (filtroTiempo) => {
+const rangoFechasPeriodo = (filtroTiempo, fechaDesde, fechaHasta) => {
   const start = new Date(); const end = new Date();
   end.setHours(23, 59, 59, 999);
+  if (filtroTiempo === 'Personalizado') {
+    const desde = new Date(`${fechaDesde}T00:00:00`);
+    const hasta = new Date(`${fechaHasta}T23:59:59.999`);
+    if (Number.isNaN(desde.getTime()) || Number.isNaN(hasta.getTime()) || desde > hasta) return null;
+    return { start: desde.toISOString(), end: hasta.toISOString() };
+  }
   if (filtroTiempo === 'Hoy') { start.setHours(0, 0, 0, 0); }
   else if (filtroTiempo === 'Ayer') { start.setDate(start.getDate() - 1); start.setHours(0, 0, 0, 0); end.setDate(end.getDate() - 1); end.setHours(23, 59, 59, 999); }
-  else if (filtroTiempo === 'Esta semana') { start.setDate(start.getDate() - 6); start.setHours(0, 0, 0, 0); }
+  else if (filtroTiempo === 'Esta semana') { start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); start.setHours(0, 0, 0, 0); }
   else if (filtroTiempo === 'Este mes') { start.setDate(1); start.setHours(0, 0, 0, 0); }
   return { start: start.toISOString(), end: end.toISOString() };
 };
@@ -46,6 +52,9 @@ export default function AdminDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [filtroTiempo, setFiltroTiempo] = useState('Hoy');
+  const hoyLocal = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const [fechaDesde, setFechaDesde] = useState(hoyLocal);
+  const [fechaHasta, setFechaHasta] = useState(hoyLocal);
 
   const [kpis, setKpis] = useState({ ventasTotal: 0, operaciones: 0, ticketPromedio: 0, gananciaNeta: 0 });
   const [turnosAbiertos, setTurnosAbiertos] = useState([]);
@@ -74,7 +83,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setTurnosExpandidos(new Set());
-  }, [filtroTiempo, sucursalFiltro]);
+  }, [filtroTiempo, sucursalFiltro, fechaDesde, fechaHasta]);
   useEffect(() => {
     if (!bubbleAbierta) return undefined;
     const handleClickFuera = (e) => {
@@ -95,14 +104,16 @@ export default function AdminDashboard() {
   const turnosAbiertosRef = useRef(turnosAbiertos);
   turnosAbiertosRef.current = turnosAbiertos;
 
-  useEffect(() => { cargarDatosDashboard(); }, [filtroTiempo, sucursalFiltro]);
+  useEffect(() => { cargarDatosDashboard(); }, [filtroTiempo, sucursalFiltro, fechaDesde, fechaHasta]);
 
   // Panel "Estado SUNAT": consulta propia a comprobantes_sunat, la misma tabla que lista
   // AdminSunat. Antes se contaba ventas.estado_sunat con un catch-all (`else pendientes++`)
   // que metía ENVIADO, REQUIERE_REVISION y las notas de venta (estado null) en
   // "pendientes", y además ventas.estado_sunat puede quedar desfasado del comprobante.
   const cargarEstadoSunat = useCallback(async () => {
-    const { start, end } = rangoFechasPeriodo(filtroTiempo);
+    const rango = rangoFechasPeriodo(filtroTiempo, fechaDesde, fechaHasta);
+    if (!rango) return;
+    const { start, end } = rango;
     try {
       const conteo = await contarComprobantesSunat(supabase, {
         idSucursal: sucursalFiltro === 'TODAS' ? null : sucursalFiltro,
@@ -120,7 +131,7 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error('Error cargando estado SUNAT:', e);
     }
-  }, [filtroTiempo, sucursalFiltro]);
+  }, [filtroTiempo, sucursalFiltro, fechaDesde, fechaHasta]);
 
   useEffect(() => { if (facturacionElectronica) cargarEstadoSunat(); }, [cargarEstadoSunat]);
 
@@ -239,7 +250,7 @@ export default function AdminDashboard() {
       clearTimeout(timeoutId);
       supabase.removeChannel(canalVentas);
     };
-  }, [filtroTiempo, sucursalFiltro, refrescarSeccion]);
+  }, [filtroTiempo, sucursalFiltro, fechaDesde, fechaHasta, refrescarSeccion]);
 
   useEffect(() => {
     if (appData?.sucursales) {
@@ -318,7 +329,7 @@ export default function AdminDashboard() {
     } catch (e) { console.error(e); }
   };
 
-  const obtenerRangoFechas = () => rangoFechasPeriodo(filtroTiempo);
+  const obtenerRangoFechas = () => rangoFechasPeriodo(filtroTiempo, fechaDesde, fechaHasta);
 
   // Filtro centralizado de anuladas (mismo criterio que ya usa AdminVentas.jsx) — se
   // aplica una sola vez acá, así ningún caller (carga inicial, appData cacheado, o el
@@ -475,7 +486,9 @@ export default function AdminDashboard() {
     // del login, sin id_sucursal fiable → ventas nuevas del Admin/POS no aparecían y el
     // filtro por sucursal podía vaciar la lista).
     setLoading(true);
-    const { start, end } = obtenerRangoFechas();
+    const rango = obtenerRangoFechas();
+    if (!rango) { setLoading(false); return; }
+    const { start, end } = rango;
     try {
       let queryVentas = supabase
         .from('ventas')
@@ -558,10 +571,14 @@ export default function AdminDashboard() {
       {/* FILTROS */}
       <div className="admin-top-filters">
         <div className="filter-tabs">
-          {['Hoy', 'Ayer', 'Esta semana', 'Este mes'].map(tab => (
+          {['Hoy', 'Ayer', 'Esta semana', 'Este mes', 'Personalizado'].map(tab => (
             <button key={tab} className={`tab ${filtroTiempo === tab ? 'active' : ''}`} onClick={() => setFiltroTiempo(tab)}>{tab}</button>
           ))}
         </div>
+        {filtroTiempo === 'Personalizado' && <div className="filter-custom-dates">
+          <label>Desde <input type="date" value={fechaDesde} max={fechaHasta} onChange={e => setFechaDesde(e.target.value)} /></label>
+          <label>Hasta <input type="date" value={fechaHasta} min={fechaDesde} max={hoyLocal} onChange={e => setFechaHasta(e.target.value)} /></label>
+        </div>}
         <div className="filter-branch">
           <select
             className="btn-sucursal-select"
