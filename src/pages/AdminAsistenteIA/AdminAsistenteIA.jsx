@@ -36,6 +36,42 @@ function cantidad(valor) {
   return Number(valor || 0).toLocaleString('es-PE', { maximumFractionDigits: 2 });
 }
 
+function fechaISOlocal(fecha) {
+  const ajustada = new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60_000);
+  return ajustada.toISOString().slice(0, 10);
+}
+
+function periodoInformeVentas(pregunta, idSucursal) {
+  const texto = pregunta.toLocaleLowerCase('es');
+  if (!/\b(venta|ventas|ingreso|ingresos|recaudaci[oó]n|facturaci[oó]n|ganancia|ganancias|utilidad|ticket|tickets)\b/.test(texto)) return null;
+  const hoy = new Date();
+  let desde = new Date(hoy);
+  let hasta = new Date(hoy);
+  if (/\b(ayer|d[ií]a anterior)\b/.test(texto)) {
+    desde.setDate(desde.getDate() - 1);
+    hasta = new Date(desde);
+  } else if (/\b(semana pasada|[uú]ltima semana)\b/.test(texto)) {
+    const lunesEsta = new Date(hoy);
+    lunesEsta.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+    hasta = new Date(lunesEsta);
+    hasta.setDate(hasta.getDate() - 1);
+    desde = new Date(hasta);
+    desde.setDate(desde.getDate() - 6);
+  } else if (/\b(mes pasado|[uú]ltimo mes)\b/.test(texto)) {
+    desde = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+    hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+  } else if (/\b(mes|mensual)\b/.test(texto)) {
+    desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  } else if (/\b(semana|semanal)\b/.test(texto)) {
+    desde.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  } else if (/\b(30 d[ií]as|[uú]ltimos 30)\b/.test(texto)) {
+    desde.setDate(desde.getDate() - 29);
+  } else if (/\b(7 d[ií]as|[uú]ltimos 7)\b/.test(texto)) {
+    desde.setDate(desde.getDate() - 6);
+  }
+  return { desde: fechaISOlocal(desde), hasta: fechaISOlocal(hasta), id_sucursal: idSucursal === 'TODAS' ? null : Number(idSucursal) };
+}
+
 function TextoConNegritas({ texto }) {
   return String(texto || '').split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((parte, indice) => (
     parte.startsWith('**') && parte.endsWith('**')
@@ -315,6 +351,13 @@ export default function AdminAsistenteIA() {
     }
     setConsultando(true);
     try {
+      const textoPeriodo = limpia.toLocaleLowerCase('es');
+      const diasConsulta = /\b(hoy|diari[oa]|del d[ií]a|por d[ií]a)\b/.test(textoPeriodo) ? 1
+        : /\b(semanal|esta semana|semana pasada|[uú]ltimos 7 d[ií]as)\b/.test(textoPeriodo) ? 7
+          : /\b(mensual|este mes|mes pasado|[uú]ltimos 30 d[ií]as)\b/.test(textoPeriodo) ? 30 : null;
+      const datosConsulta = diasConsulta
+        ? await cargarDatosAsistenteIA({ idSucursal, token: sesionIA.token, dias: diasConsulta })
+        : datos;
       const resultado = consultaStock
         ? await consultarStockActualAsistenteIA({
           pregunta: limpia,
@@ -324,11 +367,12 @@ export default function AdminAsistenteIA() {
         : await consultarAsistenteIA({
           token: sesionIA.token,
           pregunta: limpia,
-          snapshot: datos.snapshotIA,
+          snapshot: datosConsulta.snapshotIA,
           historial: mensajes.slice(-6).map((mensaje) => ({
             rol: mensaje.rol,
             texto: mensaje.texto,
           })),
+          periodoVentas: periodoInformeVentas(limpia, idSucursal),
         });
       setMensajes((actuales) => [...actuales, {
         id: `a-${Date.now()}`,

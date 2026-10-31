@@ -227,11 +227,39 @@ async function consultar(request: Request, db: ReturnType<typeof createClient>, 
   }
 
   const historial = historialItems.map((item) => item.linea).join('\n');
+  const periodoVentas = body.periodo_ventas && typeof body.periodo_ventas === 'object'
+    ? body.periodo_ventas as Record<string, unknown>
+    : null;
+  let resumenVentas: unknown = null;
+  const preguntaCompleta = esSeguimiento ? `${ultimaPregunta} ${pregunta}` : pregunta;
+  const pideInformeVentas = /\b(venta|ventas|ingreso|ingresos|recaudaci[oó]n|facturaci[oó]n|ganancia|ganancias|utilidad|ticket|tickets)\b/i.test(preguntaCompleta);
+  if (pideInformeVentas && periodoVentas) {
+    const desde = String(periodoVentas.desde || '');
+    const hasta = String(periodoVentas.hasta || '');
+    const idSucursal = periodoVentas.id_sucursal == null ? null : Number(periodoVentas.id_sucursal);
+    const fechaDesde = new Date(`${desde}T00:00:00Z`);
+    const fechaHasta = new Date(`${hasta}T00:00:00Z`);
+    const dias = (fechaHasta.getTime() - fechaDesde.getTime()) / 86_400_000;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)
+      || Number.isNaN(dias) || dias < 0 || dias > 365
+      || (idSucursal !== null && (!Number.isInteger(idSucursal) || idSucursal <= 0))) {
+      return respuestaJson(request, { code: 'INVALID_INPUT', message: 'El período solicitado no es válido (máximo 366 días).' }, 400);
+    }
+    const { data, error } = await db.rpc('resumen_ventas_asistente_ia', {
+      p_desde: desde, p_hasta: hasta, p_id_sucursal: idSucursal,
+    });
+    if (error || !data) {
+      console.error('[asistente-ia] No se pudo consultar el agregado de ventas', error);
+      return respuestaJson(request, { code: 'SALES_SUMMARY_UNAVAILABLE', message: 'No se pudo obtener el resumen de ventas del período.' }, 503);
+    }
+    resumenVentas = data;
+  }
 
   const instrucciones = [
     'Eres el asistente analítico de LuxFarma para administradores de una botica.',
     'Responde en español, de forma breve, concreta y orientada a decisiones.',
     'Usa exclusivamente el resumen JSON recibido. No inventes productos, cifras, causas ni tendencias.',
+    'Si se incluye resumenVentas, úsalo para responder cifras monetarias, operaciones, ticket promedio, costos, ganancias y serie diaria; nunca presentes movimientos de unidades como ventas monetarias.',
     'Los totales representan el conjunto completo, pero cada lista contiene como máximo los elementos indicados en metadata.limiteItemsPorCategoria.',
     'Nunca presentes una lista parcial como si fuera completa ni deduzcas el stock de un producto que no aparece en los datos.',
     'stockBase significa stock disponible para venta y solo suma lotes VIGENTE; no incluye lotes VENCIDO.',
@@ -246,7 +274,7 @@ async function consultar(request: Request, db: ReturnType<typeof createClient>, 
     'Responde de manera natural y directa. No repitas siempre la misma plantilla; usa listas únicamente cuando ayuden.',
     'Si productosAnalizados es mayor que cero pero productosConStock es cero, explica que no hay lotes sincronizados y no que el catálogo esté realmente agotado.',
   ].join(' ');
-  const entrada = `${historial ? `Conversación reciente:\n${historial}\n\n` : ''}Pregunta actual del administrador:\n${pregunta}\n\nResumen real y acotado de LuxFarma:\n${resumenJson}`;
+  const entrada = `${historial ? `Conversación reciente:\n${historial}\n\n` : ''}Pregunta actual del administrador:\n${pregunta}\n\nResumen real y acotado de LuxFarma:\n${resumenJson}${resumenVentas ? `\n\nResumen agregado de ventas del período solicitado (sin registros individuales):\n${JSON.stringify(resumenVentas)}` : ''}`;
 
   const geminiKey = Deno.env.get('GEMINI_API_KEY');
   const geminiModel = Deno.env.get('GEMINI_MODEL') || 'gemini-3.1-flash-lite';
